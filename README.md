@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/goistjt/MotionData.svg?branch=master)](https://travis-ci.org/goistjt/MotionData)
 # MotionData
-By 
+By Brooke Brown, Jeremiah Goist, Steve Trotta and Runzhi Yang
 ## Project Description:
 ##Milestone1:
   1.	Progress on problem statement
