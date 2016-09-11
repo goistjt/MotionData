@@ -25,3 +25,4 @@ By Brooke Brown, Jeremiah Goist, Steve Trotta and Runzhi Yang
 
 ##Resources:
 - [Meeting minutes](https://docs.google.com/document/d/1QG2Vc7Fuq_-LPjUG3eRwiL3g6tIQKHReexd1JDyUs9I/edit?usp=sharing)
+- [Google Document](https://drive.google.com/open?id=0By5ol31z4l_lSFdoVHB6UHpsQ0U)
