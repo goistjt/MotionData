@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,23 +10,83 @@
     tools:context="edu.rose_hulman.nswccrane.dataacquisition.MainActivity">
 
     <Button
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
         android:id="@+id/calibration_button"
-        android:text="@string/calibrate"/>
-
-    <Button
         android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:text="@string/calibrate" />
+
+    <Button
         android:id="@+id/collection_button"
-        android:layout_below="@id/calibration_button"
-        android:text="@string/collect_data"/>
-
-    <Button
         android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/calibration_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="28dp"
+        android:text="@string/collect_data" />
+
+    <Button
         android:id="@+id/export_button"
-        android:layout_below="@id/collection_button"
-        android:text="@string/export_data"/>
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/collection_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="28dp"
+        android:text="@string/export_data" />
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/export_button"
+        android:layout_marginBottom="28dp"
+        android:layout_marginEnd="28dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="28dp">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/x_accel_text_view"
+                android:layout_weight="1"
+                android:text="@string/x_accel_default" />
+
+            <TextView
+                android:id="@+id/pitch_gyro_text_view"
+                android:layout_weight="1"
+                android:text="@string/pitch_gyro_default" />
+        </TableRow>
+
+        <TableRow android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/y_accel_text_view"
+                android:layout_weight="1"
+                android:text="@string/y_accel_default" />
+
+            <TextView
+                android:id="@+id/yaw_gyro_text_view"
+                android:layout_weight="1"
+                android:text="@string/yaw_gyro_default" />
+        </TableRow>
+
+        <TableRow android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/z_accel_text_view"
+                android:layout_weight="1"
+                android:text="@string/z_accel_default" />
+
+            <TextView
+                android:id="@+id/roll_gyro_text_view"
+                android:layout_weight="1"
+                android:text="@string/roll_gyro_default" />
+        </TableRow>
+    </TableLayout>
 
 </RelativeLayout>
