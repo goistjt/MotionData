@@ -1,5 +1,5 @@
 language: android
-jdk: oraclejdk7
+jdk: oraclejdk8
 # Use the Travis Container-Based Infrastructure
 sudo: false
 
@@ -46,4 +46,5 @@ before_script:
   - android-wait-for-emulator
 
 script:
-  - cd DataAcquisition & ./gradlew clean check connectedCheck -x library:signArchives -PdisablePreDex
+  - cd DataAcquisition
+  - ./gradlew connectedAndroidTest
