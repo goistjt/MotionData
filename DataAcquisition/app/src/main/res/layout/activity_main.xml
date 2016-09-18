@@ -11,16 +11,23 @@
     tools:context="edu.rose_hulman.nswccrane.dataacquisition.MainActivity">
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:id="@+id/calibration_button"
         android:text="@string/calibrate"/>
 
     <Button
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:id="@+id/collection_button"
         android:layout_below="@id/calibration_button"
         android:text="@string/collect_data"/>
+
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/export_button"
+        android:layout_below="@id/collection_button"
+        android:text="@string/export_data"/>
 
 </RelativeLayout>
