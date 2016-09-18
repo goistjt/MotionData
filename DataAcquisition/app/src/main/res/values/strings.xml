@@ -3,10 +3,10 @@
     <string name="calibrate">Calibrate Sensors</string>
     <string name="collect_data">Collect Data</string>
     <string name="export_data">Export Data</string>
-    <string name="x_accel_default">X: 0.00 m/s</string>
     <string name="pitch_gyro_default">Pitch: 0.00 °</string>
-    <string name="y_accel_default">Y: 0.00 m/s</string>
     <string name="yaw_gyro_default">Yaw: 0.00 °</string>
-    <string name="z_accel_default">Z: 0.00 ms</string>
     <string name="roll_gyro_default">Roll: 0.00 °</string>
+    <string name="z_accel_default">Z: 0.00 m/s²</string>
+    <string name="y_accel_default">Y: 0.00 m/s²</string>
+    <string name="x_accel_default">X: 0.00 m/s²</string>
 </resources>
