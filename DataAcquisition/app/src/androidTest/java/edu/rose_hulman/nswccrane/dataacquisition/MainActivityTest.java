@@ -32,4 +32,9 @@ public class MainActivityTest extends JUnitTestCase<MainActivity> {
         onView(withId(R.id.collection_button)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testExportButtonExists() {
+        onView(withId(R.id.export_button)).check(matches(isDisplayed()));
+    }
+
 }
