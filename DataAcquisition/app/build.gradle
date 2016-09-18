@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
+apply plugin: 'spoon'
 
 android {
     compileSdkVersion 23
@@ -11,6 +12,7 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -21,9 +23,36 @@ android {
 }
 
 dependencies {
+    // BUILD
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.jakewharton:butterknife:8.4.0'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
+
+    // UNIT TESTING
+    testCompile(
+            'junit:junit:4.12',
+            'com.android.support:support-annotations:24.1.0',
+            'com.squareup.assertj:assertj-android:1.0.0',
+            'org.mockito:mockito-core:1.9.5',
+            'org.assertj:assertj-core:1.7.0'
+    )
+    testCompile('org.robolectric:robolectric:2.4') {
+        exclude group: 'commons-logging'
+        exclude group: 'org.apache.httpcomponents'
+    }
+
+    // INTEGRATION TESTING
+    configurations {
+        androidTestCompile.exclude module: 'support-v4'
+        androidTestCompile.exclude module: 'support-v7'
+        androidTestCompile.exclude module: 'android'
+    }
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.0',
+            'com.android.support.test.espresso:espresso-idling-resource:2.0',
+            'com.android.support.test:testing-support-lib:0.1',
+            'com.squareup.spoon:spoon-client:1.1.8')
+    androidTestCompile('com.android.support.test.espresso:espresso-contrib:2.0') {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    }
 }
