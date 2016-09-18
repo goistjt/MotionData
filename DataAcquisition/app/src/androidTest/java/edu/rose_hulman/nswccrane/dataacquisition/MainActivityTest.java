@@ -27,4 +27,9 @@ public class MainActivityTest extends JUnitTestCase<MainActivity> {
         onView(withId(R.id.calibration_button)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testCollectionButtonExists() {
+        onView(withId(R.id.collection_button)).check(matches(isDisplayed()));
+    }
+
 }
