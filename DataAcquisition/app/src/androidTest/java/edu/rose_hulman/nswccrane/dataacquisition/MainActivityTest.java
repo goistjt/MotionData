@@ -37,4 +37,14 @@ public class MainActivityTest extends JUnitTestCase<MainActivity> {
         onView(withId(R.id.export_button)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void testSensorLabelsExist() {
+        onView(withId(R.id.x_accel_text_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.y_accel_text_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.z_accel_text_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.pitch_gyro_text_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.yaw_gyro_text_view)).check(matches(isDisplayed()));
+        onView(withId(R.id.roll_gyro_text_view)).check(matches(isDisplayed()));
+    }
+
 }
