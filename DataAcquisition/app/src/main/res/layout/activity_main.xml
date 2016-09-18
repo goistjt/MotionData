@@ -16,4 +16,11 @@
         android:id="@+id/calibration_button"
         android:text="@string/calibrate"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/collection_button"
+        android:layout_below="@id/calibration_button"
+        android:text="@string/collect_data"/>
+
 </RelativeLayout>
