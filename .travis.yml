@@ -48,8 +48,8 @@ before_script:
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
-  - adb shell reboot -p
-  - emulator -avd test -no-audio -no-window &
+  - emulator -vm stop
+  - emulator -vm start
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
 
