@@ -10,26 +10,26 @@ public class AccelDataModel {
     private double z_val;
     private long time_val;
 
-    public AccelDataModel(double x, double y, double z, long time){
+    public AccelDataModel(long time, double x, double y, double z){
         x_val = x;
         y_val = y;
         z_val = z;
         time_val = time;
     }
 
-    public double GetXVal(){
+    public double getX(){
         return x_val;
     }
 
-    public double GetYVal(){
+    public double getY(){
         return y_val;
     }
 
-    public double GetZVal(){
+    public double getZ(){
         return z_val;
     }
 
-    public double GetTimeOfOccurrence(){
+    public long getTime(){
         return time_val;
     }
 }
