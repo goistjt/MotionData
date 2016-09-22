@@ -139,26 +139,14 @@ public class ApplicationTest extends JUnitTestCase<MainActivity> {
     @Test
     public void testToggleCollectionTrueNoException() throws NoSuchFieldException, IllegalAccessException {
         MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
-        Field startedField = MainActivity.class.getDeclaredField("mStarted");
-        if(!startedField.isAccessible()) {
-            startedField.setAccessible(true);
-        }
+        Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, true);
-        Field collectionButtonField = MainActivity.class.getDeclaredField("mCollectionButton");
-        if(!collectionButtonField.isAccessible()) {
-            collectionButtonField.setAccessible(true);
-        }
-        Field dbField = MainActivity.class.getDeclaredField("mMotionCollectionDBHelper");
-        if(!dbField.isAccessible()) {
-            dbField.setAccessible(true);
-        }
+        Field collectionButtonField = getFieldFromMainActivity("mCollectionButton");
+        Field dbField = getFieldFromMainActivity("mMotionCollectionDBHelper");
         dbField.set(mainActivity, new FakeMotionDB(mainActivity));
-        Field insertionPoolField = MainActivity.class.getDeclaredField("mInsertionThreadPool");
+        Field insertionPoolField = getFieldFromMainActivity("mInsertionThreadPool");
         FakePool newPool = new FakePool();
         newPool.errorOnAwait = false;
-        if(!insertionPoolField.isAccessible()) {
-            insertionPoolField.setAccessible(true);
-        }
         insertionPoolField.set(mainActivity, newPool);
         onView(ViewMatchers.withId(R.id.collection_button)).perform(ViewActions.click());
         Button collectionButton = (Button) collectionButtonField.get(mainActivity);
@@ -168,5 +156,13 @@ public class ApplicationTest extends JUnitTestCase<MainActivity> {
         Assert.assertTrue(collectionButton.getText().equals("Start Collection"));
         Assert.assertFalse(started);
         Assert.assertTrue(helper.successfullyDeleted);
+    }
+
+    private Field getFieldFromMainActivity(String declarationName) throws NoSuchFieldException {
+        Field field = MainActivity.class.getDeclaredField(declarationName);
+        if(!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        return field;
     }
 }
