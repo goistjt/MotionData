@@ -39,29 +39,36 @@ public class ApplicationTest extends JUnitTestCase<MainActivity> {
     class FakePool implements ExecutorService {
 
         public boolean errorOnAwait;
+        public boolean shutdownBool;
+        public boolean terminateBool;
 
         public FakePool(){
             errorOnAwait = false;
+            shutdownBool = false;
+            terminateBool = false;
         }
 
         @Override
         public void shutdown() {
+            this.terminateBool = true;
+            this.shutdownBool = true;
         }
 
         @NonNull
         @Override
         public List<Runnable> shutdownNow() {
+            this.shutdown();
             return null;
         }
 
         @Override
         public boolean isShutdown() {
-            return false;
+            return this.shutdownBool;
         }
 
         @Override
         public boolean isTerminated() {
-            return false;
+            return this.terminateBool;
         }
 
         @Override
@@ -157,7 +164,32 @@ public class ApplicationTest extends JUnitTestCase<MainActivity> {
     }
 
     @Test
-    public void testToggleCollectionFalseNoException() throws NoSuchFieldException, IllegalAccessException {
+    public void testToggleCollectionTrueWithException() throws NoSuchFieldException, IllegalAccessException {
+        MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+        Field startedField = getFieldFromMainActivity("mStarted");
+        startedField.set(mainActivity, true);
+        Field collectionButtonField = getFieldFromMainActivity("mCollectionButton");
+        Field dbField = getFieldFromMainActivity("mMotionCollectionDBHelper");
+        dbField.set(mainActivity, new FakeMotionDB(mainActivity));
+        Field insertionPoolField = getFieldFromMainActivity("mInsertionThreadPool");
+        FakePool newPool = new FakePool();
+        newPool.errorOnAwait = true;
+        insertionPoolField.set(mainActivity, newPool);
+        onView(ViewMatchers.withId(R.id.collection_button)).perform(ViewActions.click());
+        Button collectionButton = (Button) collectionButtonField.get(mainActivity);
+        boolean started = (boolean) startedField.get(mainActivity);
+        FakeMotionDB helper = (FakeMotionDB) dbField.get(mainActivity);
+        ExecutorService insertionPool = (ExecutorService) insertionPoolField.get(mainActivity);
+        Assert.assertTrue(collectionButton.isActivated());
+        Assert.assertTrue(collectionButton.getText().equals("Start Collection"));
+        Assert.assertFalse(started);
+        Assert.assertTrue(helper.successfullyDeleted);
+        Assert.assertTrue(insertionPool.isShutdown());
+        Assert.assertTrue(insertionPool.isTerminated());
+    }
+
+    @Test
+    public void testToggleCollectionFalse() throws NoSuchFieldException, IllegalAccessException {
         MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
         Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, false);

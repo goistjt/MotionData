@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 mInsertionThreadPool.awaitTermination(SECONDS_TO_INSERTION_AWAIT_TIMEOUT, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Log.e("INT_AWAIT", e.getMessage());
+                mInsertionThreadPool.shutdownNow();
             }
             mCollectionButton.setText("Start Collection");
             mMotionCollectionDBHelper.DeleteCurrentAccelData();
