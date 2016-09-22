@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -146,7 +145,6 @@ public class ApplicationTest extends JUnitTestCase<MainActivity> {
         dbField.set(mainActivity, new FakeMotionDB(mainActivity));
         Field insertionPoolField = getFieldFromMainActivity("mInsertionThreadPool");
         FakePool newPool = new FakePool();
-        newPool.errorOnAwait = false;
         insertionPoolField.set(mainActivity, newPool);
         onView(ViewMatchers.withId(R.id.collection_button)).perform(ViewActions.click());
         Button collectionButton = (Button) collectionButtonField.get(mainActivity);
@@ -156,6 +154,27 @@ public class ApplicationTest extends JUnitTestCase<MainActivity> {
         Assert.assertTrue(collectionButton.getText().equals("Start Collection"));
         Assert.assertFalse(started);
         Assert.assertTrue(helper.successfullyDeleted);
+    }
+
+    @Test
+    public void testToggleCollectionFalseNoException() throws NoSuchFieldException, IllegalAccessException {
+        MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+        Field startedField = getFieldFromMainActivity("mStarted");
+        startedField.set(mainActivity, false);
+        Field collectionButtonField = getFieldFromMainActivity("mCollectionButton");
+        Field dbField = getFieldFromMainActivity("mMotionCollectionDBHelper");
+        dbField.set(mainActivity, new FakeMotionDB(mainActivity));
+        Field insertionPoolField = getFieldFromMainActivity("mInsertionThreadPool");
+        FakePool newPool = new FakePool();
+        insertionPoolField.set(mainActivity, newPool);
+        onView(ViewMatchers.withId(R.id.collection_button)).perform(ViewActions.click());
+        Button collectionButton = (Button) collectionButtonField.get(mainActivity);
+        boolean started = (boolean) startedField.get(mainActivity);
+        ExecutorService insertionPool = (ExecutorService) insertionPoolField.get(mainActivity);
+        Assert.assertTrue(collectionButton.isActivated());
+        Assert.assertTrue(collectionButton.getText().equals("Stop Collection and Delete Current Data"));
+        Assert.assertTrue(started);
+        Assert.assertTrue(insertionPool != newPool);
     }
 
     private Field getFieldFromMainActivity(String declarationName) throws NoSuchFieldException {
