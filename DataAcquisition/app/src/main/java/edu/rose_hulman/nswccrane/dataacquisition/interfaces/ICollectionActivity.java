@@ -1,5 +1,12 @@
 package edu.rose_hulman.nswccrane.dataacquisition.interfaces;
 
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import datamodels.AccelDataModel;
 import sqlite.MotionCollectionDBHelper;
 
@@ -13,7 +20,7 @@ public interface ICollectionActivity {
 
     void teardownSensorDependencies();
 
-    void collectionButtonSetup();
+    void toggleCollection();
 
     class InsertionThread implements Runnable {
 

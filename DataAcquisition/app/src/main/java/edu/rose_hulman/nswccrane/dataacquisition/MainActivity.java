@@ -24,11 +24,12 @@ import sqlite.MotionCollectionDBHelper;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, ICollectionActivity {
 
+    private Button mCollectionButton;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private MotionCollectionDBHelper mMotionCollectionDBHelper;
     private ExecutorService mInsertionThreadPool;
-    private boolean started = false;
+    private boolean mStarted = false;
     private long SECONDS_TO_INSERTION_AWAIT_TIMEOUT = 30;
 
     @Override
@@ -41,9 +42,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
         setContentView(R.layout.activity_main);
+        mCollectionButton = (Button) findViewById(R.id.collection_button);
         mMotionCollectionDBHelper = new MotionCollectionDBHelper(this, new Semaphore(1));
         mInsertionThreadPool = Executors.newFixedThreadPool(10);
-        collectionButtonSetup();
+        mCollectionButton.setOnClickListener(new CollectionClickListener());
     }
 
     public void populateSensorDependencies() {
@@ -53,48 +55,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (mAccelerometer == null) {
             mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         }
-        if (!started){
+        if (!mStarted){
             mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
-            started = true;
+            mStarted = true;
         }
     }
 
     public void teardownSensorDependencies() {
-        if (started) {
+        if (mStarted) {
             mSensorManager.unregisterListener(this);
-            started = false;
+            mStarted = false;
         }
         mAccelerometer = null;
         mSensorManager = null;
         mMotionCollectionDBHelper = null;
     }
 
-    public void collectionButtonSetup(){
-        final Button button = (Button) findViewById(R.id.collection_button);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                if(started) {
-                    button.setActivated(false);
-                    mInsertionThreadPool.shutdown();
-                    try {
-                        mInsertionThreadPool.awaitTermination(SECONDS_TO_INSERTION_AWAIT_TIMEOUT, TimeUnit.SECONDS);
-                    } catch (InterruptedException e) {
-                        Log.e("INT_AWAIT", e.getMessage());
-                    }
-                    button.setText("Start Collection");
-                    mMotionCollectionDBHelper.DeleteCurrentAccelData();
-                    started = false;
-                    button.setActivated(true);
-                }
-                else {
-                    button.setActivated(false);
-                    mInsertionThreadPool = Executors.newFixedThreadPool(10);
-                    button.setText("Stop Collection and Delete Data");
-                    started = true;
-                    button.setActivated(true);
-                }
+    private class CollectionClickListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            // May want to make this a thread in and of itself. Investigate whether onClick starts asynchronously.
+            toggleCollection();
+        }
+    }
+
+    public void toggleCollection() {
+        if(mStarted) {
+            mCollectionButton.setActivated(false);
+            mInsertionThreadPool.shutdown();
+            try {
+                mInsertionThreadPool.awaitTermination(SECONDS_TO_INSERTION_AWAIT_TIMEOUT, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Log.e("INT_AWAIT", e.getMessage());
             }
-        });
+            mCollectionButton.setText("Start Collection");
+            mMotionCollectionDBHelper.DeleteCurrentAccelData();
+            mStarted = false;
+            mCollectionButton.setActivated(true);
+            return;
+        }
+        mCollectionButton.setActivated(false);
+        mInsertionThreadPool = Executors.newFixedThreadPool(10);
+        mCollectionButton.setText("Stop Collection and Delete Current Data");
+        mStarted = true;
+        mCollectionButton.setActivated(true);
     }
 
     @Override
@@ -121,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (started) {
+        if (mStarted) {
             final AccelDataModel accelData = new AccelDataModel(System.currentTimeMillis(), event.values[0], event.values[1], event.values[2]);
             mInsertionThreadPool.submit(new ICollectionActivity.InsertionThread(accelData, mMotionCollectionDBHelper));
         }

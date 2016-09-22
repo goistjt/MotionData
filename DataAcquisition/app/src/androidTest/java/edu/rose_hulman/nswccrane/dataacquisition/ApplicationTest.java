@@ -1,37 +1,172 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
-import android.app.Application;
-import android.test.ApplicationTestCase;
-import android.util.Log;
+import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.test.espresso.action.ViewActions;
+import android.support.test.espresso.matcher.ViewMatchers;
+// import android.support.test.espresso.assertion.ViewAssertions;
+import android.support.test.runner.AndroidJUnit4;
+import android.widget.Button;
 
+// import org.junit.Before;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import datamodels.AccelDataModel;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-/**
- * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
- */
-public class ApplicationTest extends ApplicationTestCase<Application> {
+import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
+import sqlite.MotionCollectionDBHelper;
+
+import static android.support.test.espresso.Espresso.onView;
+
+@RunWith(AndroidJUnit4.class)
+public class ApplicationTest extends JUnitTestCase<MainActivity> {
 
     public ApplicationTest() {
-        super(Application.class);
+        super(MainActivity.class);
+    }
+
+    class FakePool implements ExecutorService {
+
+        public boolean errorOnAwait;
+
+        public FakePool(){
+            errorOnAwait = false;
+        }
+
+        @Override
+        public void shutdown() {
+        }
+
+        @NonNull
+        @Override
+        public List<Runnable> shutdownNow() {
+            return null;
+        }
+
+        @Override
+        public boolean isShutdown() {
+            return false;
+        }
+
+        @Override
+        public boolean isTerminated() {
+            return false;
+        }
+
+        @Override
+        public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+            if (errorOnAwait){
+                throw new InterruptedException("Test throw of and interrupted exception.");
+            }
+            return !errorOnAwait;
+        }
+
+        @NonNull
+        @Override
+        public <T> Future<T> submit(Callable<T> task) {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> Future<T> submit(Runnable task, T result) {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public Future<?> submit(Runnable task) {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+            return null;
+        }
+
+        @Override
+        public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return null;
+        }
+
+        @Override
+        public void execute(Runnable command) {
+
+        }
+    }
+
+    class FakeMotionDB extends MotionCollectionDBHelper {
+
+        public boolean successfullyDeleted;
+
+        public FakeMotionDB(Context context) {
+            super(context, new Semaphore(1));
+            successfullyDeleted = false;
+        }
+
+        @Override
+        public long DeleteCurrentAccelData(){
+            successfullyDeleted = true;
+            return 0;
+        }
     }
 
     @Test
-    public void testAccelDataModelConstructor() {
-        long currentTime = System.currentTimeMillis();
-        double inX = 0.0;
-        double inY = 0.0;
-        double inZ = 0.0;
-        AccelDataModel model = new AccelDataModel(currentTime, inX, inY, inZ);
-        Assert.assertEquals(currentTime, model.getTime());
-        Assert.assertTrue(inX == model.getX());
-        Assert.assertTrue(inY == model.getY());
-        Assert.assertTrue(inZ == model.getZ());
-    }
-
-    @Test
-    public void testCollectionButtonSetup() {
+    public void testToggleCollectionTrueNoException() throws NoSuchFieldException, IllegalAccessException {
+        MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+        Field startedField = MainActivity.class.getDeclaredField("mStarted");
+        if(!startedField.isAccessible()) {
+            startedField.setAccessible(true);
+        }
+        startedField.set(mainActivity, true);
+        Field collectionButtonField = MainActivity.class.getDeclaredField("mCollectionButton");
+        if(!collectionButtonField.isAccessible()) {
+            collectionButtonField.setAccessible(true);
+        }
+        Field dbField = MainActivity.class.getDeclaredField("mMotionCollectionDBHelper");
+        if(!dbField.isAccessible()) {
+            dbField.setAccessible(true);
+        }
+        dbField.set(mainActivity, new FakeMotionDB(mainActivity));
+        Field insertionPoolField = MainActivity.class.getDeclaredField("mInsertionThreadPool");
+        FakePool newPool = new FakePool();
+        newPool.errorOnAwait = false;
+        if(!insertionPoolField.isAccessible()) {
+            insertionPoolField.setAccessible(true);
+        }
+        insertionPoolField.set(mainActivity, newPool);
+        onView(ViewMatchers.withId(R.id.collection_button)).perform(ViewActions.click());
+        Button collectionButton = (Button) collectionButtonField.get(mainActivity);
+        boolean started = (boolean) startedField.get(mainActivity);
+        FakeMotionDB helper = (FakeMotionDB) dbField.get(mainActivity);
+        Assert.assertTrue(collectionButton.isActivated());
+        Assert.assertTrue(collectionButton.getText().equals("Start Collection"));
+        Assert.assertFalse(started);
+        Assert.assertTrue(helper.successfullyDeleted);
     }
 }
