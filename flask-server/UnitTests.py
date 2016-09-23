@@ -13,14 +13,13 @@ class FlaskTestCase(unittest.TestCase):
         pass
 
     def test_hello_world(self):
-        response = self.app.get('/')
-        assert b'Hello World!' in response.data
+        response = self.app.get('/hello-world')
+        self.assertEquals(b'Hello World!', response.data)
 
     def test_echo(self):
-        test_input = {'usernames': ['brownba1']}
-        response = self.app.get('/echo?usernames=brownba1')
+        test_input = {'usernames': ['test_username']}
+        response = self.app.get('/echo?usernames=test_username')
         resp_json = json.loads(response.data.decode("utf-8"))
-        print(resp_json)
         self.assertEquals(test_input, resp_json)
 
 if __name__ == '__main__':

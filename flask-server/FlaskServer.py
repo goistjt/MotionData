@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 from ServerException import *
-# import re
 
 app = Flask(__name__)
 
@@ -19,7 +18,7 @@ def echo():
     return jsonify(usernames=users)
 
 
-@app.route('/')
+@app.route('/hello-world')
 def hello_world():
     return 'Hello World!'
 
