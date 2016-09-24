@@ -1,5 +1,7 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
+import android.content.Context;
+import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +20,8 @@ public class CalibrationActivity extends AppCompatActivity {
 
     private final int CALIBRATION_TIME = 30;
     private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+    private Sensor mGyroscope;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,9 +30,22 @@ public class CalibrationActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
+        initSensors();
     }
 
-    public Object getSensorManager() {
+    public SensorManager getSensorManager() {
         return mSensorManager;
+    }
+
+    private void initSensors() {
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+    }
+
+    public Sensor getAccelerometer() {
+        return mAccelerometer;
+    }
+
+    public Sensor getGyroscope() {
+        return mGyroscope;
     }
 }

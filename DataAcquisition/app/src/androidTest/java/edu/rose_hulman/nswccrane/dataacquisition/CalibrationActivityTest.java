@@ -26,4 +26,10 @@ public class CalibrationActivityTest extends JUnitTestCase<CalibrationActivity> 
         Assert.assertNotNull(mActivity.getSensorManager());
     }
 
+    @Test
+    public void testInitSensors() {
+        Assert.assertNotNull(mActivity.getAccelerometer());
+        Assert.assertNotNull(mActivity.getGyroscope());
+    }
+
 }
