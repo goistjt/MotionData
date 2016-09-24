@@ -9,4 +9,6 @@
     <string name="z_accel_default">Z: 0.00 m/s²</string>
     <string name="y_accel_default">Y: 0.00 m/s²</string>
     <string name="x_accel_default">X: 0.00 m/s²</string>
+    <string name="calibration_dialog_title">Calibration</string>
+    <string name="cancel">Cancel</string>
 </resources>
