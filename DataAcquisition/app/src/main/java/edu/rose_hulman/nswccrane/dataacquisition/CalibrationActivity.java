@@ -1,5 +1,6 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -16,6 +17,7 @@ public class CalibrationActivity extends AppCompatActivity {
     TextView mTimeRemaining;
 
     private final int CALIBRATION_TIME = 30;
+    private SensorManager mSensorManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -24,5 +26,9 @@ public class CalibrationActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
+    }
+
+    public Object getSensorManager() {
+        return mSensorManager;
     }
 }
