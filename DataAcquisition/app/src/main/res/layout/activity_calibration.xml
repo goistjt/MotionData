@@ -10,6 +10,7 @@
         android:id="@+id/time_remaining"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
+        android:visibility="invisible"
         android:textSize="30sp"/>
 
     <TextView
