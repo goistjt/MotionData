@@ -3,6 +3,7 @@ package edu.rose_hulman.nswccrane.dataacquisition;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -49,7 +50,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dialog.setPositiveButton(R.string.calibrate, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // Nothing yet
+                Intent startCalibrationIntent = new Intent(MainActivity.this, CalibrationActivity.class);
+                startActivity(startCalibrationIntent);
             }
         });
         dialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
