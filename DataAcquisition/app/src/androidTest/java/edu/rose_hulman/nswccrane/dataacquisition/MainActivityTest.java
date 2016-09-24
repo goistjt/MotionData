@@ -60,12 +60,4 @@ public class MainActivityTest extends JUnitTestCase<MainActivity> {
         onView(withId(R.id.roll_gyro_text_view)).check(matches(isDisplayed()));
     }
 
-    @Test
-    public void testCalibrationDialog() {
-        onView(withId(R.id.calibration_button)).perform(click());
-        onView(withText(R.string.calibration_dialog_title)).check(matches(isDisplayed()));
-        onView(withText(R.string.calibrate)).check(matches(isDisplayed()));
-        onView(withText(R.string.cancel)).check(matches(isDisplayed()));
-    }
-
 }
