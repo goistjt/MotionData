@@ -28,6 +28,9 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public float max_x_noise = 0;
     public float max_y_noise = 0;
     public float max_z_noise = 0;
+    public float max_roll_noise = 0;
+    public float max_pitch_noise = 0;
+    public float max_yaw_noise = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,7 +66,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-
+        switch (event.sensor.getType()) {
+            case Sensor.TYPE_LINEAR_ACCELERATION:
+                accelerometerChanged(event.values);
+                break;
+            case Sensor.TYPE_GYROSCOPE:
+                break;
+        }
     }
 
     @Override
@@ -75,5 +84,9 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         max_x_noise = Math.abs(Math.max(max_x_noise, floats[0]));
         max_y_noise = Math.abs(Math.max(max_y_noise, floats[1]));
         max_z_noise = Math.abs(Math.max(max_z_noise, floats[2]));
+    }
+
+    public void gyroscopeChanged(float[] floats) {
+
     }
 }
