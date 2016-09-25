@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -30,14 +31,32 @@ public class CalibrationActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
-        initSensors();
+        initSensorManager();
+        initAccelerometer(mSensorManager);
+        initGyroscope(mSensorManager);
+    }
+
+    private void initAccelerometer(SensorManager sensorManager) {
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
+            mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        } else {
+            Log.d("Calibration", "Linear Accelerometer does not exist");
+        }
+    }
+
+    private void initGyroscope(SensorManager sensorManager) {
+        if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)!=null){
+            mGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        } else {
+            Log.d("Calibration", "Gyroscope does not exist");
+        }
     }
 
     public SensorManager getSensorManager() {
         return mSensorManager;
     }
 
-    private void initSensors() {
+    private void initSensorManager() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
     }
 
