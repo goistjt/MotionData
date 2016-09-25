@@ -2,6 +2,8 @@ package edu.rose_hulman.nswccrane.dataacquisition;
 
 import android.content.Context;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +17,7 @@ import butterknife.ButterKnife;
 /**
  * Created by Jeremiah Goist on 9/24/2016.
  */
-public class CalibrationActivity extends AppCompatActivity {
+public class CalibrationActivity extends AppCompatActivity implements SensorEventListener {
     @BindView(R.id.time_remaining)
     TextView mTimeRemaining;
 
@@ -23,6 +25,9 @@ public class CalibrationActivity extends AppCompatActivity {
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mGyroscope;
+    public float max_x_noise = 0;
+    public float max_y_noise = 0;
+    public float max_z_noise = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,7 +42,7 @@ public class CalibrationActivity extends AppCompatActivity {
     }
 
     private void initAccelerometer(SensorManager sensorManager) {
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
             mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         } else {
             Log.d("Calibration", "Linear Accelerometer does not exist");
@@ -45,26 +50,27 @@ public class CalibrationActivity extends AppCompatActivity {
     }
 
     private void initGyroscope(SensorManager sensorManager) {
-        if(sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)!=null){
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             mGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         } else {
             Log.d("Calibration", "Gyroscope does not exist");
         }
     }
 
-    public SensorManager getSensorManager() {
-        return mSensorManager;
-    }
-
     private void initSensorManager() {
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
     }
 
-    public Sensor getAccelerometer() {
-        return mAccelerometer;
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+
     }
 
-    public Sensor getGyroscope() {
-        return mGyroscope;
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+    }
+
+    public void accelerometerChanged(float[] floats) {
     }
 }
