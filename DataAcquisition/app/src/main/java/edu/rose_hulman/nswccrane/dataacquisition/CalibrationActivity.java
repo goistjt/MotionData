@@ -72,5 +72,8 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     }
 
     public void accelerometerChanged(float[] floats) {
+        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0]));
+        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1]));
+        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2]));
     }
 }
