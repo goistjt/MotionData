@@ -87,6 +87,8 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     }
 
     public void gyroscopeChanged(float[] floats) {
-
+        max_roll_noise = Math.abs(Math.max(max_roll_noise, floats[0]));
+        max_pitch_noise = Math.abs(Math.max(max_pitch_noise, floats[1]));
+        max_yaw_noise = Math.abs(Math.max(max_yaw_noise, floats[2]));
     }
 }
