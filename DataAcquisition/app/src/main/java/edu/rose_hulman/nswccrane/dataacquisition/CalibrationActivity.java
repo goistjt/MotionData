@@ -1,11 +1,13 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -21,10 +23,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     @BindView(R.id.time_remaining)
     TextView mTimeRemaining;
 
-    private final int CALIBRATION_TIME = 30;
-    private SensorManager mSensorManager;
-    private Sensor mAccelerometer;
-    private Sensor mGyroscope;
+    public SensorManager mSensorManager;
     public float max_x_noise = 0;
     public float max_y_noise = 0;
     public float max_z_noise = 0;
@@ -37,16 +36,39 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration);
         ButterKnife.bind(this);
+        int CALIBRATION_TIME = 30;
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
         initSensorManager();
         initAccelerometer(mSensorManager);
         initGyroscope(mSensorManager);
+        new CountDownTimer(CALIBRATION_TIME * 1000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                mTimeRemaining.setText(getString(R.string.time_remaining, millisUntilFinished / 1000));
+            }
+
+            @Override
+            public void onFinish() {
+                CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
+                SharedPreferences settings = getApplicationContext().getSharedPreferences("Calibration", 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putFloat("x_threshold", max_x_noise);
+                editor.putFloat("y_threshold", max_y_noise);
+                editor.putFloat("z_threshold", max_z_noise);
+                editor.putFloat("roll_threshold", max_roll_noise);
+                editor.putFloat("pitch_threshold", max_pitch_noise);
+                editor.putFloat("yaw_threshold", max_yaw_noise);
+                editor.apply();
+                CalibrationActivity.this.finish();
+            }
+        }.start();
     }
 
     private void initAccelerometer(SensorManager sensorManager) {
         if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
-            mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+            Sensor mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+            sensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
         } else {
             Log.d("Calibration", "Linear Accelerometer does not exist");
         }
@@ -54,7 +76,8 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
 
     private void initGyroscope(SensorManager sensorManager) {
         if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
-            mGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+            Sensor mGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+            sensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
         } else {
             Log.d("Calibration", "Gyroscope does not exist");
         }
@@ -71,6 +94,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
                 accelerometerChanged(event.values);
                 break;
             case Sensor.TYPE_GYROSCOPE:
+                gyroscopeChanged(event.values);
                 break;
         }
     }
