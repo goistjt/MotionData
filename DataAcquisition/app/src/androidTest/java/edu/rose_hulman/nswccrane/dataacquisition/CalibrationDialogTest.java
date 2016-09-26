@@ -22,7 +22,7 @@ public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
     }
 
     @Before
-    public void openCalibrationDialog() throws InterruptedException {
+    public void openCalibrationDialog() {
         onView(withId(R.id.calibration_button)).perform(click());
         onView(withText(R.string.calibration_dialog_title)).check(matches(isDisplayed()));
     }
