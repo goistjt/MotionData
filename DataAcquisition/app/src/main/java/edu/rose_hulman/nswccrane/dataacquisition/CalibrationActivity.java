@@ -31,6 +31,9 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public float max_pitch_noise = 0;
     public float max_yaw_noise = 0;
 
+    private float[] prev_accel = new float[]{0, 0, 0};
+    private float[] prev_gyro = new float[]{0, 0, 0};
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,14 +108,16 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     }
 
     public void accelerometerChanged(float[] floats) {
-        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0]));
-        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1]));
-        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2]));
+        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
+        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
+        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
+        prev_accel = floats;
     }
 
     public void gyroscopeChanged(float[] floats) {
-        max_roll_noise = Math.abs(Math.max(max_roll_noise, floats[0]));
-        max_pitch_noise = Math.abs(Math.max(max_pitch_noise, floats[1]));
-        max_yaw_noise = Math.abs(Math.max(max_yaw_noise, floats[2]));
+        max_roll_noise = Math.abs(Math.max(max_roll_noise, floats[0] - prev_gyro[0]));
+        max_pitch_noise = Math.abs(Math.max(max_pitch_noise, floats[1] - prev_gyro[1]));
+        max_yaw_noise = Math.abs(Math.max(max_yaw_noise, floats[2] - prev_gyro[2]));
+        prev_gyro = floats;
     }
 }
