@@ -3,6 +3,8 @@ package edu.rose_hulman.nswccrane.dataacquisition;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.TimeUnit;
+
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -22,7 +24,7 @@ public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
     }
 
     @Before
-    public void openCalibrationDialog() {
+    public void openCalibrationDialog() throws InterruptedException {
         onView(withId(R.id.calibration_button)).perform(click());
         onView(withText(R.string.calibration_dialog_title)).check(matches(isDisplayed()));
     }
@@ -35,13 +37,14 @@ public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testCancelButton() {
-        onView(withText(R.string.cancel)).perform(click());
+        onView(withId(android.R.id.button2)).perform(click());
         onView(withId(R.id.calibration_button)).check(matches(isDisplayed()));
     }
 
     @Test
-    public void testCalibrateButton() {
-        onView(withText(R.string.calibrate)).perform(click());
+    public void testCalibrateButton() throws InterruptedException {
+        onView(withId(android.R.id.button1)).perform(click());
         onView(withId(R.id.calibration_text)).check(matches(isDisplayed()));
+        getCurrentActivity().finish();
     }
 }
