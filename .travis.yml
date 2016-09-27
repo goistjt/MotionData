@@ -7,4 +7,5 @@ install:
     - cd flask-server
     - pip install -r requirements.txt
 script:
+    - python setup.py install
     - python -m unittest discover -p "*_test.py"
