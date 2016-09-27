@@ -43,6 +43,5 @@ public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
     public void testCalibrateButton() {
         onView(withId(android.R.id.button1)).perform(click());
         onView(withId(R.id.calibration_text)).check(matches(isDisplayed()));
-        getCurrentActivity().finish();
     }
 }
