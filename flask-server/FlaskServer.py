@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, request
-from ServerException import *
 import _mysql
+from flask import Flask, jsonify, request
+from modules.ServerException import *
 
 app = Flask(__name__)
 db = _mysql.connect(user='root',
