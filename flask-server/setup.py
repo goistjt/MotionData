@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-setup(name='ServerException',
+setup(name='InvalidUsage',
       version='1.0',
-      py_modules=['InvalidUsage']
+      py_modules=['ServerException']
       )
