@@ -75,7 +75,7 @@ public class JUnitTestCase<T extends Activity> {
         int i = 0;
         while (closeActivity(instrumentation)) {
             if (i++ > NUMBER_OF_RETRIES) {
-                throw new AssertionError("Limit of retries excesses");
+                throw new AssertionError("Limit of retries exceeded");
             }
             Thread.sleep(200);
         }
