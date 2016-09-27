@@ -9,4 +9,27 @@
     <string name="z_accel_default">Z: 0.00 m/s²</string>
     <string name="y_accel_default">Y: 0.00 m/s²</string>
     <string name="x_accel_default">X: 0.00 m/s²</string>
+    <string name="timestamp">timestamp</string>
+    <string name="x">x</string>
+    <string name="y">y</string>
+    <string name="z">z</string>
+    <string name="AccelerationTableName">Accel_Data</string>
+    <string name="CreateAccelDataTable">CREATE TABLE Accel_Data(timestamp UNSIGNED BIGINT PRIMARY KEY, x DOUBLE, y DOUBLE, z DOUBLE)</string>
+    <string name="CreateGyroDataTable">CREATE TABLE Gyro_Data(timestamp UNSIGNED BIGINT PRIMARY KEY, pitch DOUBLE, roll DOUBLE, yaw DOUBLE)</string>
+    <string name="DropAccelDataTable">DROP TABLE IF EXISTS Accel_Data</string>
+    <string name="DropGyroDataTable">DROP TABLE IF EXISTS Gyro_Data</string>
+    <string name="pitch">pitch</string>
+    <string name="roll">roll</string>
+    <string name="yaw">yaw</string>
+    <string name="GyroscopeTableName">Gyro_Data</string>
+    <string name="DeleteAccelData">DELETE FROM Accel_Data</string>
+    <string name="DeleteGyroData">DELETE FROM Gyro_Data</string>
+    <string name="StartCollection">Start Collection</string>
+    <string name="StopCollection">Stop Collection</string>
+    <string name="XFormat">X: %f m/s²</string>
+    <string name="YFormat">Y: %f m/s²</string>
+    <string name="ZFormat">Z: %f m/s²</string>
+    <string name="PitchFormat">Pitch: %f\u00b0</string>
+    <string name="RollFormat">Roll: %f\u00b0</string>
+    <string name="YawFormat">Yaw: %f\u00b0</string>
 </resources>

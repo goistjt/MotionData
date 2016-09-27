@@ -1,70 +1,107 @@
 package sqlite;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
-
-import java.util.concurrent.Semaphore;
-
+import java.util.Stack;
 import datamodels.AccelDataModel;
+import datamodels.GyroDataModel;
+import edu.rose_hulman.nswccrane.dataacquisition.R;
+import sqlite.interfaces.ICollectionDBHelper;
 
 /**
  * Created by steve on 9/14/16.
  */
-public class MotionCollectionDBHelper extends SQLiteOpenHelper {
+public class MotionCollectionDBHelper extends SQLiteOpenHelper implements ICollectionDBHelper {
 
-    private static final String INSERT_INTO_ACCEL_DATA = "INSERT INTO Accel_Data(timestamp, x, y, z) VALUES (?, ?, ?, ?)";
-    private static final String DELETE_ALL_ACCEL_DATA = "DELETE FROM Accel_Data";
+    private final Stack<AccelDataModel> mAccelStack = new Stack<>();
+    private final Stack<GyroDataModel> mGyroStack = new Stack<>();
+    private Context mContext;
 
-    private Semaphore mInsertionSemaphore;
-
-    public MotionCollectionDBHelper(Context context, Semaphore insertionSemaphore) {
+    public MotionCollectionDBHelper(Context context) {
         super(context, "MotionCollectionDB", null, 1);
-        mInsertionSemaphore = insertionSemaphore;
+        mContext = context;
+        onUpgrade(this.getWritableDatabase(), 0, 0);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE Accel_Data(timestamp UNSIGNED BIGINT PRIMARY KEY, x DOUBLE, y DOUBLE, z DOUBLE)");
+        db.execSQL(mContext.getString(R.string.CreateAccelDataTable));
+        db.execSQL(mContext.getString(R.string.CreateGyroDataTable));
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS Accel_Data");
+        db.execSQL(mContext.getString(R.string.DropAccelDataTable));
+        db.execSQL(mContext.getString(R.string.DropGyroDataTable));
         onCreate(db);
     }
 
-    public long InsertModelIntoDB(AccelDataModel data) {
-        SQLiteStatement statement = this.getWritableDatabase().compileStatement(INSERT_INTO_ACCEL_DATA);
-        statement.bindLong(1, data.getTime());
-        statement.bindDouble(2, data.getX());
-        statement.bindDouble(3, data.getY());
-        statement.bindDouble(4, data.getZ());
-        long rowId = 0;
-        try {
-            mInsertionSemaphore.acquire();
-        } catch (InterruptedException e) {
-            Log.e("ACQ_INT_INS", e.getMessage());
-        }
-        try {
-            rowId = statement.executeInsert();
-            Log.d("ROW", String.valueOf(rowId));
-        }
-        catch (Exception e) {
-            mInsertionSemaphore.release();
+    public void pushAccelData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try{
+            ContentValues values = new ContentValues();
+            while (!mAccelStack.isEmpty()) {
+                AccelDataModel data = mAccelStack.pop();
+                values.put(mContext.getString(R.string.timestamp), data.getTime());
+                values.put(mContext.getString(R.string.x), data.getX());
+                values.put(mContext.getString(R.string.y), data.getY());
+                values.put(mContext.getString(R.string.z), data.getZ());
+                db.insert(mContext.getString(R.string.AccelerationTableName), null, values);
+            }
+            db.setTransactionSuccessful();
         }
         finally {
-            mInsertionSemaphore.release();
+            db.endTransaction();
+            Log.d("ACCEL_COUNT", String.valueOf(DatabaseUtils.queryNumEntries(db, "Accel_Data")));
         }
+    }
+
+    public void pushGyroData() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        try{
+            ContentValues values = new ContentValues();
+            while (!mGyroStack.isEmpty()) {
+                GyroDataModel data = mGyroStack.pop();
+                values.put(mContext.getString(R.string.timestamp), data.getTime());
+                values.put(mContext.getString(R.string.pitch), data.getPitch());
+                values.put(mContext.getString(R.string.roll), data.getRoll());
+                values.put(mContext.getString(R.string.yaw), data.getYaw());
+                db.insert(mContext.getString(R.string.GyroscopeTableName), null, values);
+            }
+            db.setTransactionSuccessful();
+        }
+        finally {
+            db.endTransaction();
+            Log.d("GYRO_COUNT", String.valueOf(DatabaseUtils.queryNumEntries(db, "Gyro_Data")));
+        }
+    }
+
+    public void insertAccelData(AccelDataModel data) {
+        mAccelStack.push(data);
+    }
+
+    public void insertGyroData(GyroDataModel data) {
+        mGyroStack.push(data);
+    }
+
+    public long deleteCurrentAccelData() {
+        SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.DeleteAccelData));
+        long rowId = statement.executeUpdateDelete();
+        Log.d("ACCEL_ROW", String.valueOf(rowId));
         return rowId;
     }
 
-    public long DeleteCurrentAccelData(){
-        SQLiteStatement statement = this.getWritableDatabase().compileStatement(DELETE_ALL_ACCEL_DATA);
-        long rowId = statement.executeInsert();
-        Log.d("ROW", String.valueOf(rowId));
+    public long deleteCurrentGyroData() {
+        SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.DeleteGyroData));
+        long rowId = statement.executeUpdateDelete();
+        Log.d("GYRO_ROW", String.valueOf(rowId));
         return rowId;
     }
 }
