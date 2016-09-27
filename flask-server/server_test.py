@@ -24,7 +24,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertEqual(test_input, resp_json)
 
     def test_db_select_access(self):
-        test_input = {'row': '((\'2016\', \'1\', \'1\', \'1\', b\'hear\', \'1\'),)'}
+        test_input = {'row': '()'}
         response = self.app.get('/gyro')
         resp_json = json.loads(response.data.decode("utf-8"))
         self.assertEqual(test_input, resp_json)
