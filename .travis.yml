@@ -1,1 +1,7 @@
-
+language: python
+python:
+  - "3.5"
+install:
+  - cd flask-server
+  - pip install -r requirements.txt
+script: python -m unittest discover -p "*_test.py"
