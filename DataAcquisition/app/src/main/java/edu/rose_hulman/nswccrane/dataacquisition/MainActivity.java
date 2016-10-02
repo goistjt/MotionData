@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.interfaces.ICollectionActivity;
@@ -33,18 +32,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final int MAX_THREADS_COLLECTION_SERVICE = 10;
 
     private Button mCollectionButton;
+
     private TextView mXTextView;
     private TextView mYTextView;
     private TextView mZTextView;
+
     private TextView mPitchTextView;
     private TextView mRollTextView;
     private TextView mYawTextView;
+
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mGyroscope;
+
     private ICollectionDBHelper mCollectionDBHelper;
+
     private ExecutorService mToggleButtonService;
     private ExecutorService mCollectionService;
+
     private boolean mStarted;
 
     @Override
@@ -82,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mYawTextView = (TextView) findViewById(R.id.yaw_gyro_text_view);
 
         mCollectionButton = (Button) findViewById(R.id.collection_button);
-        mCollectionButton.setText(getString(R.string.StartCollection));
+        mCollectionButton.setText(getString(R.string.collect_data));
         mCollectionButton.setOnClickListener(new CollectionClickListener());
     }
 
@@ -126,12 +131,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (mStarted) {
             mCollectionButton.setActivated(false);
             mStarted = false;
-            mCollectionButton.setText(R.string.StartCollection);
+            mCollectionButton.setText(R.string.collect_data);
             mToggleButtonService.execute(new ToggleButtonRunnable());
             return;
         }
         mCollectionButton.setActivated(false);
-        mCollectionButton.setText(R.string.StopCollection);
+        mCollectionButton.setText(R.string.stop_collection);
+        //mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         mStarted = true;
         mCollectionButton.setActivated(true);
     }
@@ -139,17 +145,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void accelerometerChanged(AccelDataModel dataModel) {
         mCollectionService.execute(new AccelRunnable(dataModel));
-        mXTextView.setText(String.format(Locale.US, getString(R.string.XFormat), dataModel.getX()));
-        mYTextView.setText(String.format(Locale.US, getString(R.string.YFormat), dataModel.getY()));
-        mZTextView.setText(String.format(Locale.US, getString(R.string.ZFormat), dataModel.getZ()));
+        mXTextView.setText(String.format(Locale.US, getString(R.string.x_format), dataModel.getX()));
+        mYTextView.setText(String.format(Locale.US, getString(R.string.y_format), dataModel.getY()));
+        mZTextView.setText(String.format(Locale.US, getString(R.string.z_format), dataModel.getZ()));
     }
 
     @Override
     public void gyroscopeChanged(GyroDataModel dataModel) {
         mCollectionService.execute(new GyroRunnable(dataModel));
-        mPitchTextView.setText(String.format(Locale.US, getString(R.string.PitchFormat), dataModel.getPitch()));
-        mRollTextView.setText(String.format(Locale.US, getString(R.string.RollFormat), dataModel.getRoll()));
-        mYawTextView.setText(String.format(Locale.US, getString(R.string.YawFormat), dataModel.getYaw()));
+        mPitchTextView.setText(String.format(Locale.US, getString(R.string.pitch_format), dataModel.getPitch()));
+        mRollTextView.setText(String.format(Locale.US, getString(R.string.roll_format), dataModel.getRoll()));
+        mYawTextView.setText(String.format(Locale.US, getString(R.string.yaw_format), dataModel.getYaw()));
     }
 
     class ToggleButtonRunnable implements Runnable {
@@ -165,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mCollectionService = Executors.newFixedThreadPool(MAX_THREADS_COLLECTION_SERVICE);
             mCollectionDBHelper.pushAccelData();
             mCollectionDBHelper.pushGyroData();
+            //mCollectionDBHelper.setEndTime(System.currentTimeMillis());
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

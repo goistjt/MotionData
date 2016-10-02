@@ -13,9 +13,13 @@ import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.runner.AndroidJUnit4;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -37,14 +41,16 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 @RunWith(AndroidJUnit4.class)
 public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
+    private MainActivity mainActivity;
+
     public CollectionActivityTests() {
         super(MainActivity.class);
     }
 
     class FakeExecutorService implements ExecutorService {
 
-        public boolean shutdownOccurred = false;
-        public boolean terminationOccurred = true;
+        boolean shutdownOccurred = false;
+        boolean terminationOccurred = true;
 
         @Override
         public void shutdown() {
@@ -55,7 +61,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         @Override
         public List<Runnable> shutdownNow() {
             shutdownOccurred = true;
-            return null;
+            return new ArrayList<>();
         }
 
         @Override
@@ -69,69 +75,86 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         }
 
         @Override
-        public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+        public boolean awaitTermination(long timeout, @NonNull TimeUnit unit) throws InterruptedException {
             terminationOccurred = true;
-            return terminationOccurred;
+            return true;
         }
 
         @NonNull
         @Override
-        public <T> Future<T> submit(Callable<T> task) {
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public <T> Future<T> submit(Runnable task, T result) {
+        public <T> Future<T> submit(@NonNull Callable<T> task) {
             return null;
         }
 
         @NonNull
         @Override
-        public Future<?> submit(Runnable task) {
+        public <T> Future<T> submit(@NonNull Runnable task, T result) {
             return null;
         }
 
         @NonNull
         @Override
-        public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks) throws InterruptedException {
+        public Future<?> submit(@NonNull Runnable task) {
             return null;
         }
 
         @NonNull
         @Override
-        public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+        public <T> List<Future<T>> invokeAll(@NonNull Collection<? extends Callable<T>> tasks) throws InterruptedException {
             return null;
         }
 
         @NonNull
         @Override
-        public <T> T invokeAny(Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+        public <T> List<Future<T>> invokeAll(@NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit) throws InterruptedException {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> T invokeAny(@NonNull Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
             return null;
         }
 
         @Override
-        public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        public <T> T invokeAny(@NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
 
         @Override
-        public void execute(Runnable command) {
+        public void execute(@NonNull Runnable command) {
 
         }
     }
 
     class FakeCollectionDB implements ICollectionDBHelper {
 
-        public boolean pushAccelDataHit = false;
-        public boolean pushGyroDataHit = false;
-        public boolean insertAccelDataHit = false;
-        public boolean insertGyroDataHit = false;
-        public boolean deleteCurrentAccelDataHit = false;
-        public boolean deleteCurrentGyroDataHit = false;
+        boolean pushAccelDataHit = false;
+        boolean pushGyroDataHit = false;
+        boolean insertAccelDataHit = false;
+        boolean insertGyroDataHit = false;
+        boolean deleteCurrentAccelDataHit = false;
+        boolean deleteCurrentGyroDataHit = false;
 
         public FakeCollectionDB() {
         }
+
+        /*
+        @Override
+        public void setStartTime(long startTime) {
+
+        }
+
+        @Override
+        public void setEndTime(long endTime) {
+
+        }
+
+        @Override
+        public void getAllTimeframesBetween(long startTime, long endTime) {
+
+        }
+        */
 
         @Override
         public void pushAccelData() {
@@ -164,11 +187,22 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
             deleteCurrentGyroDataHit = true;
             return 0;
         }
+
+        /*
+        @Override
+        public long deleteCurrentTimeframeData() {
+            return 0;
+        }
+        */
+    }
+
+    @Before
+    public void before() {
+        mainActivity = (MainActivity) getCurrentActivity();
     }
 
     @Test
     public void testToggleCollectionTrue() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, true);
@@ -192,7 +226,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         toggleService.awaitTermination(30, TimeUnit.SECONDS);
 
         onView(withId(R.id.collection_button)).check(matches(isEnabled()));
-        onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.StartCollection))));
+        onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.collect_data))));
 
         boolean started = (boolean) startedField.get(mainActivity);
         Assert.assertFalse(started);
@@ -204,7 +238,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testToggleCollectionFalse() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, false);
@@ -233,12 +266,11 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         Assert.assertTrue(started);
 
         onView(withId(R.id.collection_button)).check(matches(isEnabled()));
-        onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.StopCollection))));
+        onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.stop_collection))));
     }
 
     @Test
     public void testPopulateSensorDependencies() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field startedField = getFieldFromMainActivity("mStarted");
 
@@ -277,7 +309,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testTeardownSensorDependencies() throws NoSuchFieldException, InterruptedException, IllegalAccessException {
-        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, true);
@@ -305,7 +336,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testAccelerometerChangedZeros() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
         dbField.set(mainActivity, new FakeCollectionDB());
@@ -342,7 +372,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testAccelerometerChangedVarious() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
         dbField.set(mainActivity, new FakeCollectionDB());
@@ -380,7 +409,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testGyroscopeChangedZeros() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
         dbField.set(mainActivity, new FakeCollectionDB());
@@ -417,7 +445,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testGyroscopeChangedVarious() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
-        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
         dbField.set(mainActivity, new FakeCollectionDB());
@@ -452,11 +479,47 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 5.000000\u00b0")));
     }
 
+
+    @Test
+    public void testUISetup() throws NoSuchFieldException, IllegalAccessException, InterruptedException, NoSuchMethodException, InvocationTargetException {
+
+        final Method setupMethod = getMethodFromMainActivity("setupUIElements");
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    setupMethod.invoke(mainActivity);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText(mainActivity.getString(R.string.pitch_gyro_default))));
+        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText(mainActivity.getString(R.string.roll_gyro_default))));
+        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText(mainActivity.getString(R.string.yaw_gyro_default))));
+
+        onView(ViewMatchers.withId(R.id.x_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText(mainActivity.getString(R.string.x_accel_default))));
+        onView(ViewMatchers.withId(R.id.y_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText(mainActivity.getString(R.string.y_accel_default))));
+        onView(ViewMatchers.withId(R.id.z_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText(mainActivity.getString(R.string.z_accel_default))));
+
+        onView(withId(R.id.collection_button)).check(matches(isEnabled()));
+        onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.collect_data))));
+    }
+
     private Field getFieldFromMainActivity(String declarationName) throws NoSuchFieldException {
         Field field = MainActivity.class.getDeclaredField(declarationName);
         if (!field.isAccessible()) {
             field.setAccessible(true);
         }
         return field;
+    }
+
+    private Method getMethodFromMainActivity(String declarationName) throws NoSuchMethodException {
+        Method method = MainActivity.class.getDeclaredMethod(declarationName);
+        if (!method.isAccessible()) {
+            method.setAccessible(true);
+        }
+        return method;
     }
 }
