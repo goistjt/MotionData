@@ -23,9 +23,8 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
     private Context mContext;
 
     public MotionCollectionDBHelper(Context context) {
-        super(context, "MotionCollectionDB", null, 1);
+        super(context, context.getString(R.string.DBName), null, 1);
         mContext = context;
-        onUpgrade(this.getWritableDatabase(), 0, 0);
     }
 
     @Override
@@ -58,6 +57,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         }
         finally {
             db.endTransaction();
+            Log.d("ACCEL_STACK", String.valueOf(mAccelStack.size()));
             Log.d("ACCEL_COUNT", String.valueOf(DatabaseUtils.queryNumEntries(db, "Accel_Data")));
         }
     }
@@ -79,6 +79,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         }
         finally {
             db.endTransaction();
+            Log.d("GYRO_STACK", String.valueOf(mGyroStack.size()));
             Log.d("GYRO_COUNT", String.valueOf(DatabaseUtils.queryNumEntries(db, "Gyro_Data")));
         }
     }

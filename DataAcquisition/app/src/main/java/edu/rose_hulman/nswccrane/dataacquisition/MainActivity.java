@@ -20,13 +20,17 @@ import java.util.concurrent.TimeUnit;
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.interfaces.ICollectionActivity;
-import edu.rose_hulman.nswccrane.dataacquisition.interfaces.ICollectionCallback;
 import sqlite.MotionCollectionDBHelper;
 import sqlite.interfaces.ICollectionDBHelper;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, ICollectionActivity, ICollectionCallback {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, ICollectionActivity {
 
     private static final int MAXIMUM_LATENCY = 0;
+
+    private static final int MAX_THREADS_TOGGLE_SERVICE = 1;
+
+    private static final int MAX_WAIT_TIME_COLLECTION_SERVICE = 30;
+    private static final int MAX_THREADS_COLLECTION_SERVICE = 10;
 
     private Button mCollectionButton;
     private TextView mXTextView;
@@ -58,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
+        setupUIElements();
         populateSensorDependencies();
     }
 
@@ -67,43 +72,45 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         teardownSensorDependencies();
     }
 
-    @Override
-    public void populateSensorDependencies() {
+    private void setupUIElements() {
         mXTextView = (TextView) findViewById(R.id.x_accel_text_view);
         mYTextView = (TextView) findViewById(R.id.y_accel_text_view);
         mZTextView = (TextView) findViewById(R.id.z_accel_text_view);
+
         mPitchTextView = (TextView) findViewById(R.id.pitch_gyro_text_view);
         mRollTextView = (TextView) findViewById(R.id.roll_gyro_text_view);
         mYawTextView = (TextView) findViewById(R.id.yaw_gyro_text_view);
-        mToggleButtonService = Executors.newFixedThreadPool(1);
-        mCollectionService = Executors.newFixedThreadPool(Integer.MAX_VALUE);
+
         mCollectionButton = (Button) findViewById(R.id.collection_button);
+        mCollectionButton.setText(getString(R.string.StartCollection));
         mCollectionButton.setOnClickListener(new CollectionClickListener());
+    }
+
+    @Override
+    public void populateSensorDependencies() {
+        mStarted = false;
+
+        mToggleButtonService = Executors.newFixedThreadPool(MAX_THREADS_TOGGLE_SERVICE);
+        mCollectionService = Executors.newFixedThreadPool(MAX_THREADS_COLLECTION_SERVICE);
+
         mCollectionDBHelper = new MotionCollectionDBHelper(this);
+
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
         mSensorManager.registerListener(this, mAccelerometer, MAXIMUM_LATENCY);
         mSensorManager.registerListener(this, mGyroscope, MAXIMUM_LATENCY);
-        mStarted = false;
     }
 
     @Override
     public void teardownSensorDependencies() {
-        mToggleButtonService.shutdown();
-        try {
-            mToggleButtonService.awaitTermination(30, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            mToggleButtonService.shutdown();
-            e.printStackTrace();
-        }
-        mCollectionService.shutdown();
-        try {
-            mCollectionService.awaitTermination(30, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            mCollectionService.shutdownNow();
-        }
+        mStarted = false;
+
+        mToggleButtonService.shutdownNow();
+        mCollectionService.shutdownNow();
+
         mSensorManager.unregisterListener(this);
     }
 
@@ -118,9 +125,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void toggleCollection() {
         if (mStarted) {
             mCollectionButton.setActivated(false);
-            mCollectionButton.setText(R.string.StartCollection);
-            mToggleButtonService.execute(new PushRunnable(this));
             mStarted = false;
+            mCollectionButton.setText(R.string.StartCollection);
+            mToggleButtonService.execute(new ToggleButtonRunnable());
             return;
         }
         mCollectionButton.setActivated(false);
@@ -130,39 +137,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public void resetCollectionButton() {
-        mCollectionButton.setActivated(true);
+    public void accelerometerChanged(AccelDataModel dataModel) {
+        mCollectionService.execute(new AccelRunnable(dataModel));
+        mXTextView.setText(String.format(Locale.US, getString(R.string.XFormat), dataModel.getX()));
+        mYTextView.setText(String.format(Locale.US, getString(R.string.YFormat), dataModel.getY()));
+        mZTextView.setText(String.format(Locale.US, getString(R.string.ZFormat), dataModel.getZ()));
     }
 
     @Override
-    public void setAccelTextViews(double x, double y, double z) {
-        mXTextView.setText(String.format(Locale.US, getString(R.string.XFormat), x));
-        mYTextView.setText(String.format(Locale.US, getString(R.string.YFormat), y));
-        mZTextView.setText(String.format(Locale.US, getString(R.string.ZFormat), z));
+    public void gyroscopeChanged(GyroDataModel dataModel) {
+        mCollectionService.execute(new GyroRunnable(dataModel));
+        mPitchTextView.setText(String.format(Locale.US, getString(R.string.PitchFormat), dataModel.getPitch()));
+        mRollTextView.setText(String.format(Locale.US, getString(R.string.RollFormat), dataModel.getRoll()));
+        mYawTextView.setText(String.format(Locale.US, getString(R.string.YawFormat), dataModel.getYaw()));
     }
 
-    @Override
-    public void setGyroTextViews(double pitch, double roll, double yaw) {
-        mPitchTextView.setText(String.format(Locale.US, getString(R.string.PitchFormat), pitch));
-        mRollTextView.setText(String.format(Locale.US, getString(R.string.RollFormat), roll));
-        mYawTextView.setText(String.format(Locale.US, getString(R.string.YawFormat), yaw));
-    }
-
-    class PushRunnable implements Runnable {
-
-        private ICollectionCallback mCallback;
-
-        public PushRunnable(ICollectionCallback callback) {
-            mCallback = callback;
-        }
+    class ToggleButtonRunnable implements Runnable {
 
         public void run() {
+            mCollectionService.shutdown();
+            try {
+                mCollectionService.awaitTermination(MAX_WAIT_TIME_COLLECTION_SERVICE, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                mCollectionService.shutdownNow();
+            }
+            mCollectionService = Executors.newFixedThreadPool(MAX_THREADS_COLLECTION_SERVICE);
             mCollectionDBHelper.pushAccelData();
             mCollectionDBHelper.pushGyroData();
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mCallback.resetCollectionButton();
+                    mCollectionButton.setActivated(true);
                 }
             });
         }
@@ -171,20 +177,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     class AccelRunnable implements Runnable {
 
         private AccelDataModel mData;
-        private ICollectionCallback mCallback;
 
-        public AccelRunnable(AccelDataModel data, ICollectionCallback callback){
+        public AccelRunnable(AccelDataModel data){
             mData = data;
-            mCallback = callback;
         }
 
         public void run() {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mCallback.setAccelTextViews(mData.getX(), mData.getY(), mData.getZ());
-                }
-            });
             mCollectionDBHelper.insertAccelData(mData);
         }
     }
@@ -192,20 +190,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     class GyroRunnable implements Runnable {
 
         private GyroDataModel mData;
-        private ICollectionCallback mCallback;
 
-        public GyroRunnable(GyroDataModel data, ICollectionCallback callback) {
+        public GyroRunnable(GyroDataModel data) {
             mData = data;
-            mCallback = callback;
         }
 
         public void run() {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mCallback.setGyroTextViews(mData.getPitch(), mData.getRoll(), mData.getYaw());
-                }
-            });
             mCollectionDBHelper.insertGyroData(mData);
         }
     }
@@ -214,10 +204,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         if (mStarted) {
             if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                mCollectionService.execute(new AccelRunnable(new AccelDataModel(event.timestamp, event.values[0], event.values[1], event.values[2]), this));
+                AccelDataModel dataModel = new AccelDataModel(event.timestamp, event.values[0], event.values[1], event.values[2]);
+                accelerometerChanged(dataModel);
             }
             else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-                mCollectionService.execute(new GyroRunnable(new GyroDataModel(event.timestamp, event.values[0], event.values[1], event.values[2]), this));
+                GyroDataModel dataModel = new GyroDataModel(event.timestamp, event.values[0], event.values[1], event.values[2]);
+                gyroscopeChanged(dataModel);
             }
         }
     }

@@ -32,4 +32,5 @@
     <string name="PitchFormat">Pitch: %f\u00b0</string>
     <string name="RollFormat">Roll: %f\u00b0</string>
     <string name="YawFormat">Yaw: %f\u00b0</string>
+    <string name="DBName">MotionCollectionDB</string>
 </resources>

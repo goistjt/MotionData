@@ -7,33 +7,32 @@ package edu.rose_hulman.nswccrane.dataacquisition;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.support.annotation.NonNull;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.action.ViewActions;
+import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.runner.AndroidJUnit4;
-import android.widget.Button;
-import android.widget.TextView;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
 import sqlite.interfaces.ICollectionDBHelper;
 
 import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 @RunWith(AndroidJUnit4.class)
 public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
@@ -44,30 +43,35 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     class FakeExecutorService implements ExecutorService {
 
+        public boolean shutdownOccurred = false;
+        public boolean terminationOccurred = true;
+
         @Override
         public void shutdown() {
-
+            shutdownOccurred = true;
         }
 
         @NonNull
         @Override
         public List<Runnable> shutdownNow() {
+            shutdownOccurred = true;
             return null;
         }
 
         @Override
         public boolean isShutdown() {
-            return false;
+            return shutdownOccurred;
         }
 
         @Override
         public boolean isTerminated() {
-            return false;
+            return terminationOccurred;
         }
 
         @Override
         public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-            return false;
+            terminationOccurred = true;
+            return terminationOccurred;
         }
 
         @NonNull
@@ -119,12 +123,12 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
     class FakeCollectionDB implements ICollectionDBHelper {
 
-        public boolean pushAccelDataHit;
-        public boolean pushGyroDataHit;
-        public boolean insertAccelDataHit;
-        public boolean insertGyroDataHit;
-        public boolean deleteCurrentAccelDataHit;
-        public boolean deleteCurrentGyroDataHit;
+        public boolean pushAccelDataHit = false;
+        public boolean pushGyroDataHit = false;
+        public boolean insertAccelDataHit = false;
+        public boolean insertGyroDataHit = false;
+        public boolean deleteCurrentAccelDataHit = false;
+        public boolean deleteCurrentGyroDataHit = false;
 
         public FakeCollectionDB() {
         }
@@ -165,27 +169,35 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
     @Test
     public void testToggleCollectionTrue() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
         MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
         Field startedField = getFieldFromMainActivity("mStarted");
-        Field collectionButtonField = getFieldFromMainActivity("mCollectionButton");
+        startedField.set(mainActivity, true);
+
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
         dbField.set(mainActivity, new FakeCollectionDB());
+
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
-        collectionServiceField.set(mainActivity, new FakeExecutorService());
+
         Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
-        startedField.set(mainActivity, true);
+
         onView(ViewMatchers.withId(R.id.collection_button)).perform(ViewActions.click());
-        Button collectionButton = (Button) collectionButtonField.get(mainActivity);
-        boolean started = (boolean) startedField.get(mainActivity);
-        FakeCollectionDB helper = (FakeCollectionDB) dbField.get(mainActivity);
-        ExecutorService execService = (ExecutorService) collectionServiceField.get(mainActivity);
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
         ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
-        execService.shutdown();
-        execService.awaitTermination(30, TimeUnit.SECONDS);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
         toggleService.shutdown();
         toggleService.awaitTermination(30, TimeUnit.SECONDS);
-        Assert.assertTrue(collectionButton.isActivated());
-        Assert.assertTrue(collectionButton.getText().equals(mainActivity.getString(R.string.StartCollection)));
+
+        onView(withId(R.id.collection_button)).check(matches(isEnabled()));
+        onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.StartCollection))));
+
+        boolean started = (boolean) startedField.get(mainActivity);
         Assert.assertFalse(started);
+
+        FakeCollectionDB helper = (FakeCollectionDB) dbField.get(mainActivity);
         Assert.assertTrue(helper.pushAccelDataHit);
         Assert.assertTrue(helper.pushGyroDataHit);
     }
@@ -193,76 +205,251 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
     @Test
     public void testToggleCollectionFalse() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
         MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
         Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, false);
-        Field collectionButtonField = getFieldFromMainActivity("mCollectionButton");
+
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
         dbField.set(mainActivity, new FakeCollectionDB());
+
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
         collectionServiceField.set(mainActivity, new FakeExecutorService());
+
         Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+        toggleServiceField.set(mainActivity, new FakeExecutorService());
+
         onView(ViewMatchers.withId(R.id.collection_button)).perform(ViewActions.click());
-        Button collectionButton = (Button) collectionButtonField.get(mainActivity);
-        boolean started = (boolean) startedField.get(mainActivity);
-        ExecutorService execService = (ExecutorService) collectionServiceField.get(mainActivity);
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
         ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
-        execService.shutdown();
-        execService.awaitTermination(30, TimeUnit.SECONDS);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
         toggleService.shutdown();
         toggleService.awaitTermination(30, TimeUnit.SECONDS);
-        Assert.assertTrue(collectionButton.isActivated());
-        Assert.assertTrue(collectionButton.getText().equals(mainActivity.getString(R.string.StopCollection)));
+
+        boolean started = (boolean) startedField.get(mainActivity);
         Assert.assertTrue(started);
+
+        onView(withId(R.id.collection_button)).check(matches(isEnabled()));
+        onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.StopCollection))));
     }
 
     @Test
-    public void testPopulateSensorDependencies() throws NoSuchFieldException, IllegalAccessException {
-        MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+    public void testPopulateSensorDependencies() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
         Field startedField = getFieldFromMainActivity("mStarted");
-        Field collectionButtonField = getFieldFromMainActivity("mCollectionButton");
+
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+        collectionServiceField.set(mainActivity, new FakeExecutorService());
+
         Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
-        Field XTextViewField = getFieldFromMainActivity("mXTextView");
-        Field YTextViewField = getFieldFromMainActivity("mYTextView");
-        Field ZTextViewField = getFieldFromMainActivity("mZTextView");
-        Field PitchTextViewField = getFieldFromMainActivity("mPitchTextView");
-        Field RollTextViewField = getFieldFromMainActivity("mRollTextView");
-        Field YawTextViewField = getFieldFromMainActivity("mYawTextView");
+        toggleServiceField.set(mainActivity, new FakeExecutorService());
+
         Field SensorManagerField = getFieldFromMainActivity("mSensorManager");
+
         Field AccelerometerField = getFieldFromMainActivity("mAccelerometer");
-        Field GyroscopeField = getFieldFromMainActivity("mGyroscope");
+
         mainActivity.populateSensorDependencies();
+
         boolean started = (boolean) startedField.get(mainActivity);
         Assert.assertFalse(started);
-        Button collectionButton = (Button) collectionButtonField.get(mainActivity);
-        Assert.assertTrue(collectionButton.getText().equals(mainActivity.getString(R.string.StartCollection)));
+
         ICollectionDBHelper dbHelper = (ICollectionDBHelper) dbField.get(mainActivity);
-        Class[] classArray = new Class[1];
-        classArray[0] = ICollectionDBHelper.class;
-        Assert.assertTrue(dbHelper.getClass().getInterfaces().equals(classArray));
+        Assert.assertTrue(dbHelper.getClass().getInterfaces()[0].equals(ICollectionDBHelper.class));
+
         ExecutorService collectService = (ExecutorService) collectionServiceField.get(mainActivity);
         Assert.assertTrue(!collectService.isTerminated() && !collectService.isShutdown());
+
         ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
         Assert.assertTrue(!toggleService.isTerminated() && !toggleService.isShutdown());
-        TextView xTextView = (TextView) XTextViewField.get(mainActivity);
-        Assert.assertTrue(xTextView.getText().equals(mainActivity.getString(R.string.x_accel_default)));
-        TextView yTextView = (TextView) YTextViewField.get(mainActivity);
-        Assert.assertTrue(yTextView.getText().equals(mainActivity.getString(R.string.y_accel_default)));
-        TextView zTextView = (TextView) ZTextViewField.get(mainActivity);
-        Assert.assertTrue(zTextView.getText().equals(mainActivity.getString(R.string.z_accel_default)));
-        TextView pitchTextView = (TextView) PitchTextViewField.get(mainActivity);
-        Assert.assertTrue(pitchTextView.getText().equals(mainActivity.getString(R.string.pitch_gyro_default)));
-        TextView rollTextView = (TextView) RollTextViewField.get(mainActivity);
-        Assert.assertTrue(rollTextView.getText().equals(mainActivity.getString(R.string.roll_gyro_default)));
-        TextView yawTextView = (TextView) YawTextViewField.get(mainActivity);
-        Assert.assertTrue(yawTextView.getText().equals(mainActivity.getString(R.string.yaw_gyro_default)));
+
         Sensor accelerometer = (Sensor) AccelerometerField.get(mainActivity);
         Assert.assertTrue(accelerometer.getType() == Sensor.TYPE_ACCELEROMETER);
-        Sensor gyroscope = (Sensor) GyroscopeField.get(mainActivity);
-        Assert.assertTrue(gyroscope.getName().equals(Sensor.TYPE_GYROSCOPE));
+
         SensorManager sensorManager = (SensorManager) SensorManagerField.get(mainActivity);
-        Assert.assertTrue(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).contains(accelerometer) && sensorManager.getSensorList(Sensor.TYPE_GYROSCOPE).contains(gyroscope));
+        Assert.assertTrue(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).contains(accelerometer));
+    }
+
+    @Test
+    public void testTeardownSensorDependencies() throws NoSuchFieldException, InterruptedException, IllegalAccessException {
+        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
+        Field startedField = getFieldFromMainActivity("mStarted");
+        startedField.set(mainActivity, true);
+
+        Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+        dbField.set(mainActivity, new FakeCollectionDB());
+
+        Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+        collectionServiceField.set(mainActivity, new FakeExecutorService());
+
+        Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+        toggleServiceField.set(mainActivity, new FakeExecutorService());
+
+        mainActivity.teardownSensorDependencies();
+
+        boolean startedVal = (boolean) startedField.get(mainActivity);
+        Assert.assertTrue(!startedVal);
+
+        FakeExecutorService toggleServiceVal = (FakeExecutorService) toggleServiceField.get(mainActivity);
+        Assert.assertTrue(toggleServiceVal.isTerminated() && toggleServiceVal.isShutdown());
+
+        FakeExecutorService collectionServiceVal = (FakeExecutorService) collectionServiceField.get(mainActivity);
+        Assert.assertTrue(collectionServiceVal.isTerminated() && collectionServiceVal.isShutdown());
+    }
+
+    @Test
+    public void testAccelerometerChangedZeros() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
+        Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+        dbField.set(mainActivity, new FakeCollectionDB());
+
+        Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+
+        Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+
+        final AccelDataModel dataModel = new AccelDataModel(0, 0, 0, 0);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.accelerometerChanged(dataModel);
+            }
+        });
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
+        ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
+        toggleService.shutdown();
+        toggleService.awaitTermination(30, TimeUnit.SECONDS);
+
+        FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
+        Assert.assertTrue(fakeDB.insertAccelDataHit);
+
+        onView(ViewMatchers.withId(R.id.x_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("X: 0.000000 m/s²")));
+        onView(ViewMatchers.withId(R.id.y_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Y: 0.000000 m/s²")));
+        onView(ViewMatchers.withId(R.id.z_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Z: 0.000000 m/s²")));
+    }
+
+    @Test
+    public void testAccelerometerChangedVarious() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
+        Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+        dbField.set(mainActivity, new FakeCollectionDB());
+
+        Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+
+        Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+
+        final AccelDataModel dataModel = new AccelDataModel(0, -1.23, 4.56, 5.000000001);
+
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.accelerometerChanged(dataModel);
+            }
+        });
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
+        ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
+        toggleService.shutdown();
+        toggleService.awaitTermination(30, TimeUnit.SECONDS);
+
+        FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
+        Assert.assertTrue(fakeDB.insertAccelDataHit);
+
+        onView(ViewMatchers.withId(R.id.x_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("X: -1.230000 m/s²")));
+        onView(ViewMatchers.withId(R.id.y_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Y: 4.560000 m/s²")));
+        onView(ViewMatchers.withId(R.id.z_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Z: 5.000000 m/s²")));
+    }
+
+    @Test
+    public void testGyroscopeChangedZeros() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
+        Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+        dbField.set(mainActivity, new FakeCollectionDB());
+
+        Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+
+        Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+
+        final GyroDataModel dataModel = new GyroDataModel(0, 0, 0, 0);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.gyroscopeChanged(dataModel);
+            }
+        });
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
+        ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
+        toggleService.shutdown();
+        toggleService.awaitTermination(30, TimeUnit.SECONDS);
+
+        FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
+        Assert.assertTrue(fakeDB.insertGyroDataHit);
+
+        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Pitch: 0.000000\u00b0")));
+        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Roll: 0.000000\u00b0")));
+        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 0.000000\u00b0")));
+    }
+
+    @Test
+    public void testGyroscopeChangedVarious() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+        final MainActivity mainActivity = (MainActivity) this.getCurrentActivity();
+
+        Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+        dbField.set(mainActivity, new FakeCollectionDB());
+
+        Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+
+        Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+
+        final GyroDataModel dataModel = new GyroDataModel(0, -1.23, 4.56, 5.000000001);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.gyroscopeChanged(dataModel);
+            }
+        });
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
+        ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
+        toggleService.shutdown();
+        toggleService.awaitTermination(30, TimeUnit.SECONDS);
+
+        FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
+        Assert.assertTrue(fakeDB.insertGyroDataHit);
+
+        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Pitch: -1.230000\u00b0")));
+        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Roll: 4.560000\u00b0")));
+        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 5.000000\u00b0")));
     }
 
     private Field getFieldFromMainActivity(String declarationName) throws NoSuchFieldException {
