@@ -23,11 +23,15 @@ class FlaskTestCase(unittest.TestCase):
         resp_json = json.loads(response.data.decode("utf-8"))
         self.assertEqual(test_input, resp_json)
 
-    def test_db_select_access(self):
-        test_input = {'row': '()'}
+    # def test_db_select_access(self):
+    #     test_input = {'row': '()'}
+    #     response = self.app.get('/gyro')
+    #     resp_json = json.loads(response.data.decode("utf-8"))
+    #     self.assertEqual(test_input, resp_json)
+    def test_connection(self):
         response = self.app.get('/gyro')
-        resp_json = json.loads(response.data.decode("utf-8"))
-        self.assertEqual(test_input, resp_json)
+        self.assertEqual(response, 200)
+
 
 
 if __name__ == '__main__':
