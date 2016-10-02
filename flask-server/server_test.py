@@ -1,5 +1,5 @@
 import unittest
-
+import requests
 import FlaskServer
 import json
 
@@ -28,10 +28,10 @@ class FlaskTestCase(unittest.TestCase):
     #     response = self.app.get('/gyro')
     #     resp_json = json.loads(response.data.decode("utf-8"))
     #     self.assertEqual(test_input, resp_json)
-    def test_connection(self):
-        response = self.app.get('/gyro')
-        self.assertEqual(response, 200)
 
+    def test_connection(self):
+        r = requests.get('http://www.google.com')
+        self.assertEqual(r.status_code, 200)
 
 
 if __name__ == '__main__':

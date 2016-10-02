@@ -1,6 +1,5 @@
 import _mysql
 from flask import Flask, jsonify, request
-import requests
 
 
 class InvalidUsage(Exception):
@@ -46,14 +45,12 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/gyro')
-def gyro():
+# @app.route('/gyro')
+# def gyro():
     # db.query("""SELECT * FROM GyroPoints LIMIT 1""")
     # result = db.use_result()
     # result = result.fetch_row()
     # return jsonify(row=str(result))
-    r = requests.get('http://www.google.com')
-    return r.status_code
 
 
 # used to check for sql injection later on
