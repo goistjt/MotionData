@@ -1,4 +1,5 @@
 import unittest
+
 import FlaskServer
 import json
 
@@ -6,7 +7,6 @@ import json
 class FlaskTestCase(unittest.TestCase):
     def setUp(self):
         app = FlaskServer.app
-        self.db = FlaskServer.db
         app.config['TESTING'] = True
         self.app = app.test_client()
 
