@@ -2,10 +2,12 @@ import unittest
 
 import FlaskServer
 import json
+import requests
 
 
 class FlaskTestCase(unittest.TestCase):
     def setUp(self):
+        requests.get("http://google.com/")
         app = FlaskServer.app
         app.config['TESTING'] = True
         self.app = app.test_client()
