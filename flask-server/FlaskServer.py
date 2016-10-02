@@ -1,8 +1,6 @@
 import _mysql
 from flask import Flask, jsonify, request
 
-import requests
-
 
 class InvalidUsage(Exception):
     status_code = 400
@@ -21,7 +19,6 @@ class InvalidUsage(Exception):
 
 
 app = Flask(__name__)
-r = requests.get("http://google.com/")
 db = _mysql.connect(user='root',
                     passwd='csse',
                     host='six-dof.csse.rose-hulman.edu',
