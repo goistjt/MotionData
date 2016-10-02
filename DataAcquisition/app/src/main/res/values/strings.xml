@@ -13,4 +13,6 @@
     <string name="cancel">Cancel</string>
     <string name="time_remaining">%d seconds</string>
     <string name="calibration_complete_in">Calibration will be \ncompleted in:</string>
+    <string name="new_session">New Session</string>
+    <string name="add_to_session">Add to Session</string>
 </resources>
