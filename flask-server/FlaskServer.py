@@ -52,7 +52,7 @@ def gyro():
     # result = db.use_result()
     # result = result.fetch_row()
     # return jsonify(row=str(result))
-    r = requests.get('www.google.com')
+    r = requests.get('http://www.google.com')
     return r.status_code
 
 
