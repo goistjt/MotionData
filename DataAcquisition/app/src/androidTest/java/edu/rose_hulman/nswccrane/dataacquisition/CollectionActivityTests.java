@@ -32,7 +32,6 @@ import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
 import sqlite.interfaces.ICollectionDBHelper;
-
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -139,7 +138,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         public FakeCollectionDB() {
         }
 
-        /*
         @Override
         public void setStartTime(long startTime) {
 
@@ -154,7 +152,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         public void getAllTimeframesBetween(long startTime, long endTime) {
 
         }
-        */
 
         @Override
         public void pushAccelData() {
@@ -188,12 +185,10 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
             return 0;
         }
 
-        /*
         @Override
         public long deleteCurrentTimeframeData() {
             return 0;
         }
-        */
     }
 
     @Before

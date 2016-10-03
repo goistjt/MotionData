@@ -8,16 +8,14 @@ import datamodels.GyroDataModel;
  */
 
 public interface ICollectionDBHelper {
-    /*
     void setStartTime(long startTime);
     void setEndTime(long endTime);
     void getAllTimeframesBetween(long startTime, long endTime);
-    */
     void pushAccelData();
     void pushGyroData();
     void insertAccelData(AccelDataModel data);
     void insertGyroData(GyroDataModel data);
     long deleteCurrentAccelData();
     long deleteCurrentGyroData();
-    //long deleteCurrentTimeframeData();
+    long deleteCurrentTimeframeData();
 }
