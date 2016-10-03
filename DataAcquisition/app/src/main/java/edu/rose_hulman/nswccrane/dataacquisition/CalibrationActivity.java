@@ -56,12 +56,12 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
                 CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
                 SharedPreferences settings = getApplicationContext().getSharedPreferences("Calibration", 0);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putFloat("x_threshold", max_x_noise);
-                editor.putFloat("y_threshold", max_y_noise);
-                editor.putFloat("z_threshold", max_z_noise);
-                editor.putFloat("roll_threshold", max_roll_noise);
-                editor.putFloat("pitch_threshold", max_pitch_noise);
-                editor.putFloat("yaw_threshold", max_yaw_noise);
+                editor.putFloat(getString(R.string.x_threshold), max_x_noise);
+                editor.putFloat(getString(R.string.y_threshold), max_y_noise);
+                editor.putFloat(getString(R.string.z_threshold), max_z_noise);
+                editor.putFloat(getString(R.string.roll_threshold), max_roll_noise);
+                editor.putFloat(getString(R.string.pitch_threshold), max_pitch_noise);
+                editor.putFloat(getString(R.string.yaw_threshold), max_yaw_noise);
                 editor.apply();
                 CalibrationActivity.this.finish();
             }

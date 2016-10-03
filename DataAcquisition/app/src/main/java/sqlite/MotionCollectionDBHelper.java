@@ -12,12 +12,11 @@ import java.util.Stack;
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
-import sqlite.interfaces.ICollectionDBHelper;
 
 /**
  * Created by steve on 9/14/16.
  */
-public class MotionCollectionDBHelper extends SQLiteOpenHelper implements ICollectionDBHelper {
+public class MotionCollectionDBHelper extends SQLiteOpenHelper {
 
     private final Stack<AccelDataModel> mAccelStack = new Stack<>();
     private final Stack<GyroDataModel> mGyroStack = new Stack<>();
@@ -93,7 +92,6 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
     }
     */
 
-    @Override
     public void pushAccelData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
@@ -116,7 +114,6 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         }
     }
 
-    @Override
     public void pushGyroData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
@@ -139,17 +136,14 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         }
     }
 
-    @Override
     public void insertAccelData(AccelDataModel data) {
         mAccelStack.push(data);
     }
 
-    @Override
     public void insertGyroData(GyroDataModel data) {
         mGyroStack.push(data);
     }
 
-    @Override
     public long deleteCurrentAccelData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_accel_data));
         long rowId = statement.executeUpdateDelete();
@@ -157,7 +151,6 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         return rowId;
     }
 
-    @Override
     public long deleteCurrentGyroData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_gyro_data));
         long rowId = statement.executeUpdateDelete();

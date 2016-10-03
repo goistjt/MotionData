@@ -34,13 +34,20 @@
     <string name="x_format">X: %f m/s²</string>
     <string name="y_format">Y: %f m/s²</string>
     <string name="z_format">Z: %f m/s²</string>
-    <string name="pitch_format">Pitch: %f\u00b0</string>
-    <string name="roll_format">Roll: %f\u00b0</string>
-    <string name="yaw_format">Yaw: %f\u00b0</string>
+    <string name="pitch_format">Pitch: %f°</string>
+    <string name="roll_format">Roll: %f°</string>
+    <string name="yaw_format">Yaw: %f°</string>
     <string name="db_name">MotionCollectionDB</string>
     <string name="timeframe_select_query"><![CDATA[SELECT * FROM Timeframe WHERE Timeframe.start_time >= in_start_time OR Timeframe.end_time = in_end_time]]></string>
     <string name="calibration_dialog_title">Calibration</string>
     <string name="cancel">Cancel</string>
     <string name="time_remaining">%d seconds</string>
     <string name="calibration_complete_in">Calibration will be \ncompleted in:</string>
+    <string name="x_threshold">x_threshold</string>
+    <string name="y_threshold">y_threshold</string>
+    <string name="z_threshold">z_threshold</string>
+    <string name="roll_threshold">roll_threshold</string>
+    <string name="pitch_threshold">pitch_threshold</string>
+    <string name="yaw_threshold">yaw_threshold</string>
+    <string name="please_secure_device">Please secure the device where desired within the vehicle, and turn the engine on before calibration</string>
 </resources>

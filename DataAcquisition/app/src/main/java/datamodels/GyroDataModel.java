@@ -29,22 +29,6 @@ public class GyroDataModel {
         return yaw_val;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        GyroDataModel that = (GyroDataModel) o;
-
-        return time_val == that.time_val;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) (time_val ^ (time_val >>> 32));
-    }
-
     public long getTime(){
         return time_val;
     }

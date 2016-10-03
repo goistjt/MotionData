@@ -32,20 +32,4 @@ public class AccelDataModel {
     public long getTime(){
         return time_val;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        AccelDataModel that = (AccelDataModel) o;
-
-        return time_val == that.time_val;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) (time_val ^ (time_val >>> 32));
-    }
 }

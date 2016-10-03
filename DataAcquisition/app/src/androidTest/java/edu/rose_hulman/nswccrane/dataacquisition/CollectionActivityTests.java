@@ -4,8 +4,8 @@ package edu.rose_hulman.nswccrane.dataacquisition;
  * Created by steve on 9/26/16.
  */
 
+import android.content.Context;
 import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.action.ViewActions;
@@ -31,7 +31,7 @@ import java.util.concurrent.TimeoutException;
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
-import sqlite.interfaces.ICollectionDBHelper;
+import sqlite.MotionCollectionDBHelper;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -126,7 +126,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         }
     }
 
-    class FakeCollectionDB implements ICollectionDBHelper {
+    class FakeCollectionDB extends MotionCollectionDBHelper {
 
         boolean pushAccelDataHit = false;
         boolean pushGyroDataHit = false;
@@ -135,7 +135,8 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         boolean deleteCurrentAccelDataHit = false;
         boolean deleteCurrentGyroDataHit = false;
 
-        public FakeCollectionDB() {
+        public FakeCollectionDB(Context context) {
+            super(context);
         }
 
         /*
@@ -196,13 +197,13 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
     }
 
     @Test
-    public void testToggleCollectionTrue() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void testCollectionOn() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, true);
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
-        dbField.set(mainActivity, new FakeCollectionDB());
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
 
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
 
@@ -231,13 +232,13 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
     }
 
     @Test
-    public void testToggleCollectionFalse() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+    public void testCollectionOff() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         Field startedField = getFieldFromMainActivity("mStarted");
         startedField.set(mainActivity, false);
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
-        dbField.set(mainActivity, new FakeCollectionDB());
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
 
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
         collectionServiceField.set(mainActivity, new FakeExecutorService());
@@ -276,17 +277,15 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
         toggleServiceField.set(mainActivity, new FakeExecutorService());
 
-        Field SensorManagerField = getFieldFromMainActivity("mSensorManager");
-
         Field AccelerometerField = getFieldFromMainActivity("mAccelerometer");
 
-        mainActivity.populateSensorDependencies();
+        mainActivity.initializeCollectionDependencies();
 
         boolean started = (boolean) startedField.get(mainActivity);
         Assert.assertFalse(started);
 
-        ICollectionDBHelper dbHelper = (ICollectionDBHelper) dbField.get(mainActivity);
-        Assert.assertTrue(dbHelper.getClass().getInterfaces()[0].equals(ICollectionDBHelper.class));
+        MotionCollectionDBHelper dbHelper = (MotionCollectionDBHelper) dbField.get(mainActivity);
+        Assert.assertTrue(dbHelper.getClass().equals(MotionCollectionDBHelper.class));
 
         ExecutorService collectService = (ExecutorService) collectionServiceField.get(mainActivity);
         Assert.assertTrue(!collectService.isTerminated() && !collectService.isShutdown());
@@ -296,9 +295,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
         Sensor accelerometer = (Sensor) AccelerometerField.get(mainActivity);
         Assert.assertTrue(accelerometer.getType() == Sensor.TYPE_ACCELEROMETER);
-
-        SensorManager sensorManager = (SensorManager) SensorManagerField.get(mainActivity);
-        Assert.assertTrue(sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).contains(accelerometer));
     }
 
     @Test
@@ -308,7 +304,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         startedField.set(mainActivity, true);
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
-        dbField.set(mainActivity, new FakeCollectionDB());
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
 
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
         collectionServiceField.set(mainActivity, new FakeExecutorService());
@@ -316,7 +312,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
         toggleServiceField.set(mainActivity, new FakeExecutorService());
 
-        mainActivity.teardownSensorDependencies();
+        mainActivity.teardownCollectionDependencies();
 
         boolean startedVal = (boolean) startedField.get(mainActivity);
         Assert.assertTrue(!startedVal);
@@ -332,7 +328,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
     public void testAccelerometerChangedZeros() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
-        dbField.set(mainActivity, new FakeCollectionDB());
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
 
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
 
@@ -368,7 +364,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
     public void testAccelerometerChangedVarious() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
-        dbField.set(mainActivity, new FakeCollectionDB());
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
 
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
 
@@ -405,7 +401,7 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
     public void testGyroscopeChangedZeros() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
-        dbField.set(mainActivity, new FakeCollectionDB());
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
 
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
 
@@ -432,16 +428,16 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
         Assert.assertTrue(fakeDB.insertGyroDataHit);
 
-        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Pitch: 0.000000\u00b0")));
-        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Roll: 0.000000\u00b0")));
-        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 0.000000\u00b0")));
+        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Pitch: 0.000000°")));
+        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Roll: 0.000000°")));
+        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 0.000000°")));
     }
 
     @Test
     public void testGyroscopeChangedVarious() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
         Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
-        dbField.set(mainActivity, new FakeCollectionDB());
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
 
         Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
 
@@ -468,9 +464,9 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
         Assert.assertTrue(fakeDB.insertGyroDataHit);
 
-        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Pitch: -1.230000\u00b0")));
-        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Roll: 4.560000\u00b0")));
-        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 5.000000\u00b0")));
+        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Pitch: -1.230000°")));
+        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Roll: 4.560000°")));
+        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 5.000000°")));
     }
 
 
