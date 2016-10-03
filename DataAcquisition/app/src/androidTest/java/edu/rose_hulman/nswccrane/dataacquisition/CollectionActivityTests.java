@@ -138,20 +138,24 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         public FakeCollectionDB() {
         }
 
+        /*
         @Override
         public void setStartTime(long startTime) {
-
         }
 
         @Override
         public void setEndTime(long endTime) {
-
         }
 
         @Override
         public void getAllTimeframesBetween(long startTime, long endTime) {
-
         }
+
+        @Override
+        public long deleteCurrentTimeframeData() {
+            return 0;
+        }
+        */
 
         @Override
         public void pushAccelData() {
@@ -182,11 +186,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         @Override
         public long deleteCurrentGyroData() {
             deleteCurrentGyroDataHit = true;
-            return 0;
-        }
-
-        @Override
-        public long deleteCurrentTimeframeData() {
             return 0;
         }
     }

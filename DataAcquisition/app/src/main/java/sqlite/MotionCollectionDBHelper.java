@@ -2,7 +2,7 @@ package sqlite;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
+//import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -22,14 +22,19 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
     private final Stack<AccelDataModel> mAccelStack = new Stack<>();
     private final Stack<GyroDataModel> mGyroStack = new Stack<>();
     private Context mContext;
+
+    /*
     private long currentStartTime;
     private long currentEndTime;
+    */
 
     public MotionCollectionDBHelper(Context context) {
         super(context, context.getString(R.string.db_name), null, 1);
         mContext = context;
+        /*
         currentStartTime = 0;
         currentEndTime = 0;
+        */
     }
 
     @Override
@@ -47,6 +52,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         onCreate(db);
     }
 
+    /*
     @Override
     public void setStartTime(long startTime) {
         currentStartTime = startTime;
@@ -85,6 +91,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
             db.endTransaction();
         }
     }
+    */
 
     @Override
     public void pushAccelData() {
@@ -158,6 +165,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         return rowId;
     }
 
+    /*
     @Override
     public long deleteCurrentTimeframeData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_timeframe));
@@ -165,4 +173,5 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper implements IColle
         Log.d("TIME_ROW", String.valueOf(rowId));
         return rowId;
     }
+    */
 }

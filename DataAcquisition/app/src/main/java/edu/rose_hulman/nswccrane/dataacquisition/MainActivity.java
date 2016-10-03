@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         mCollectionButton.setActivated(false);
         mCollectionButton.setText(R.string.stop_collection);
-        mCollectionDBHelper.setStartTime(System.currentTimeMillis());
+        //mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         mStarted = true;
         mCollectionButton.setActivated(true);
     }
@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mCollectionService = Executors.newFixedThreadPool(MAX_THREADS_COLLECTION_SERVICE);
             mCollectionDBHelper.pushAccelData();
             mCollectionDBHelper.pushGyroData();
-            mCollectionDBHelper.setEndTime(System.currentTimeMillis());
+            //mCollectionDBHelper.setEndTime(System.currentTimeMillis());
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
