@@ -6,7 +6,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
@@ -16,13 +19,15 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.interfaces.ICollectionActivity;
 import sqlite.MotionCollectionDBHelper;
 import sqlite.interfaces.ICollectionDBHelper;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener, ICollectionActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, ICollectionActivity, View.OnClickListener {
 
     private static final int MAXIMUM_LATENCY = 0;
 
@@ -52,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private boolean mStarted;
 
+    @BindView(R.id.calibration_button)
+    Button mCalibrationButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +70,39 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         }
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+        this.mCalibrationButton.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.calibration_button:
+                openCalibrationDialog();
+                break;
+            default:
+                //Empty
+        }
+    }
+
+    private void openCalibrationDialog() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle(R.string.calibration_dialog_title);
+        dialog.setMessage("Please secure the device where desired within the vehicle, and turn the engine on before calibration");
+        dialog.setPositiveButton(R.string.calibrate, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent startCalibrationIntent = new Intent(MainActivity.this, CalibrationActivity.class);
+                startActivity(startCalibrationIntent);
+            }
+        });
+        dialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     @Override

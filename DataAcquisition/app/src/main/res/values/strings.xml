@@ -39,4 +39,8 @@
     <string name="yaw_format">Yaw: %f\u00b0</string>
     <string name="db_name">MotionCollectionDB</string>
     <string name="timeframe_select_query"><![CDATA[SELECT * FROM Timeframe WHERE Timeframe.start_time >= in_start_time OR Timeframe.end_time = in_end_time]]></string>
+    <string name="calibration_dialog_title">Calibration</string>
+    <string name="cancel">Cancel</string>
+    <string name="time_remaining">%d seconds</string>
+    <string name="calibration_complete_in">Calibration will be \ncompleted in:</string>
 </resources>
