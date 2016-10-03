@@ -19,11 +19,11 @@ class InvalidUsage(Exception):
 
 
 app = Flask(__name__)
-# db = _mysql.connect(user='root',
-#                     passwd='csse',
-#                     host='six-dof.csse.rose-hulman.edu',
-#                     port=3306,
-#                     db='six-dof')
+db = _mysql.connect(user='root',
+                    passwd='csse',
+                    host='six-dof.csse.rose-hulman.edu',
+                    port=3306,
+                    db='six-dof')
 
 
 @app.errorhandler(InvalidUsage)
@@ -45,12 +45,12 @@ def hello_world():
     return 'Hello World!'
 
 
-# @app.route('/gyro')
-# def gyro():
-    # db.query("""SELECT * FROM GyroPoints LIMIT 1""")
-    # result = db.use_result()
-    # result = result.fetch_row()
-    # return jsonify(row=str(result))
+@app.route('/gyro')
+def gyro():
+    db.query("""SELECT * FROM GyroPoints LIMIT 1""")
+    result = db.use_result()
+    result = result.fetch_row()
+    return jsonify(row=str(result))
 
 
 # used to check for sql injection later on
