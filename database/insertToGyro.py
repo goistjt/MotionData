@@ -55,11 +55,12 @@ def insert_AccessPoints(timestamp, x, y, z, sessNum, deviceNum):
         conn.close()
 
 
-# def main():
-#     now = datetime.now().date()
-#     # now = datetime(2009, 5, 5)
-#     # str_now = now.date().isoformat()
-#     insert_GyroPoints(now, 1.0, 1.0, 1.0, 'hear2', 2)
+def main():
+    # now = datetime.now().date()
+    # now = datetime(2009, 5, 5)
+    # str_now = now.date().isoformat()
+    # insert_GyroPoints(now, 1.0, 1.0, 1.0, 'hear2', 2)
+    
  
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
