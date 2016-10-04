@@ -13,10 +13,14 @@ import android.widget.Button;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     @BindView(R.id.calibration_button)
     Button mCalibrationButton;
+
+    @BindView(R.id.export_button)
+    Button mExportButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         this.mCalibrationButton.setOnClickListener(this);
+        this.mExportButton.setOnClickListener(this);
     }
 
     @Override
@@ -38,9 +43,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.calibration_button:
                 openCalibrationDialog();
                 break;
+            case R.id.export_button:
+                openExportDialog();
+                break;
             default:
                 //Empty
         }
+    }
+
+    private void openExportDialog() {
+        ExportDialog exportDialog = new ExportDialog();
+        exportDialog.show(getFragmentManager(), "export_redirect");
     }
 
     private void openCalibrationDialog() {
