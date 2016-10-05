@@ -11,6 +11,7 @@ import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -32,7 +33,12 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
     }
 
     @Test
-    public void nothing() {
-
+    public void openCloseNewSessionDialog() {
+        onView(withId(R.id.new_session_button)).perform(click());
+        onView(withId(R.id.description_edit_text)).check(matches(isDisplayed()));
+        onView(withId(R.id.description_text)).check(matches(withText("Enter a description")));
+        onView(withId(R.id.collection_time_selector)).check(matches(isDisplayed()));
+        onView(withId(R.id.new_sess_submit_button)).perform(click());
+        onView(withId(R.id.export_button)).check(matches(isDisplayed()));
     }
 }

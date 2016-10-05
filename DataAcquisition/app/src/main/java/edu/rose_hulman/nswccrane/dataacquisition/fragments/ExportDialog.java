@@ -6,7 +6,6 @@ import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
 
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 
@@ -15,8 +14,6 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
  */
 
 public class ExportDialog extends DialogFragment implements View.OnClickListener {
-    Button mNewSessButton;
-    Button mAddSessButton;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -33,6 +30,9 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.new_session_button:
+                NewSessionDialog newSessionDialog = new NewSessionDialog();
+                newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
+                dismiss();
                 break;
             case R.id.add_to_session_button:
                 break;
