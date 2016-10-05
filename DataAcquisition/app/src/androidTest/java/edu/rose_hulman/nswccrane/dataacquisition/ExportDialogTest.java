@@ -27,8 +27,8 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
     @Before
     public void openDialog() {
         onView(withId(R.id.export_button)).perform(click());
-        onView(withId(android.R.id.button1)).check(matches(withText(R.string.new_session)));
-        onView(withId(android.R.id.button2)).check(matches(withText(R.string.add_to_session)));
+        onView(withId(R.id.new_session_button)).check(matches(withText(R.string.new_session)));
+        onView(withId(R.id.add_to_session_button)).check(matches(withText(R.string.add_to_session)));
     }
 
     @Test
