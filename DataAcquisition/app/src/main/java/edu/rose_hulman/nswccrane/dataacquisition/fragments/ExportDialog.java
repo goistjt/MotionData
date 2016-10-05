@@ -32,10 +32,12 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
             case R.id.new_session_button:
                 NewSessionDialog newSessionDialog = new NewSessionDialog();
                 newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
-                dismiss();
                 break;
             case R.id.add_to_session_button:
+                AddSessionDialog addSessionDialog = new AddSessionDialog();
+                addSessionDialog.show(getFragmentManager(), "add_sess_dialog");
                 break;
         }
+        dismiss();
     }
 }

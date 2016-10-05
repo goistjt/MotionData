@@ -4,28 +4,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/description_text"
+    <Spinner
+        android:id="@+id/session_selector"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Enter a description" />
-
-    <EditText
-        android:id="@+id/description_edit_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Session Description" />
+        android:layout_height="wrap_content" />
 
     <Spinner
-        android:id="@+id/collection_time_selector"
+        android:id="@+id/collection_time_selector2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <Button
-        android:id="@+id/new_sess_submit_button"
+        android:id="@+id/add_sess_submit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
+        android:layout_gravity="end"
         android:text="Submit Data" />
 
 </LinearLayout>

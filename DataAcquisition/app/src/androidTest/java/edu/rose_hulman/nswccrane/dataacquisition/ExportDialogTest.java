@@ -41,4 +41,13 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
         onView(withId(R.id.new_sess_submit_button)).perform(click());
         onView(withId(R.id.export_button)).check(matches(isDisplayed()));
     }
+
+    @Test
+    public void openCloseAddToSessionDialog() {
+        onView(withId(R.id.add_to_session_button)).perform(click());
+        onView(withId(R.id.session_selector)).check(matches(isDisplayed()));
+        onView(withId(R.id.collection_time_selector2)).check(matches(isDisplayed()));
+        onView(withId(R.id.add_sess_submit_button)).perform(click());
+        onView(withId(R.id.export_button)).check(matches(isDisplayed()));
+    }
 }
