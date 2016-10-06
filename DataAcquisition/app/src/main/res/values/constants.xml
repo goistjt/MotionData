@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="DEFAULT_COLLECTION_THREADS">10</integer>
+    <integer name="DEFAULT_TOGGLE_THREADS">1</integer>
+    <integer name="DEFAULT_COLLECTION_LATENCY">40</integer>
+</resources>
