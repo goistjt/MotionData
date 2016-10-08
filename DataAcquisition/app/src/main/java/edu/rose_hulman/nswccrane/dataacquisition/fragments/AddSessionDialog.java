@@ -2,6 +2,7 @@ package edu.rose_hulman.nswccrane.dataacquisition.fragments;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -12,6 +13,8 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
  * Created by Jeremiah Goist on 10/4/2016.
  */
 public class AddSessionDialog extends DialogFragment implements View.OnClickListener {
+    private Context applicationContext;
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -28,5 +31,9 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
                 dismiss();
                 break;
         }
+    }
+
+    public void setApplicationContext(Context applicationContext) {
+        this.applicationContext = applicationContext;
     }
 }

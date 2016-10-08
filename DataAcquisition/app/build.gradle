@@ -22,12 +22,17 @@ android {
     }
 }
 
+def AAVersion = '4.1.0'
+
 dependencies {
     // BUILD
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.jakewharton:butterknife:8.4.0'
+    compile 'com.squareup.okhttp3:okhttp:3.4.1'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
+    apt "org.androidannotations:androidannotations:$AAVersion"
+    compile "org.androidannotations:androidannotations-api:$AAVersion"
 
     // UNIT TESTING
     testCompile(

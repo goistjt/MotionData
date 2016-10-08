@@ -92,8 +92,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        this.mCalibrationButton.setOnClickListener(this);
-        this.mExportButton.setOnClickListener(this);
     }
 
     @Override
@@ -119,6 +117,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void openExportDialog() {
         ExportDialog exportDialog = new ExportDialog();
+        exportDialog.setApplicationContext(getApplicationContext());
         exportDialog.show(getFragmentManager(), "export_redirect");
     }
 
@@ -170,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void setupUIElements() {
         mCollectionButton.setOnClickListener(this);
         mCalibrationButton.setOnClickListener(this);
+        mExportButton.setOnClickListener(this);
     }
 
     public void initializeCollectionDependencies() {

@@ -3,6 +3,8 @@ package edu.rose_hulman.nswccrane.dataacquisition.fragments;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,12 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
  */
 
 public class ExportDialog extends DialogFragment implements View.OnClickListener {
+
+    private Context mApplicationContext;
+
+    public void setApplicationContext(Context mApplicationContext) {
+        this.mApplicationContext = mApplicationContext;
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -30,14 +38,48 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.new_session_button:
-                NewSessionDialog newSessionDialog = new NewSessionDialog();
-                newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
+                (new NewSessionTask()).execute((Void) null);
                 break;
             case R.id.add_to_session_button:
-                AddSessionDialog addSessionDialog = new AddSessionDialog();
-                addSessionDialog.show(getFragmentManager(), "add_sess_dialog");
+                (new AddSessionTask()).execute((Void) null);
                 break;
         }
         dismiss();
+    }
+
+    private class NewSessionTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: Get time frames from SQLite and convert to Array of Strings
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+//                Bundle bundle = new Bundle();
+                NewSessionDialog newSessionDialog = new NewSessionDialog();
+                newSessionDialog.setApplicationContext(mApplicationContext);
+                newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
+            }
+        }
+    }
+
+    private class AddSessionTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: Get Time frames from SQLite
+            // TODO: Get Session info from server
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            AddSessionDialog addSessionDialog = new AddSessionDialog();
+            addSessionDialog.setApplicationContext(mApplicationContext);
+            addSessionDialog.show(getFragmentManager(), "add_sess_dialog");
+        }
     }
 }
