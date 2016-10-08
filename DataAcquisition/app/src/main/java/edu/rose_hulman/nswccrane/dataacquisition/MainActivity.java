@@ -28,6 +28,7 @@ import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.AccelRunnable;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.GyroRunnable;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.ServiceShutdownRunnable;
 import sqlite.MotionCollectionDBHelper;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener, ICollectionCallback {
 
@@ -54,6 +55,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @BindView(R.id.calibration_button)
     Button mCalibrationButton;
+
+    @BindView(R.id.export_button)
+    Button mExportButton;
 
     /*
     private float max_x_noise;
@@ -87,6 +91,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        this.mCalibrationButton.setOnClickListener(this);
+        this.mExportButton.setOnClickListener(this);
     }
 
     @Override
@@ -94,6 +100,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         switch (v.getId()) {
             case R.id.calibration_button:
                 openCalibrationDialog();
+                break;
+            case R.id.export_button:
+                openExportDialog();
                 break;
             case R.id.collection_button:
                 if (mStarted) {
@@ -105,6 +114,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             default:
                 //Empty
         }
+    }
+
+    private void openExportDialog() {
+        ExportDialog exportDialog = new ExportDialog();
+        exportDialog.show(getFragmentManager(), "export_redirect");
     }
 
     private void openCalibrationDialog() {

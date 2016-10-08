@@ -43,6 +43,8 @@
     <string name="cancel">Cancel</string>
     <string name="time_remaining">%d seconds</string>
     <string name="calibration_complete_in">Calibration will be \ncompleted in:</string>
+    <string name="new_session">New Session</string>
+    <string name="add_to_session">Add to Session</string>
     <string name="x_threshold">x_threshold</string>
     <string name="y_threshold">y_threshold</string>
     <string name="z_threshold">z_threshold</string>
