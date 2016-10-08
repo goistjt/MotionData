@@ -54,7 +54,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
             @Override
             public void onFinish() {
                 CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
-                SharedPreferences settings = getApplicationContext().getSharedPreferences("Calibration", 0);
+                SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putFloat(getString(R.string.x_threshold), max_x_noise);
                 editor.putFloat(getString(R.string.y_threshold), max_y_noise);
