@@ -5,6 +5,7 @@ package edu.rose_hulman.nswccrane.dataacquisition;
  */
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.support.annotation.NonNull;
 import android.support.test.InstrumentationRegistry;
@@ -469,6 +470,102 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 5.000000°")));
     }
 
+    @Test
+    public void testGyroscopeChangedLessThanMax() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+
+        Field maxPitchNoiseField = getFieldFromMainActivity("max_pitch_noise");
+        maxPitchNoiseField.set(mainActivity, 500);
+
+        Field maxRollNoiseField = getFieldFromMainActivity("max_roll_noise");
+        maxRollNoiseField.set(mainActivity, 500);
+
+        Field maxYawNoiseField = getFieldFromMainActivity("max_yaw_noise");
+        maxYawNoiseField.set(mainActivity, 500);
+
+        Field prevGyroField = getFieldFromMainActivity("mPrevGyroModel");
+        prevGyroField.set(mainActivity, new GyroDataModel(0, 0, 0, 0));
+
+        Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
+
+        Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+
+        Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+
+        final GyroDataModel dataModel = new GyroDataModel(0, -501, 500, 499);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.gyroscopeChanged(dataModel);
+            }
+        });
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
+        ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
+        toggleService.shutdown();
+        toggleService.awaitTermination(30, TimeUnit.SECONDS);
+
+        FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
+        Assert.assertTrue(fakeDB.insertGyroDataHit);
+
+        onView(ViewMatchers.withId(R.id.pitch_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Pitch: -501.000000°")));
+        onView(ViewMatchers.withId(R.id.roll_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Roll: 500.000000°")));
+        onView(ViewMatchers.withId(R.id.yaw_gyro_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Yaw: 0.000000°")));
+    }
+
+    @Test
+    public void testAccelerometerChangedLessThanMax() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
+
+        Field maxXNoiseField = getFieldFromMainActivity("max_x_noise");
+        maxXNoiseField.set(mainActivity, 500);
+
+        Field maxYNoiseField = getFieldFromMainActivity("max_y_noise");
+        maxYNoiseField.set(mainActivity, 500);
+
+        Field maxZNoiseField = getFieldFromMainActivity("max_z_noise");
+        maxZNoiseField.set(mainActivity, 500);
+
+        Field prevAccelField = getFieldFromMainActivity("mPrevAccelModel");
+        prevAccelField.set(mainActivity, new AccelDataModel(0, 0, 0, 0));
+
+        Field dbField = getFieldFromMainActivity("mCollectionDBHelper");
+        dbField.set(mainActivity, new FakeCollectionDB(mainActivity));
+
+        Field collectionServiceField = getFieldFromMainActivity("mCollectionService");
+
+        Field toggleServiceField = getFieldFromMainActivity("mToggleButtonService");
+
+        final AccelDataModel dataModel = new AccelDataModel(0, -501, 500, 499);
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.accelerometerChanged(dataModel);
+            }
+        });
+
+        ExecutorService collectionService = (ExecutorService) collectionServiceField.get(mainActivity);
+        ExecutorService toggleService = (ExecutorService) toggleServiceField.get(mainActivity);
+
+        collectionService.shutdown();
+        collectionService.awaitTermination(30, TimeUnit.SECONDS);
+
+        toggleService.shutdown();
+        toggleService.awaitTermination(30, TimeUnit.SECONDS);
+
+        FakeCollectionDB fakeDB = (FakeCollectionDB) dbField.get(mainActivity);
+        Assert.assertTrue(fakeDB.insertAccelDataHit);
+
+        onView(ViewMatchers.withId(R.id.x_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("X: -501.000000 m/s²")));
+        onView(ViewMatchers.withId(R.id.y_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Y: 500.000000 m/s²")));
+        onView(ViewMatchers.withId(R.id.z_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Z: 0.000000 m/s²")));
+    }
+
 
     @Test
     public void testUISetup() throws NoSuchFieldException, IllegalAccessException, InterruptedException, NoSuchMethodException, InvocationTargetException {
@@ -495,6 +592,33 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
 
         onView(withId(R.id.collection_button)).check(matches(isEnabled()));
         onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.collect_data))));
+    }
+
+    @Test
+    public void testSharedPrefs() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        SharedPreferences settings = mainActivity.getApplicationContext().getSharedPreferences(mainActivity.getString(R.string.calibration_prefs), 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putFloat(mainActivity.getString(R.string.x_threshold), 500);
+        editor.putFloat(mainActivity.getString(R.string.y_threshold), 500);
+        editor.putFloat(mainActivity.getString(R.string.z_threshold), 500);
+        editor.putFloat(mainActivity.getString(R.string.roll_threshold), 500);
+        editor.putFloat(mainActivity.getString(R.string.pitch_threshold), 500);
+        editor.putFloat(mainActivity.getString(R.string.yaw_threshold), 500);
+        editor.apply();
+        final Method populateMethod = getMethodFromMainActivity("populatePreservedValues");
+        populateMethod.invoke(mainActivity);
+        Field maxXNoiseField = getFieldFromMainActivity("max_x_noise");
+        Assert.assertTrue(((Double) maxXNoiseField.get(mainActivity)) == 500);
+        Field maxYNoiseField = getFieldFromMainActivity("max_y_noise");
+        Assert.assertTrue(((Double) maxYNoiseField.get(mainActivity)) == 500);
+        Field maxZNoiseField = getFieldFromMainActivity("max_z_noise");
+        Assert.assertTrue(((Double) maxZNoiseField.get(mainActivity)) == 500);
+        Field maxPitchNoiseField = getFieldFromMainActivity("max_pitch_noise");
+        Assert.assertTrue(((Double) maxPitchNoiseField.get(mainActivity)) == 500);
+        Field maxRollNoiseField = getFieldFromMainActivity("max_roll_noise");
+        Assert.assertTrue(((Double) maxRollNoiseField.get(mainActivity)) == 500);
+        Field maxYawNoiseField = getFieldFromMainActivity("max_yaw_noise");
+        Assert.assertTrue(((Double) maxYawNoiseField.get(mainActivity)) == 500);
     }
 
     private Field getFieldFromMainActivity(String declarationName) throws NoSuchFieldException {

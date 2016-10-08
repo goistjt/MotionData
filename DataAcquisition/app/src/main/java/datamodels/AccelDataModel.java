@@ -29,6 +29,18 @@ public class AccelDataModel {
         return z_val;
     }
 
+    public void setX(double x) {
+        this.x_val = x;
+    }
+
+    public void setY(double y) {
+        this.y_val = y;
+    }
+
+    public void setZ(double z) {
+        this.z_val = z;
+    }
+
     public long getTime(){
         return time_val;
     }

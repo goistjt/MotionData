@@ -50,4 +50,5 @@
     <string name="pitch_threshold">pitch_threshold</string>
     <string name="yaw_threshold">yaw_threshold</string>
     <string name="please_secure_device">Please secure the device where desired within the vehicle, and turn the engine on before calibration</string>
+    <string name="calibration_prefs">Calibration</string>
 </resources>

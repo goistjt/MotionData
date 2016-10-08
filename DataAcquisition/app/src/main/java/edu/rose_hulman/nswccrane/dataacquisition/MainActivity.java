@@ -2,7 +2,7 @@ package edu.rose_hulman.nswccrane.dataacquisition;
 
 import android.app.KeyguardManager;
 import android.content.Context;
-//import android.content.SharedPreferences;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -55,15 +55,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @BindView(R.id.calibration_button)
     Button mCalibrationButton;
 
-    /*
-    private float max_x_noise;
-    private float max_y_noise;
-    private float max_z_noise;
+    private double max_x_noise;
+    private double max_y_noise;
+    private double max_z_noise;
 
-    private float max_roll_noise;
-    private float max_pitch_noise;
-    private float max_yaw_noise;
-    */
+    private double max_roll_noise;
+    private double max_pitch_noise;
+    private double max_yaw_noise;
+
+    private AccelDataModel mPrevAccelModel;
+    private GyroDataModel mPrevGyroModel;
 
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -130,22 +131,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
-        //populatePreservedValues();
+        populatePreservedValues();
         setupUIElements();
         initializeCollectionDependencies();
     }
 
-    /*
+
     private void populatePreservedValues() {
-        SharedPreferences sharedPref = this.getPreferences(Context.MODE_PRIVATE);
-        max_x_noise = sharedPref.getInt(getString(R.string.x_threshold), 0);
-        max_y_noise = sharedPref.getInt(getString(R.string.y_threshold), 0);
-        max_z_noise = sharedPref.getInt(getString(R.string.z_threshold), 0);
-        max_pitch_noise = sharedPref.getInt(getString(R.string.pitch_threshold), 0);
-        max_roll_noise = sharedPref.getInt(getString(R.string.roll_threshold), 0);
-        max_yaw_noise = sharedPref.getInt(getString(R.string.yaw_threshold), 0);
+        SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.calibration_prefs), 0);
+        max_x_noise = sharedPref.getFloat(getString(R.string.x_threshold), getResources().getInteger(R.integer.DEFAULT_X_THRESHOLD));
+        max_y_noise = sharedPref.getFloat(getString(R.string.y_threshold), getResources().getInteger(R.integer.DEFAULT_Y_THRESHOLD));
+        max_z_noise = sharedPref.getFloat(getString(R.string.z_threshold), getResources().getInteger(R.integer.DEFAULT_Z_THRESHOLD));
+        max_pitch_noise = sharedPref.getFloat(getString(R.string.pitch_threshold), getResources().getInteger(R.integer.DEFAULT_PITCH_THRESHOLD));
+        max_roll_noise = sharedPref.getFloat(getString(R.string.roll_threshold), getResources().getInteger(R.integer.DEFAULT_ROLL_THRESHOLD));
+        max_yaw_noise = sharedPref.getFloat(getString(R.string.yaw_threshold), getResources().getInteger(R.integer.DEFAULT_YAW_THRESHOLD));
     }
-    */
 
     @Override
     protected void onStop() {
@@ -203,6 +203,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void accelerometerChanged(AccelDataModel dataModel) {
+        if (this.mPrevAccelModel == null) {
+            this.mPrevAccelModel = dataModel;
+        }
+        else {
+            if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.max_x_noise) {
+                dataModel.setX(this.mPrevAccelModel.getX());
+            }
+            if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.max_y_noise) {
+                dataModel.setY(this.mPrevAccelModel.getY());
+            }
+            if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.max_z_noise) {
+                dataModel.setZ(this.mPrevAccelModel.getZ());
+            }
+        }
+        this.mPrevAccelModel = dataModel;
         mCollectionService.execute(new AccelRunnable(dataModel, mCollectionDBHelper));
         mXTextView.setText(String.format(Locale.US, getString(R.string.x_format), dataModel.getX()));
         mYTextView.setText(String.format(Locale.US, getString(R.string.y_format), dataModel.getY()));
@@ -210,6 +225,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void gyroscopeChanged(GyroDataModel dataModel) {
+        if (this.mPrevGyroModel == null) {
+            this.mPrevGyroModel = dataModel;
+        }
+        else {
+            if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.max_pitch_noise) {
+                dataModel.setPitch(this.mPrevGyroModel.getPitch());
+            }
+            if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.max_roll_noise) {
+                dataModel.setRoll(this.mPrevGyroModel.getRoll());
+            }
+            if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.max_yaw_noise) {
+                dataModel.setYaw(this.mPrevGyroModel.getYaw());
+            }
+        }
+        this.mPrevGyroModel = dataModel;
         mCollectionService.execute(new GyroRunnable(dataModel, mCollectionDBHelper));
         mPitchTextView.setText(String.format(Locale.US, getString(R.string.pitch_format), dataModel.getPitch()));
         mRollTextView.setText(String.format(Locale.US, getString(R.string.roll_format), dataModel.getRoll()));

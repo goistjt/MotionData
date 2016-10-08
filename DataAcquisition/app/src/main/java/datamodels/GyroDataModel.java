@@ -29,6 +29,18 @@ public class GyroDataModel {
         return yaw_val;
     }
 
+    public void setPitch(double pitch) {
+        this.pitch_val = pitch;
+    }
+
+    public void setRoll(double roll) {
+        this.roll_val = roll;
+    }
+
+    public void setYaw(double yaw) {
+        this.yaw_val = yaw;
+    }
+
     public long getTime(){
         return time_val;
     }
