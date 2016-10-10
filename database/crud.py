@@ -36,6 +36,11 @@ def readSession(name):
     args = [name]
     return readOne(query, args)
 
+def getSessionName(description, starting_time):
+    query = "SELECT * FROM Session WHERE description = %s AND starting_time = %s"
+    args = [description, starting_time]
+    return readOne(query, args)
+
 def readDataPoints(table, records_id, timestamp) :
     query = "SELECT * FROM table WHERE records_id = %s AND timestamp = %s"
     args = [records_id, timestamp]
@@ -94,9 +99,7 @@ def readAll(query, args):
         cursor.close()
         conn.close()
 
-def main():
-    
-    
- 
-if __name__ == '__main__':
-    main()
+# def main():
+     
+# if __name__ == '__main__':
+#     main()

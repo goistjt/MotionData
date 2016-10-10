@@ -1,5 +1,5 @@
 import _mysql
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 
 class InvalidUsage(Exception):
@@ -51,6 +51,11 @@ def gyro():
     result = db.use_result()
     result = result.fetch_row()
     return jsonify(row=str(result))
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
 
 
 # used to check for sql injection later on
