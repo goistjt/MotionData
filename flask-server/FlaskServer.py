@@ -1,4 +1,4 @@
-import _mysql
+# import _mysql
 from flask import Flask, jsonify, request, render_template
 
 
@@ -19,11 +19,11 @@ class InvalidUsage(Exception):
 
 
 app = Flask(__name__)
-db = _mysql.connect(user='root',
-                    passwd='csse',
-                    host='six-dof.csse.rose-hulman.edu',
-                    port=3306,
-                    db='six-dof')
+# db = _mysql.connect(user='root',
+#                     passwd='csse',
+#                     host='six-dof.csse.rose-hulman.edu',
+#                     port=3306,
+#                     db='six-dof')
 
 
 @app.errorhandler(InvalidUsage)
@@ -34,10 +34,10 @@ def handle_missing_argument(error):
 
 
 # /echo?usernames=<insert here>
-@app.route('/echo')
-def echo():
-    users = request.args.get('usernames').split(',')
-    return jsonify(usernames=users)
+# @app.route('/echo')
+# def echo():
+#     users = request.args.get('usernames').split(',')
+#     return jsonify(usernames=users)
 
 
 @app.route('/hello-world')
