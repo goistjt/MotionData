@@ -2,7 +2,7 @@ package sqlite;
 
 import android.content.ContentValues;
 import android.content.Context;
-//import android.database.Cursor;
+import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -22,18 +22,15 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
     private final Stack<GyroDataModel> mGyroStack = new Stack<>();
     private Context mContext;
 
-    /*
     private long currentStartTime;
     private long currentEndTime;
-    */
 
     public MotionCollectionDBHelper(Context context) {
         super(context, context.getString(R.string.db_name), null, 1);
         mContext = context;
-        /*
         currentStartTime = 0;
         currentEndTime = 0;
-        */
+        onUpgrade(getWritableDatabase(), 0, 0);
     }
 
     @Override
@@ -51,13 +48,10 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    /*
-    @Override
     public void setStartTime(long startTime) {
         currentStartTime = startTime;
     }
 
-    @Override
     public void setEndTime(long endTime) {
         currentEndTime = endTime;
         SQLiteDatabase db = this.getWritableDatabase();
@@ -75,10 +69,10 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
             Log.d("END", String.valueOf(currentEndTime));
             currentStartTime = 0;
             currentEndTime = 0;
+            Log.d("TIME_COUNT", String.valueOf(DatabaseUtils.queryNumEntries(db, mContext.getString(R.string.timeframe_table_name))));
         }
     }
 
-    @Override
     public void getAllTimeframesBetween(long startTime, long endTime) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
@@ -90,7 +84,6 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
             db.endTransaction();
         }
     }
-    */
 
     public void pushAccelData() {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -158,13 +151,10 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         return rowId;
     }
 
-    /*
-    @Override
     public long deleteCurrentTimeframeData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_timeframe));
         long rowId = statement.executeUpdateDelete();
         Log.d("TIME_ROW", String.valueOf(rowId));
         return rowId;
     }
-    */
 }

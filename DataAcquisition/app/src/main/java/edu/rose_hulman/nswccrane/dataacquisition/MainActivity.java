@@ -197,6 +197,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void collectionOff() {
         mCollectionButton.setActivated(false);
         mStarted = false;
+        mCollectionDBHelper.setEndTime(System.currentTimeMillis());
         mCollectionButton.setText(R.string.collect_data);
         mSensorManager.unregisterListener(this);
         mToggleButtonService.execute(new ServiceShutdownRunnable(this, mCollectionService, mCollectionDBHelper));
@@ -211,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mSensorManager.registerListener(this, mGyroscope, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
         }
         mCollectionButton.setText(R.string.stop_collection);
-        //mCollectionDBHelper.setStartTime(System.currentTimeMillis());
+        mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         mStarted = true;
         mCollectionButton.setActivated(true);
     }
