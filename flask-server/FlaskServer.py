@@ -1,5 +1,6 @@
 # import _mysql
 from flask import Flask, jsonify, request, render_template
+import database.crud
 
 
 class InvalidUsage(Exception):
@@ -19,12 +20,6 @@ class InvalidUsage(Exception):
 
 
 app = Flask(__name__)
-# db = _mysql.connect(user='root',
-#                     passwd='csse',
-#                     host='six-dof.csse.rose-hulman.edu',
-#                     port=3306,
-#                     db='six-dof')
-
 
 @app.errorhandler(InvalidUsage)
 def handle_missing_argument(error):
@@ -34,10 +29,10 @@ def handle_missing_argument(error):
 
 
 # /echo?usernames=<insert here>
-# @app.route('/echo')
-# def echo():
-#     users = request.args.get('usernames').split(',')
-#     return jsonify(usernames=users)
+@app.route('/echo')
+def echo():
+    users = request.args.get('usernames').split(',')
+    return jsonify(usernames=users)
 
 
 @app.route('/hello-world')
@@ -47,9 +42,7 @@ def hello_world():
 
 @app.route('/gyro')
 def gyro():
-    db.query("""SELECT * FROM GyroPoints LIMIT 1""")
-    result = db.use_result()
-    result = result.fetch_row()
+    data = crud.readOne("""SELECT * FROM GyroPoints LIMIT 1""")
     return jsonify(row=str(result))
 
 @app.route("/")
@@ -67,5 +60,5 @@ def index():
 
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=80, debug=True)  # Use this for production
-    app.run()  # This is for local execution
+    app.run(host='0.0.0.0', port=80, debug=True)  # Use this for production
+    # app.run()  # This is for local execution
