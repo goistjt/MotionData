@@ -1,6 +1,6 @@
 # import _mysql
 from flask import Flask, jsonify, request, render_template
-from database import crud
+import crud
 
 
 class InvalidUsage(Exception):
@@ -42,7 +42,12 @@ def hello_world():
 
 @app.route('/gyro')
 def gyro():
-    data = crud.readOne("""SELECT * FROM GyroPoints LIMIT 1""")
+    result = crud.readOne("""SELECT * FROM GyroPoints LIMIT 1""")
+    return jsonify(row=str(result))
+
+@app.route('/session')
+def session():
+    result = crud.readOne("SELECT * FROM Session")
     return jsonify(row=str(result))
 
 @app.route("/")
