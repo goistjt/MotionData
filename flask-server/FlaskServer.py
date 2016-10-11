@@ -1,6 +1,6 @@
 # import _mysql
 from flask import Flask, jsonify, request, render_template
-import database.crud
+from database import crud
 
 
 class InvalidUsage(Exception):

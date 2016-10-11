@@ -75,13 +75,14 @@ def readOne(query, args=[]):
         cursor.execute(query, args)
  
         data = cursor.fetchone()
-        return data
+        
     except Error as error:
         print(error)
  
     finally:
         cursor.close()
         conn.close()
+        return data
 
 def readAll(query, args=[]):
     try:
@@ -91,13 +92,14 @@ def readAll(query, args=[]):
         cursor.execute(query, args)
  
         data = cursor.fetchall()
-        return data
+        
     except Error as error:
         print(error)
  
     finally:
         cursor.close()
         conn.close()
+        return data
 
 # def main():
 # if __name__ == '__main__':
