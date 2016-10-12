@@ -14,7 +14,6 @@ import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.runner.AndroidJUnit4;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import java.lang.reflect.Field;
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
-import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
+import edu.rose_hulman.nswccrane.dataacquisition.testing_utils.AMainActivityTest;
 import sqlite.MotionCollectionDBHelper;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
@@ -39,13 +38,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 @RunWith(AndroidJUnit4.class)
-public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
-
-    private MainActivity mainActivity;
-
-    public CollectionActivityTests() {
-        super(MainActivity.class);
-    }
+public class CollectionActivityTests extends AMainActivityTest {
 
     class FakeExecutorService implements ExecutorService {
 
@@ -190,11 +183,6 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
             deleteCurrentGyroDataHit = true;
             return 0;
         }
-    }
-
-    @Before
-    public void before() {
-        mainActivity = (MainActivity) getCurrentActivity();
     }
 
     @Test
@@ -619,21 +607,5 @@ public class CollectionActivityTests extends JUnitTestCase<MainActivity> {
         Assert.assertTrue(((Double) maxRollNoiseField.get(mainActivity)) == 500);
         Field maxYawNoiseField = getFieldFromMainActivity("max_yaw_noise");
         Assert.assertTrue(((Double) maxYawNoiseField.get(mainActivity)) == 500);
-    }
-
-    private Field getFieldFromMainActivity(String declarationName) throws NoSuchFieldException {
-        Field field = MainActivity.class.getDeclaredField(declarationName);
-        if (!field.isAccessible()) {
-            field.setAccessible(true);
-        }
-        return field;
-    }
-
-    private Method getMethodFromMainActivity(String declarationName) throws NoSuchMethodException {
-        Method method = MainActivity.class.getDeclaredMethod(declarationName);
-        if (!method.isAccessible()) {
-            method.setAccessible(true);
-        }
-        return method;
     }
 }
