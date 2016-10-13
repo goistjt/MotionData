@@ -16,10 +16,10 @@
     <string name="start_time">start_time</string>
     <string name="end_time">end_time</string>
     <string name="acceleration_table_name">Accel_Data</string>
-    <string name="create_accel_data_table">CREATE TABLE Accel_Data(timestamp UNSIGNED BIGINT PRIMARY KEY, x DOUBLE, y DOUBLE, z DOUBLE)</string>
-    <string name="create_gyro_data_table">CREATE TABLE Gyro_Data(timestamp UNSIGNED BIGINT PRIMARY KEY, pitch DOUBLE, roll DOUBLE, yaw DOUBLE)</string>
+    <string name="create_accel_data_table">CREATE TABLE Accel_Data(timestamp INTEGER PRIMARY KEY, x DOUBLE, y DOUBLE, z DOUBLE)</string>
+    <string name="create_gyro_data_table">CREATE TABLE Gyro_Data(timestamp INTEGER PRIMARY KEY, pitch DOUBLE, roll DOUBLE, yaw DOUBLE)</string>
     <string name="timeframe_table_name">Timeframe</string>
-    <string name="create_timeframe_table">CREATE TABLE Timeframe(start_time UNSIGNED BIGINT PRIMARY KEY, end_time UNSIGNED BIGINT)</string>
+    <string name="create_timeframe_table">CREATE TABLE Timeframe(start_time INTEGER PRIMARY KEY, end_time UNSIGNED BIGINT)</string>
     <string name="drop_accel_data_table">DROP TABLE IF EXISTS Accel_Data</string>
     <string name="drop_gyro_data_table">DROP TABLE IF EXISTS Gyro_Data</string>
     <string name="drop_timeframe_table">DROP TABLE IF EXISTS Timeframe</string>
@@ -38,7 +38,9 @@
     <string name="roll_format">Roll: %f°</string>
     <string name="yaw_format">Yaw: %f°</string>
     <string name="db_name">MotionCollectionDB</string>
-    <string name="timeframe_select_query"><![CDATA[SELECT * FROM Timeframe WHERE Timeframe.start_time >= in_start_time OR Timeframe.end_time = in_end_time]]></string>
+    <string name="timeframe_select_query">SELECT * FROM Timeframe WHERE Timeframe.start_time &gt;= ? AND Timeframe.end_time &lt;= ?</string>
+    <string name="accel_select_query">SELECT * FROM Accel_Data WHERE Accel_Data.timestamp &gt;= ? AND Accel_Data.timestamp &lt;= ?</string>
+    <string name="gyro_select_query">SELECT * FROM Gyro_Data WHERE Gyro_Data.timestamp &gt;= ? AND Gyro_Data.timestamp &lt;= ?</string>
     <string name="calibration_dialog_title">Calibration</string>
     <string name="cancel">Cancel</string>
     <string name="time_remaining">%d seconds</string>
@@ -53,4 +55,5 @@
     <string name="yaw_threshold">yaw_threshold</string>
     <string name="please_secure_device">Please secure the device where desired within the vehicle, and turn the engine on before calibration</string>
     <string name="calibration_prefs">Calibration</string>
+    <string name="select_all_timeframe">SELECT * FROM Timeframe</string>
 </resources>
