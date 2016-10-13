@@ -35,7 +35,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         mContext = context;
         currentStartTime = 0;
         currentEndTime = 0;
-        onUpgrade(getWritableDatabase(), 0, 0);
+//        onUpgrade(getWritableDatabase(), 0, 0);
     }
 
     @Override

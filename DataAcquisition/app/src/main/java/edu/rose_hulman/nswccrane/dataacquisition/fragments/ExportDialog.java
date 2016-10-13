@@ -38,32 +38,15 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.new_session_button:
-                (new NewSessionTask()).execute((Void) null);
+                NewSessionDialog newSessionDialog = new NewSessionDialog();
+                newSessionDialog.setApplicationContext(mApplicationContext);
+                newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
                 break;
             case R.id.add_to_session_button:
                 (new AddSessionTask()).execute((Void) null);
                 break;
         }
         dismiss();
-    }
-
-    private class NewSessionTask extends AsyncTask<Void, Void, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: Get time frames from SQLite and convert to Array of Strings
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            if (success) {
-//                Bundle bundle = new Bundle();
-                NewSessionDialog newSessionDialog = new NewSessionDialog();
-                newSessionDialog.setApplicationContext(mApplicationContext);
-                newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
-            }
-        }
     }
 
     private class AddSessionTask extends AsyncTask<Void, Void, Boolean> {

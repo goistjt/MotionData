@@ -12,6 +12,7 @@ import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -21,12 +22,16 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.EFragment;
 
 import java.io.IOException;
+import java.util.List;
 
+import datamodels.TimeframeDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.MainActivity;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
+import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import sqlite.MotionCollectionDBHelper;
 
 /**
  * Created by Jeremiah Goist on 10/4/2016.
@@ -34,7 +39,7 @@ import okhttp3.Response;
 
 @EFragment
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
-    ArrayAdapter<String> mArrayAdapter;
+    ListAdapter mListAdapter;
     private Context applicationContext;
 
     @Override
@@ -51,6 +56,13 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         return builder.create();
     }
 
+    private void populateArrayAdapter() {
+        MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(applicationContext);
+        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(System.currentTimeMillis() - (24 * 60 * 60 * 1000),
+                System.currentTimeMillis());
+        mListAdapter = new TimeframeAdapter(getActivity(), R.layout.list_item_timespan, timeData);
+    }
+
     private void initUIElements(View v) {
         v.findViewById(R.id.new_sess_submit_button).setOnClickListener(this);
         v.findViewById(R.id.collection_time_selector).setOnClickListener(this);
@@ -64,14 +76,15 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                 dismiss();
                 break;
             case R.id.collection_time_selector:
+                populateArrayAdapter();
                 new AlertDialog.Builder(getActivity())
                         .setTitle("Select a recording period")
-                        .setAdapter(mArrayAdapter, new DialogInterface.OnClickListener() {
+                        .setAdapter(mListAdapter, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
-                        }).create().show();
+                        }).show();
         }
     }
 
