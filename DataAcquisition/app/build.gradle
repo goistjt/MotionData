@@ -24,6 +24,10 @@ android {
 
 def AAVersion = '4.1.0'
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     // BUILD
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -33,6 +37,8 @@ dependencies {
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
     apt "org.androidannotations:androidannotations:$AAVersion"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
+
+    compile 'com.google.code.gson:gson:2.2.4'
 
     // UNIT TESTING
     testCompile(
