@@ -12,7 +12,7 @@ def create_session(description, starting_time):
     query = "INSERT INTO Session" \
             "(description, timestamp) " \
             "VALUES(%s, %s)"
-    args = (description, timestamp)
+    args = (description, starting_time)
     return insert(query, args, True) 
 
 def insert_GyroPoints(records_id, timestamp, roll, pitch, yaw):
@@ -29,11 +29,11 @@ def insert_AccessPoints(records_id, timestamp, x, y, z):
     args = (records_id, timestamp, x, y, z)
     insert(query, args)
 
-def readSession(name):
-    #name has to be surrouded by ''
+def readSession(id):
+    #id has to be surrouded by ''
     #EX: 'Test'
-    query = "SELECT * FROM Session WHERE name = %s"
-    args = [name]
+    query = "SELECT * FROM Session WHERE id = %s"
+    args = [id]
     return readOne(query, args)
 
 def getSessionName(description, starting_time):
@@ -88,7 +88,7 @@ def insert(query, args=[]):
     execute_transaction_query(query, args=[])
 
 def insert(query, args=[], uniqueId = False):
-     db_config = read_db_config()
+    db_config = read_db_config()
     try:
         conn = MySQLConnection(**db_config)
         cursor = conn.cursor()
