@@ -16,14 +16,18 @@ class crud_test(unittest.TestCase):
     #     response = self.app.get('/hello-world')
     #     self.assertEqual(b'Hello World!', response.data)
 
+    # def test_insert(self):
+    #     description = "test"
+    #     starting_time = datetime.datetime.now()
+    #     lastid = crud.create_session(description,starting_time)
+    #     data = crud.readSession(lastid)
+    #     print(data)
+    #     query = "DELETE ROW FROM Session WHERE id = %s"
+    #     crud.delet_data(query, lastid)
+
     def test_insert(self):
-        description = "test"
-        starting_time = datetime.datetime.now()
-        lastid = crud.create_session(description,starting_time)
-        data = crud.readSession(lastid)
-        print(data)
-        query = "DELETE ROW FROM Session WHERE id = %s"
-        crud.delet_data(query, lastid)
+        result = crud.readOne("""SELECT * FROM GyroPoints LIMIT 1""")
+        return jsonify(row=str(result))
 
 
     # def test_echo(self):
