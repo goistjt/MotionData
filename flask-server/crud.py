@@ -139,3 +139,4 @@ def getConnection():
     db_config = read_db_config()
     return MySQLConnection(**db_config)
 
+

@@ -4,6 +4,7 @@ import json
 import crud
 import datetime
 from flask import Flask, jsonify
+from zmq.backend.cffi.devices import device
 
 
 class crud_test(unittest.TestCase):
@@ -18,7 +19,7 @@ class crud_test(unittest.TestCase):
     def tearDown(self):
         pass
         
-    def test_create_session(self):
+    def test_create_and_read_session(self):
         description = "test"
         lastid = crud.create_session(description, self.starting_time)
         data = crud.readSession(lastid)
@@ -28,6 +29,15 @@ class crud_test(unittest.TestCase):
         crud.delete_data(query, [lastid])
         crud.reset_session_autoIndex()
     
+    def test_create_record(self):
+        session_id = 1;
+        device_id = 1;
+        lastid = crud.create_record(session_id, device_id)
+        self.assertEqual(lastid, crud.sha1(session_id+device_id))
+        query = "DELET FROM Records WHERE records_id = %s"
+        args = [lastid]
+        crud.delete(query, args)
+        
     def test_get_sessionId(self):
         description = "test"
         lastid = crud.create_session(description, self.starting_time)
@@ -36,7 +46,7 @@ class crud_test(unittest.TestCase):
         crud.delete_data(query, [lastid])
         crud.reset_session_autoIndex()
     
-    def test_insert_GyroPoints(self):
+    def test_insert_GyroPoints_and_readDataPoints(self):
         record_id = 'test'
         roll, pitch, yaw = 1.0, 1.0, 1.0;
         last_id = crud.insert_GyroPoints(record_id, self.starting_time, roll, pitch, yaw)
@@ -45,7 +55,7 @@ class crud_test(unittest.TestCase):
         query = "DELETE FROM GyroPoints WHERE records_id = %s AND timestamp = %s"
         crud.delete_data(query, [record_id, self.starting_time])
       
-    def test_insert_AccessPoints(self):
+    def test_insert_AccessPoints_and_readDataPoints(self):
         record_id = 'test'
         x, y, z = 1.0, 1.0, 1.0;
         last_id = crud.insert_AccessPoints(record_id, self.starting_time, x, y, z)
