@@ -1,6 +1,7 @@
 # import _mysql
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 import crud
+import data_analysis as da
 
 
 class InvalidUsage(Exception):
@@ -53,6 +54,18 @@ def session():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/getRecord")
+def getRecordData():
+    # with open("outputs/Adjacency.csv") as fp:
+    #     csv = fp.read()
+    record_id = '2c2b3609c6a7eefb232d816dd0222f42ee3eaa5b'
+    csv = da.download_record(record_id)
+    return Response(
+        csv,
+        mimetype="text/csv",
+        headers={"Content-disposition":
+                 "attachment; filename=record.csv"})
 
 
 

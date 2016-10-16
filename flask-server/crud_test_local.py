@@ -4,7 +4,6 @@ import json
 import crud
 import datetime
 from flask import Flask, jsonify
-from zmq.backend.cffi.devices import device
 
 
 class crud_test(unittest.TestCase):
@@ -30,13 +29,13 @@ class crud_test(unittest.TestCase):
         crud.reset_session_autoIndex()
     
     def test_create_record(self):
-        session_id = 1;
-        device_id = 1;
+        session_id = -1;
+        device_id = "-1";
         lastid = crud.create_record(session_id, device_id)
-        self.assertEqual(lastid, crud.sha1(session_id+device_id))
-        query = "DELET FROM Records WHERE records_id = %s"
+        self.assertEqual(lastid, crud.sha1(str(session_id)+device_id))
+        query = "DELETE FROM Records WHERE id = %s"
         args = [lastid]
-        crud.delete(query, args)
+        crud.delete_data(query, args)
         
     def test_get_sessionId(self):
         description = "test"
@@ -45,26 +44,26 @@ class crud_test(unittest.TestCase):
         query = "DELETE FROM Session WHERE id = %s"
         crud.delete_data(query, [lastid])
         crud.reset_session_autoIndex()
-    
+     
     def test_insert_GyroPoints_and_readDataPoints(self):
         record_id = 'test'
         roll, pitch, yaw = 1.0, 1.0, 1.0;
         last_id = crud.insert_GyroPoints(record_id, self.starting_time, roll, pitch, yaw)
         data = crud.readDataPoints("GyroPoints", record_id, self.starting_time)
         self.assertEqual(data, (record_id, self.starting_time, roll, pitch, yaw))
-        query = "DELETE FROM GyroPoints WHERE records_id = %s AND timestamp = %s"
+        query = "DELETE FROM GyroPoints WHERE record_id = %s AND timestamp = %s"
         crud.delete_data(query, [record_id, self.starting_time])
-      
+       
     def test_insert_AccessPoints_and_readDataPoints(self):
         record_id = 'test'
         x, y, z = 1.0, 1.0, 1.0;
         last_id = crud.insert_AccessPoints(record_id, self.starting_time, x, y, z)
         data = crud.readDataPoints("AccessPoints", record_id, self.starting_time)
         self.assertEqual(data, (record_id, self.starting_time, x, y, z))
-        query = "DELETE FROM AccessPoints WHERE records_id = %s AND timestamp = %s"
+        query = "DELETE FROM AccessPoints WHERE record_id = %s AND timestamp = %s"
         crud.delete_data(query, [record_id, self.starting_time])        
-  
-  
+   
+   
     def test_readAll(self):
         description = "test"
         lastid = crud.create_session(description, self.starting_time)
@@ -77,18 +76,18 @@ class crud_test(unittest.TestCase):
         crud.delete_data(query, [lastid1])
         crud.delete_data(query, [lastid2])
         crud.reset_session_autoIndex()
-        
+         
     def test_reset_autoIndex(self):
         description = "test"
         query = "DELETE FROM Session WHERE id = %s"
-        
+         
         lastid = crud.create_session(description, self.starting_time)
         crud.delete_data(query, [lastid])
         crud.reset_session_autoIndex()
-        
+         
         lastid1 = crud.create_session(description, self.starting_time+1)
         self.assertEqual(lastid, lastid1)
-        
+         
         crud.delete_data(query, [lastid1])
         crud.reset_session_autoIndex()
 

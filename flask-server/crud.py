@@ -1,7 +1,6 @@
 
 from mysql.connector import MySQLConnection, Error
 from python_mysql_dbconfig import read_db_config
-from datetime import datetime
 import hashlib
  
 def create_session(description, starting_time):
@@ -12,30 +11,31 @@ def create_session(description, starting_time):
     return insert(query, args)
 
 def create_record(session_id, device_id):
-    records_id = sha1(str(session_id)+device_id)
+    record_id = sha1(str(session_id)+device_id)
     query = "INSERT INTO Records" \
-            "(records_id, session_name, decice_id)" \
+            "(id, session_id, device_id)" \
             "VALUES(%s, %s, %s)"
-    args = [records_id, session_id, device_id]
-    return insert(query, args)
+    args = [record_id, session_id, device_id]
+    insert(query, args)
+    return record_id
             
 def sha1(input):
     m = hashlib.sha1()
     m.update(input.encode('utf-8'))
     return m.hexdigest()
 
-def insert_GyroPoints(records_id, timestamp, roll, pitch, yaw):
+def insert_GyroPoints(record_id, timestamp, roll, pitch, yaw):
     query = "INSERT INTO GyroPoints" \
-            "(records_id, timestamp, roll, pitch, yaw) " \
+            "(record_id, timestamp, roll, pitch, yaw) " \
             "VALUES(%s,%s, %s, %s, %s)"
-    args = (records_id, timestamp, roll, pitch, yaw)
+    args = (record_id, timestamp, roll, pitch, yaw)
     return insert(query, args)
 
-def insert_AccessPoints(records_id, timestamp, x, y, z):
+def insert_AccessPoints(record_id, timestamp, x, y, z):
     query = "INSERT INTO AccessPoints" \
-            "(records_id, timestamp, surge, sway, heave) " \
+            "(record_id, timestamp, surge, sway, heave) " \
             "VALUES(%s,%s, %s, %s, %s)"
-    args = (records_id, timestamp, x, y, z)
+    args = (record_id, timestamp, x, y, z)
     return insert(query, args)
 
 def readSession(id):
@@ -50,9 +50,9 @@ def getSessionId(description, starting_time):
     args = [description, starting_time]
     return readOne(query, args)
 
-def readDataPoints(table, records_id, timestamp) :
-    query = "SELECT * FROM "+table+" WHERE records_id = %s AND timestamp = %s"
-    args = [records_id, timestamp]
+def readDataPoints(table, record_id, timestamp) :
+    query = "SELECT * FROM "+table+" WHERE record_id = %s AND timestamp = %s"
+    args = [record_id, timestamp]
     return readOne(query, args)
 
 def readOne(query, args=[]):
@@ -131,12 +131,21 @@ def reset_session_autoIndex():
     if numOfRow[0] is None:
         numOfRow = [1]
     else:
-        numOfRow[0] = numOfRow[0]+1
+        numOfRow = [numOfRow[0]+1]
     query = "ALTER TABLE Session AUTO_INCREMENT = %s"
     execute_transaction_query(query, numOfRow)
 
 def getConnection():
     db_config = read_db_config()
     return MySQLConnection(**db_config)
+
+def delete_entire_session(session_id):
+#     query = "DELETE FROM Session WHERE id = %s"
+#     delete_data(query, [lastid])
+#     reset_session_autoIndex()
+#     query = ""
+    #test
+    pass
+    
 
 
