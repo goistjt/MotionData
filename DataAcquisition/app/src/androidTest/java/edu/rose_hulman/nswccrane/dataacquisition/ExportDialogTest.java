@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
 
+import static android.support.test.espresso.Espresso.closeSoftKeyboard;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
@@ -28,12 +29,17 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
     @Before
     public void openDialog() {
         onView(withId(R.id.export_button)).perform(click());
+    }
+
+    @Test
+    public void checkDialogButtons() {
         onView(withId(R.id.new_session_button)).check(matches(withText(R.string.new_session)));
         onView(withId(R.id.add_to_session_button)).check(matches(withText(R.string.add_to_session)));
     }
 
     @Test
     public void openCloseNewSessionDialog() {
+        closeSoftKeyboard();
         onView(withId(R.id.new_session_button)).perform(click());
         onView(withId(R.id.description_edit_text)).check(matches(isDisplayed()));
         onView(withId(R.id.description_text)).check(matches(withText("Enter a description")));
@@ -44,6 +50,7 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
 
     @Test
     public void openCloseAddToSessionDialog() {
+        closeSoftKeyboard();
         onView(withId(R.id.add_to_session_button)).perform(click());
         onView(withId(R.id.session_selector)).check(matches(isDisplayed()));
         onView(withId(R.id.collection_time_selector2)).check(matches(isDisplayed()));
