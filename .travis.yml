@@ -47,9 +47,7 @@ before_script:
   - echo no | android create avd --force -n test -t "android-"$EMULATOR_API_LEVEL --abi $ANDROID_ABI --tag $ANDROID_TAG
   - emulator -avd test -no-window -no-audio -sdcard sdcard.img -qemu &
   - android-wait-for-emulator
-  - adb install -r android_emulator_hacks.apk
-  - adb shell pm grant no.finn.android_emulator_hacks android.permission.SET_ANIMATION_SCALE
-  - adb shell am start -n no.finn.android_emulator_hacks/no.finn.android_emulator_hacks.HackActivity
+  - adb shell getprop init.svc.bootanim
   - adb shell pm path android
   - adb shell input keyevent 82
 script:
