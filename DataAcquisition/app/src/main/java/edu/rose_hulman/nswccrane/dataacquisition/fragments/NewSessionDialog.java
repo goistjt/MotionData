@@ -72,7 +72,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.new_sess_submit_button:
-                new PostNewSession().execute("http://six-dof.csse.rose-hulman.edu/hello-world");
+//                new PostNewSession().execute("http://six-dof.csse.rose-hulman.edu/hello-world");
                 dismiss();
                 break;
             case R.id.collection_time_selector:
@@ -85,6 +85,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                                 dialog.dismiss();
                             }
                         }).show();
+                break;
         }
     }
 
