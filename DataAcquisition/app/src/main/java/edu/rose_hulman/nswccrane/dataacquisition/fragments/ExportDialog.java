@@ -18,6 +18,7 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
 public class ExportDialog extends DialogFragment implements View.OnClickListener {
 
     private Context mApplicationContext;
+    public static final String TAG = "EXPORT_DIALOG";
 
     public void setApplicationContext(Context mApplicationContext) {
         this.mApplicationContext = mApplicationContext;
@@ -40,7 +41,7 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
             case R.id.new_session_button:
                 NewSessionDialog newSessionDialog = new NewSessionDialog();
                 newSessionDialog.setApplicationContext(mApplicationContext);
-                newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
+                newSessionDialog.show(getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
                 (new AddSessionTask()).execute((Void) null);
@@ -62,7 +63,7 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
         protected void onPostExecute(Boolean aBoolean) {
             AddSessionDialog addSessionDialog = new AddSessionDialog();
             addSessionDialog.setApplicationContext(mApplicationContext);
-            addSessionDialog.show(getFragmentManager(), "add_sess_dialog");
+            addSessionDialog.show(getFragmentManager(), AddSessionDialog.TAG);
         }
     }
 }

@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void openExportDialog() {
         ExportDialog exportDialog = new ExportDialog();
         exportDialog.setApplicationContext(getApplicationContext());
-        exportDialog.show(getFragmentManager(), "export_redirect");
+        exportDialog.show(getFragmentManager(), ExportDialog.TAG);
     }
 
     private void openCalibrationDialog() {
