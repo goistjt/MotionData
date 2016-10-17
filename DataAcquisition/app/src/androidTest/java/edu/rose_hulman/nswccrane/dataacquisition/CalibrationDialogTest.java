@@ -1,9 +1,14 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
+import android.support.test.espresso.action.GeneralLocation;
+import android.support.test.espresso.action.Press;
+import android.support.test.espresso.action.Tap;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
+import edu.rose_hulman.nswccrane.dataacquisition.testing_utils.ClickAction;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -35,13 +40,13 @@ public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
 
     @Test
     public void testCancelButton() {
-        onView(withId(android.R.id.button2)).perform(click());
+        onView(withId(android.R.id.button2)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
         onView(withId(R.id.calibration_button)).check(matches(isDisplayed()));
     }
 
     @Test
     public void testCalibrateButton() {
-        onView(withId(android.R.id.button1)).perform(click());
+        onView(withId(android.R.id.button1)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
         onView(withId(R.id.calibration_text)).check(matches(isDisplayed()));
     }
 }
