@@ -1,4 +1,3 @@
-# import _mysql
 from flask import Flask, jsonify, request, render_template, Response
 import crud
 import data_analysis as da
@@ -22,6 +21,7 @@ class InvalidUsage(Exception):
 
 app = Flask(__name__)
 
+
 @app.errorhandler(InvalidUsage)
 def handle_missing_argument(error):
     response = jsonify(error.to_dict())
@@ -43,20 +43,23 @@ def hello_world():
 
 @app.route('/gyro')
 def gyro():
-    result = crud.readOne("""SELECT * FROM GyroPoints LIMIT 1""")
+    result = crud.read_one("""SELECT * FROM GyroPoints LIMIT 1""")
     return jsonify(row=str(result))
+
 
 @app.route('/session')
 def session():
-    result = crud.readOne("SELECT * FROM Session")
+    result = crud.read_one("SELECT * FROM Session")
     return jsonify(row=str(result))
+
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/getRecord")
-def getRecordData():
+def get_record_data():
     # with open("outputs/Adjacency.csv") as fp:
     #     csv = fp.read()
     record_id = '2c2b3609c6a7eefb232d816dd0222f42ee3eaa5b'
@@ -65,8 +68,7 @@ def getRecordData():
         csv,
         mimetype="text/csv",
         headers={"Content-disposition":
-                 "attachment; filename=record.csv"})
-
+                     "attachment; filename=record.csv"})
 
 
 # used to check for sql injection later on
@@ -78,5 +80,6 @@ def getRecordData():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)  # Use this for production
-    # app.run()  # This is for local execution
+    # todo: adjust which config.ini file is being used in python_mysql_dbconfig.py
+    # app.run(host='0.0.0.0', port=80, debug=True)  # Use this for production
+    app.run()  # This is for local execution
