@@ -22,6 +22,7 @@ import sqlite.MotionCollectionDBHelper;
 public class AddSessionDialog extends DialogFragment implements View.OnClickListener {
     private Context applicationContext;
     ListAdapter mListAdapter;
+    public static final String TAG = "ADD_SESSION_DIALOG";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

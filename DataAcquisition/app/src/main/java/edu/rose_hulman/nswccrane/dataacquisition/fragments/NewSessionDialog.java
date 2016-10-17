@@ -41,6 +41,7 @@ import sqlite.MotionCollectionDBHelper;
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
     ListAdapter mListAdapter;
     private Context applicationContext;
+    public static final String TAG = "NEW_SESSION_DIALOG";
 
     @Override
     public void onAttach(Context context) {

@@ -1,11 +1,16 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
+import android.app.Fragment;
+import android.os.SystemClock;
 import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.AddSessionDialog;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.NewSessionDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
 
 import static android.support.test.espresso.Espresso.onView;
@@ -25,9 +30,21 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
         super(MainActivity.class);
     }
 
+    private Fragment waitForFragment(String tag, int timeout) {
+        long endTime = SystemClock.uptimeMillis() + timeout;
+        while (SystemClock.uptimeMillis() <= endTime) {
+            android.app.Fragment fragment = getCurrentActivity().getFragmentManager().findFragmentByTag(tag);
+            if (fragment != null) {
+                return fragment;
+            }
+        }
+        return null;
+    }
+
     @Before
     public void openDialog() {
         onView(withId(R.id.export_button)).perform(click());
+        waitForFragment(ExportDialog.TAG, 5000);
         onView(withId(R.id.new_session_button)).check(matches(withText(R.string.new_session)));
         onView(withId(R.id.add_to_session_button)).check(matches(withText(R.string.add_to_session)));
     }
@@ -35,6 +52,7 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
     @Test
     public void openCloseNewSessionDialog() {
         onView(withId(R.id.new_session_button)).perform(click());
+        waitForFragment(NewSessionDialog.TAG, 5000);
         onView(withId(R.id.description_edit_text)).check(matches(isDisplayed()));
         onView(withId(R.id.description_text)).check(matches(withText("Enter a description")));
         onView(withId(R.id.collection_time_selector)).check(matches(isDisplayed()));
@@ -45,6 +63,7 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
     @Test
     public void openCloseAddToSessionDialog() {
         onView(withId(R.id.add_to_session_button)).perform(click());
+        waitForFragment(AddSessionDialog.TAG, 5000);
         onView(withId(R.id.session_selector)).check(matches(isDisplayed()));
         onView(withId(R.id.collection_time_selector2)).check(matches(isDisplayed()));
         onView(withId(R.id.add_sess_submit_button)).perform(click());
