@@ -1,31 +1,23 @@
 package edu.rose_hulman.nswccrane.dataacquisition.fragments;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
-import android.widget.SimpleAdapter;
-import android.widget.Spinner;
 import android.widget.Toast;
 
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.EFragment;
 
 import java.io.IOException;
 import java.util.List;
 
 import datamodels.TimeframeDataModel;
-import edu.rose_hulman.nswccrane.dataacquisition.MainActivity;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
 import okhttp3.OkHttpClient;
@@ -40,7 +32,7 @@ import sqlite.MotionCollectionDBHelper;
 @EFragment
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
     ListAdapter mListAdapter;
-    private Context applicationContext;
+    private Activity mRootActivity;
     public static final String TAG = "NEW_SESSION_DIALOG";
 
     @Override
@@ -58,7 +50,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     }
 
     private void populateArrayAdapter() {
-        MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(applicationContext);
+        MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(mRootActivity);
         List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(System.currentTimeMillis() - (24 * 60 * 60 * 1000),
                 System.currentTimeMillis());
         mListAdapter = new TimeframeAdapter(getActivity(), R.layout.list_item_timespan, timeData);
@@ -90,8 +82,8 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         }
     }
 
-    public void setApplicationContext(Context applicationContext) {
-        this.applicationContext = applicationContext;
+    public void setActivity(Activity applicationContext) {
+        this.mRootActivity = applicationContext;
     }
 
     private class PostNewSession extends AsyncTask<String, Void, Response> {
@@ -115,12 +107,12 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         protected void onPostExecute(Response response) {
             if (response != null) {
                 try {
-                    Toast.makeText(applicationContext, response.body().string(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mRootActivity, response.body().string(), Toast.LENGTH_SHORT).show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
-                Toast.makeText(applicationContext, "No response provided", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mRootActivity, "No response provided", Toast.LENGTH_SHORT).show();
             }
         }
     }
