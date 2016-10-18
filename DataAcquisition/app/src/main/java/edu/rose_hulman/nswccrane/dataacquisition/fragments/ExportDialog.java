@@ -1,9 +1,9 @@
 package edu.rose_hulman.nswccrane.dataacquisition.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,11 +17,11 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
 
 public class ExportDialog extends DialogFragment implements View.OnClickListener {
 
-    private Context mApplicationContext;
+    private Activity mRootActivity;
     public static final String TAG = "EXPORT_DIALOG";
 
-    public void setApplicationContext(Context mApplicationContext) {
-        this.mApplicationContext = mApplicationContext;
+    public void setActivity(Activity mApplicationContext) {
+        this.mRootActivity = mApplicationContext;
     }
 
     @Override
@@ -40,8 +40,8 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
         switch (v.getId()) {
             case R.id.new_session_button:
                 NewSessionDialog newSessionDialog = new NewSessionDialog();
-                newSessionDialog.setApplicationContext(mApplicationContext);
-                newSessionDialog.show(getFragmentManager(), NewSessionDialog.TAG);
+                newSessionDialog.setActivity(mRootActivity);
+                newSessionDialog.show(mRootActivity.getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
                 (new AddSessionTask()).execute((Void) null);
@@ -62,8 +62,8 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             AddSessionDialog addSessionDialog = new AddSessionDialog();
-            addSessionDialog.setApplicationContext(mApplicationContext);
-            addSessionDialog.show(getFragmentManager(), AddSessionDialog.TAG);
+            addSessionDialog.setActivity(mRootActivity);
+            addSessionDialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
         }
     }
 }

@@ -1,5 +1,6 @@
 package edu.rose_hulman.nswccrane.dataacquisition.fragments;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -20,7 +21,7 @@ import sqlite.MotionCollectionDBHelper;
  * Created by Jeremiah Goist on 10/4/2016.
  */
 public class AddSessionDialog extends DialogFragment implements View.OnClickListener {
-    private Context applicationContext;
+    private Activity mRootActivity;
     ListAdapter mListAdapter;
     public static final String TAG = "ADD_SESSION_DIALOG";
 
@@ -34,7 +35,7 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
     }
 
     private void populateArrayAdapter() {
-        MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(applicationContext);
+        MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(mRootActivity);
         List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(System.currentTimeMillis() - (24 * 60 * 60 * 1000),
                 System.currentTimeMillis());
         mListAdapter = new TimeframeAdapter(getActivity(), R.layout.list_item_timespan, timeData);
@@ -65,7 +66,7 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
         }
     }
 
-    public void setApplicationContext(Context applicationContext) {
-        this.applicationContext = applicationContext;
+    public void setActivity(Activity applicationContext) {
+        this.mRootActivity = applicationContext;
     }
 }
