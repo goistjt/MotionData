@@ -1,5 +1,5 @@
 import hashlib
-from pymysql import *
+from pymysql import Error, connect
 
 from database.python_mysql_dbconfig import read_db_config
 
