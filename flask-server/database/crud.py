@@ -1,5 +1,5 @@
 import hashlib
-from mysql.connector import MySQLConnection, Error
+from pymysql import *
 
 from database.python_mysql_dbconfig import read_db_config
 
@@ -67,7 +67,7 @@ def read_data_points(table, record_id, timestamp):
 def read_one(query, args=[]):
     try:
         db_config = read_db_config()
-        conn = MySQLConnection(**db_config)
+        conn = connect(**db_config)
         cursor = conn.cursor()
         cursor.execute(query, args)
         data = cursor.fetchone()
@@ -81,7 +81,7 @@ def read_one(query, args=[]):
 def read_all(query, args=[]):
     try:
         db_config = read_db_config()
-        conn = MySQLConnection(**db_config)
+        conn = connect(**db_config)
         cursor = conn.cursor()
         cursor.execute(query, args)
         data = cursor.fetchall()
@@ -99,7 +99,7 @@ def delete_data(query, args=[]):
 def insert(query, args=[]):
     db_config = read_db_config()
     try:
-        conn = MySQLConnection(**db_config)
+        conn = connect(**db_config)
         cursor = conn.cursor()
         cursor.execute(query, args)
         last_id = cursor.lastrowid
@@ -118,7 +118,7 @@ def insert(query, args=[]):
 def execute_transaction_query(query, args=[]):
     db_config = read_db_config()
     try:
-        conn = MySQLConnection(**db_config)
+        conn = connect(**db_config)
         cursor = conn.cursor()
         cursor.execute(query, args)
         conn.commit()
@@ -142,7 +142,7 @@ def reset_session_auto_index():
 
 def get_connection():
     db_config = read_db_config()
-    return MySQLConnection(**db_config)
+    return connect(**db_config)
 
 
 def delete_entire_session(session_id):
