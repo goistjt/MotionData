@@ -6,6 +6,6 @@ before_install:
     - export PYTHONPATH='.'
 install:
     - cd flask-server
-    - pip install -r requirements.txt
+    - pip install -r travis_requirements.txt
 script:
     - python -m unittest discover -p "*_test.py"
