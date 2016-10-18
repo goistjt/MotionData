@@ -3,10 +3,11 @@ Created on Oct 15, 2016
 
 @author: yangr
 """
-import unittest
-import crud
-import data_analysis as da
 import datetime
+import unittest
+
+from data_analysis import data_analysis as da
+from database import crud
 
 
 def get_now():

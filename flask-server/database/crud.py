@@ -1,6 +1,7 @@
-from mysql.connector import MySQLConnection, Error
-from python_mysql_dbconfig import read_db_config
 import hashlib
+from mysql.connector import MySQLConnection, Error
+
+from database.python_mysql_dbconfig import read_db_config
 
 
 def create_session(description, starting_time):

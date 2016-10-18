@@ -1,6 +1,8 @@
-from flask import Flask, jsonify, request, render_template, Response
-import crud
-import data_analysis as da
+from flask import jsonify, request, render_template, Response
+
+from data_analysis import data_analysis as da
+from database import crud
+from flask_server import app
 
 
 class InvalidUsage(Exception):
@@ -17,9 +19,6 @@ class InvalidUsage(Exception):
         rv = dict(self.payload or ())
         rv['message'] = self.message
         return rv
-
-
-app = Flask(__name__)
 
 
 @app.errorhandler(InvalidUsage)
@@ -78,8 +77,3 @@ def get_record_data():
 #             "Invalid characters contained in query parameters",
 #             status_code=666)
 
-
-if __name__ == '__main__':
-    # todo: adjust which config.ini file is being used in python_mysql_dbconfig.py
-    # app.run(host='0.0.0.0', port=80, debug=True)  # Use this for production
-    app.run()  # This is for local execution

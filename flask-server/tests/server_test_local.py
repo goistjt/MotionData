@@ -1,11 +1,11 @@
-import unittest
-import FlaskServer
 import json
+import unittest
+import run_server
 
 
 class FlaskTestCase(unittest.TestCase):
     def setUp(self):
-        app = FlaskServer.app
+        app = run_server.app
         app.config['TESTING'] = True
         self.app = app.test_client()
 

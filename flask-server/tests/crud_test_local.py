@@ -1,12 +1,13 @@
-import unittest
-import FlaskServer
-import crud
 import datetime
+import unittest
+
+from flask_server import server
+from database import crud
 
 
 class CrudTest(unittest.TestCase):
     def setUp(self):
-        app = FlaskServer.app
+        app = server.app
         app.config['TESTING'] = True
         t = datetime.datetime.now()
         starting_time = (t - datetime.datetime(1970, 1, 1)).total_seconds()

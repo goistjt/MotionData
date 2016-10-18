@@ -3,9 +3,9 @@ Created on Oct 15, 2016
 
 @author: yangr
 """
-import crud
 import pandas as pd
-import numpy as np
+
+from database import crud
 
 
 def select_record(records_id):
