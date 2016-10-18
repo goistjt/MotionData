@@ -7,28 +7,28 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.CalibrationDialog;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.interfaces.ICollectionCallback;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.AccelRunnable;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.GyroRunnable;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.ServiceShutdownRunnable;
 import sqlite.MotionCollectionDBHelper;
-import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener, ICollectionCallback {
 
@@ -105,8 +105,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 if (mStarted) {
                     mCollectionButton.setEnabled(false);
                     collectionOff();
-                }
-                else {
+                } else {
                     mCollectionButton.setEnabled(false);
                     collectionOn();
                 }
@@ -122,23 +121,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void openCalibrationDialog() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.calibration_dialog_title);
-        dialog.setMessage(R.string.please_secure_device);
-        dialog.setPositiveButton(R.string.calibrate, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent startCalibrationIntent = new Intent(MainActivity.this, CalibrationActivity.class);
-                startActivity(startCalibrationIntent);
-            }
-        });
-        dialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
+        CalibrationDialog calibrationDialog = new CalibrationDialog();
+        calibrationDialog.show(getFragmentManager(), CalibrationDialog.TAG);
     }
 
     @Override
@@ -227,8 +211,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void accelerometerChanged(AccelDataModel dataModel) {
         if (this.mPrevAccelModel == null) {
             this.mPrevAccelModel = dataModel;
-        }
-        else {
+        } else {
             if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.max_x_noise) {
                 dataModel.setX(this.mPrevAccelModel.getX());
             }
@@ -249,8 +232,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void gyroscopeChanged(GyroDataModel dataModel) {
         if (this.mPrevGyroModel == null) {
             this.mPrevGyroModel = dataModel;
-        }
-        else {
+        } else {
             if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.max_pitch_noise) {
                 dataModel.setPitch(this.mPrevGyroModel.getPitch());
             }
