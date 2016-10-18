@@ -32,6 +32,7 @@ import android.support.test.espresso.util.HumanReadables;
 import com.android.support.test.deps.guava.base.Optional;
 
 import android.support.v7.widget.AppCompatButton;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.webkit.WebView;
@@ -107,9 +108,11 @@ public final class ClickAction implements ViewAction {
             try {
                 status = tapper.sendTap(uiController, coordinates, precision);
             } catch (RuntimeException re) {
-                boolean isclicked = ((AppCompatButton)view).callOnClick();
+                Log.d("WTF", "RUNTIME EXCEPTION CAUGHT");
+                boolean isclicked = view.callOnClick();
                 if(isclicked) {
                     status = Tapper.Status.SUCCESS;
+                    break;
                 }
                 /*
                 throw new PerformException.Builder()
@@ -123,12 +126,15 @@ public final class ClickAction implements ViewAction {
             int duration = ViewConfiguration.getPressedStateDuration();
             // ensures that all work enqueued to process the tap has been run.
             if (duration > 0) {
+                Log.d("WTF", "LOOPING");
                 uiController.loopMainThreadForAtLeast(duration);
             }
+            Log.d("WTF", "PAST FIRST LOOP");
             if (status == Tapper.Status.WARNING) {
-                if (rollbackAction.isPresent()) {
+                if (rollbackAction != null && rollbackAction.isPresent()) {
                     rollbackAction.get().perform(uiController, view);
                 } else {
+                    Log.d("WTF", "BREAKING AFTER WARNING");
                     break;
                 }
             }

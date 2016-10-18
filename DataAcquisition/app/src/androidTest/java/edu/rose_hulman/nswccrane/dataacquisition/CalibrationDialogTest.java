@@ -39,14 +39,16 @@ public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
     }
 
     @Test
-    public void testCancelButton() {
+    public void testCancelButton() throws InterruptedException {
         onView(withId(android.R.id.button2)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
+        Thread.sleep(1000);
         onView(withId(R.id.calibration_button)).check(matches(isDisplayed()));
     }
 
     @Test
-    public void testCalibrateButton() {
+    public void testCalibrateButton() throws InterruptedException {
         onView(withId(android.R.id.button1)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
+        Thread.sleep(1000);
         onView(withId(R.id.calibration_text)).check(matches(isDisplayed()));
     }
 }

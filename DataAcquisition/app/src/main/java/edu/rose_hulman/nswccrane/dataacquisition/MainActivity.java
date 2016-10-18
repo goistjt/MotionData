@@ -103,9 +103,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 break;
             case R.id.collection_button:
                 if (mStarted) {
+                    mCollectionButton.setEnabled(false);
                     collectionOff();
                 }
                 else {
+                    mCollectionButton.setEnabled(false);
                     collectionOn();
                 }
             default:
@@ -162,6 +164,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStop() {
         super.onStop();
         teardownCollectionDependencies();
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putFloat(getString(R.string.x_threshold), getResources().getInteger(R.integer.DEFAULT_X_THRESHOLD));
+        editor.putFloat(getString(R.string.y_threshold), getResources().getInteger(R.integer.DEFAULT_Y_THRESHOLD));
+        editor.putFloat(getString(R.string.z_threshold), getResources().getInteger(R.integer.DEFAULT_Z_THRESHOLD));
+        editor.putFloat(getString(R.string.roll_threshold), getResources().getInteger(R.integer.DEFAULT_PITCH_THRESHOLD));
+        editor.putFloat(getString(R.string.pitch_threshold), getResources().getInteger(R.integer.DEFAULT_ROLL_THRESHOLD));
+        editor.putFloat(getString(R.string.yaw_threshold), getResources().getInteger(R.integer.DEFAULT_YAW_THRESHOLD));
+        editor.apply();
     }
 
     private void setupUIElements() {
@@ -193,7 +204,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void collectionOff() {
-        mCollectionButton.setActivated(false);
         mStarted = false;
         mCollectionDBHelper.setEndTime(System.currentTimeMillis());
         mCollectionButton.setText(R.string.collect_data);
@@ -202,7 +212,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void collectionOn() {
-        mCollectionButton.setActivated(false);
         if (mAccelerometer != null) {
             mSensorManager.registerListener(this, mAccelerometer, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
         }
@@ -212,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mCollectionButton.setText(R.string.stop_collection);
         mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         mStarted = true;
-        mCollectionButton.setActivated(true);
+        mCollectionButton.setEnabled(true);
     }
 
     public void accelerometerChanged(AccelDataModel dataModel) {
@@ -284,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mCollectionButton.setActivated(true);
+                mCollectionButton.setEnabled(true);
             }
         });
     }
