@@ -37,7 +37,7 @@ android:
     - extra-android-m2repository
     # Specify at least one system image
     # - sys-img-armeabi-v7a-google_apis-$ANDROID_API_LEVEL
-    - sys-img-armeabi-v7a-google_apis-$EMULATOR_API_LEVEL
+    - sys-img-x86-android-17
 
 before_install:
   - chmod +x ./DataAcquisition/gradlew
