@@ -25,7 +25,3 @@ task wrapper(type: Wrapper) {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-task connectedAndroidTest(type: Test) {
-    exclude '**/*DialogTest'
-}
