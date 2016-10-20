@@ -7,28 +7,28 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
+
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.CalibrationDialog;
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.interfaces.ICollectionCallback;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.AccelRunnable;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.GyroRunnable;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.ServiceShutdownRunnable;
 import sqlite.MotionCollectionDBHelper;
-import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener, ICollectionCallback {
 
@@ -84,16 +84,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (BuildConfig.DEBUG) {
-            KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-            KeyguardManager.KeyguardLock keyguardLock = km.newKeyguardLock("TAG");
-            keyguardLock.disableKeyguard();
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        }
+        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+        KeyguardManager.KeyguardLock keyguardLock = km.newKeyguardLock("TAG");
+        keyguardLock.disableKeyguard();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        this.mCalibrationButton.setOnClickListener(this);
-        this.mExportButton.setOnClickListener(this);
     }
 
     @Override
@@ -107,9 +103,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 break;
             case R.id.collection_button:
                 if (mStarted) {
+                    mCollectionButton.setEnabled(false);
                     collectionOff();
-                }
-                else {
+                } else {
+                    mCollectionButton.setEnabled(false);
                     collectionOn();
                 }
             default:
@@ -119,27 +116,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void openExportDialog() {
         ExportDialog exportDialog = new ExportDialog();
-        exportDialog.show(getFragmentManager(), "export_redirect");
+        exportDialog.setActivity(this);
+        exportDialog.show(getFragmentManager(), ExportDialog.TAG);
     }
 
     private void openCalibrationDialog() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle(R.string.calibration_dialog_title);
-        dialog.setMessage(R.string.please_secure_device);
-        dialog.setPositiveButton(R.string.calibrate, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent startCalibrationIntent = new Intent(MainActivity.this, CalibrationActivity.class);
-                startActivity(startCalibrationIntent);
-            }
-        });
-        dialog.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        dialog.show();
+        CalibrationDialog calibrationDialog = new CalibrationDialog();
+        calibrationDialog.show(getFragmentManager(), CalibrationDialog.TAG);
     }
 
     @Override
@@ -165,11 +148,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onStop() {
         super.onStop();
         teardownCollectionDependencies();
+        SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putFloat(getString(R.string.x_threshold), getResources().getInteger(R.integer.DEFAULT_X_THRESHOLD));
+        editor.putFloat(getString(R.string.y_threshold), getResources().getInteger(R.integer.DEFAULT_Y_THRESHOLD));
+        editor.putFloat(getString(R.string.z_threshold), getResources().getInteger(R.integer.DEFAULT_Z_THRESHOLD));
+        editor.putFloat(getString(R.string.roll_threshold), getResources().getInteger(R.integer.DEFAULT_PITCH_THRESHOLD));
+        editor.putFloat(getString(R.string.pitch_threshold), getResources().getInteger(R.integer.DEFAULT_ROLL_THRESHOLD));
+        editor.putFloat(getString(R.string.yaw_threshold), getResources().getInteger(R.integer.DEFAULT_YAW_THRESHOLD));
+        editor.apply();
     }
 
     private void setupUIElements() {
         mCollectionButton.setOnClickListener(this);
         mCalibrationButton.setOnClickListener(this);
+        mExportButton.setOnClickListener(this);
     }
 
     public void initializeCollectionDependencies() {
@@ -195,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void collectionOff() {
-        mCollectionButton.setActivated(false);
         mStarted = false;
         mCollectionDBHelper.setEndTime(System.currentTimeMillis());
         mCollectionButton.setText(R.string.collect_data);
@@ -204,7 +196,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void collectionOn() {
-        mCollectionButton.setActivated(false);
         if (mAccelerometer != null) {
             mSensorManager.registerListener(this, mAccelerometer, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
         }
@@ -214,14 +205,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mCollectionButton.setText(R.string.stop_collection);
         mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         mStarted = true;
-        mCollectionButton.setActivated(true);
+        mCollectionButton.setEnabled(true);
     }
 
     public void accelerometerChanged(AccelDataModel dataModel) {
         if (this.mPrevAccelModel == null) {
             this.mPrevAccelModel = dataModel;
-        }
-        else {
+        } else {
             if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.max_x_noise) {
                 dataModel.setX(this.mPrevAccelModel.getX());
             }
@@ -242,8 +232,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void gyroscopeChanged(GyroDataModel dataModel) {
         if (this.mPrevGyroModel == null) {
             this.mPrevGyroModel = dataModel;
-        }
-        else {
+        } else {
             if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.max_pitch_noise) {
                 dataModel.setPitch(this.mPrevGyroModel.getPitch());
             }
@@ -286,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mCollectionButton.setActivated(true);
+                mCollectionButton.setEnabled(true);
             }
         });
     }

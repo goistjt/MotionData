@@ -16,16 +16,19 @@
         android:layout_height="wrap_content"
         android:hint="Session Description" />
 
-    <Spinner
+    <Button
         android:id="@+id/collection_time_selector"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:gravity="start"
+        android:text="Select a recording period." />
 
     <Button
         android:id="@+id/new_sess_submit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right"
+        android:layout_gravity="end"
         android:text="Submit Data" />
 
 </LinearLayout>

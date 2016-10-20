@@ -4,15 +4,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <Spinner
+    <Button
         android:id="@+id/session_selector"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:gravity="start"
+        android:text="Select an existing session." />
 
-    <Spinner
+    <Button
         android:id="@+id/collection_time_selector2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:gravity="start"
+        android:text="Select a recording period." />
 
     <Button
         android:id="@+id/add_sess_submit_button"

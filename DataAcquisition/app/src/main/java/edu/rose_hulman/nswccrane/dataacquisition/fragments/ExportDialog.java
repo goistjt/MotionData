@@ -1,8 +1,10 @@
 package edu.rose_hulman.nswccrane.dataacquisition.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,13 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
  */
 
 public class ExportDialog extends DialogFragment implements View.OnClickListener {
+
+    private Activity mRootActivity;
+    public static final String TAG = "EXPORT_DIALOG";
+
+    public void setActivity(Activity mApplicationContext) {
+        this.mRootActivity = mApplicationContext;
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -31,13 +40,30 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
         switch (v.getId()) {
             case R.id.new_session_button:
                 NewSessionDialog newSessionDialog = new NewSessionDialog();
-                newSessionDialog.show(getFragmentManager(), "new_sess_dialog");
+                newSessionDialog.setActivity(mRootActivity);
+                newSessionDialog.show(mRootActivity.getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
-                AddSessionDialog addSessionDialog = new AddSessionDialog();
-                addSessionDialog.show(getFragmentManager(), "add_sess_dialog");
+                (new AddSessionTask()).execute((Void) null);
                 break;
         }
         dismiss();
+    }
+
+    private class AddSessionTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: Get Time frames from SQLite
+            // TODO: Get Session info from server
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            AddSessionDialog addSessionDialog = new AddSessionDialog();
+            addSessionDialog.setActivity(mRootActivity);
+            addSessionDialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
+        }
     }
 }

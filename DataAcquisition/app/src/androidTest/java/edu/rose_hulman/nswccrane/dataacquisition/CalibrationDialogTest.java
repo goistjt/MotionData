@@ -1,9 +1,15 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
+import android.support.test.espresso.action.GeneralLocation;
+import android.support.test.espresso.action.Press;
+import android.support.test.espresso.action.Tap;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import edu.rose_hulman.nswccrane.dataacquisition.fragments.CalibrationDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
+import edu.rose_hulman.nswccrane.dataacquisition.testing_utils.ClickAction;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
@@ -24,24 +30,29 @@ public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
     @Before
     public void openCalibrationDialog() {
         onView(withId(R.id.calibration_button)).perform(click());
-        onView(withText(R.string.calibration_dialog_title)).check(matches(isDisplayed()));
+        ExportDialogTest.waitForFragment(CalibrationDialog.TAG, 5000, getCurrentActivity());
+        onView(withText(R.string.please_secure_device)).check(matches(isDisplayed()));
     }
 
     @Test
     public void testCalibrationDialog() {
-        onView(withText(R.string.calibrate)).check(matches(isDisplayed()));
-        onView(withText(R.string.cancel)).check(matches(isDisplayed()));
+        onView(withId(R.id.calibrate_accept_dialog_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.calibrate_cancel_dialog_button)).check(matches(isDisplayed()));
     }
 
     @Test
-    public void testCancelButton() {
-        onView(withId(android.R.id.button2)).perform(click());
+    public void testCancelButton() throws InterruptedException {
+        onView(withId(R.id.calibrate_cancel_dialog_button)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press
+                .FINGER, null));
+        Thread.sleep(1000);
         onView(withId(R.id.calibration_button)).check(matches(isDisplayed()));
     }
 
     @Test
-    public void testCalibrateButton() {
-        onView(withId(android.R.id.button1)).perform(click());
+    public void testCalibrateButton() throws InterruptedException {
+        onView(withId(R.id.calibrate_accept_dialog_button)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press
+                .FINGER, null));
+        Thread.sleep(1000);
         onView(withId(R.id.calibration_text)).check(matches(isDisplayed()));
     }
 }

@@ -56,4 +56,6 @@
     <string name="please_secure_device">Please secure the device where desired within the vehicle, and turn the engine on before calibration</string>
     <string name="calibration_prefs">Calibration</string>
     <string name="select_all_timeframe">SELECT * FROM Timeframe</string>
+    <string name="start_time_label">Start Time: %s</string>
+    <string name="end_time_label">End Time: %s</string>
 </resources>
