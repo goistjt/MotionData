@@ -2,7 +2,6 @@ import hashlib
 from pymysql import Error, connect
 
 from database.python_mysql_dbconfig import read_db_config
-from h5py.h5a import delete
 
 
 def create_session(description, starting_time):
