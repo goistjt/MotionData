@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.Toast;
@@ -17,6 +18,7 @@ import org.androidannotations.annotations.EFragment;
 import java.io.IOException;
 import java.util.List;
 
+import datamodels.SessionModel;
 import datamodels.TimeframeDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
@@ -33,6 +35,7 @@ import sqlite.MotionCollectionDBHelper;
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
     ListAdapter mListAdapter;
     private Activity mRootActivity;
+    private MotionCollectionDBHelper motionDB;
     public static final String TAG = "NEW_SESSION_DIALOG";
 
     @Override
@@ -50,8 +53,8 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     }
 
     private void populateArrayAdapter() {
-        MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(mRootActivity);
-        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(System.currentTimeMillis() - (24 * 60 * 60 * 1000),
+        motionDB = new MotionCollectionDBHelper(mRootActivity);
+        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(0,
                 System.currentTimeMillis());
         mListAdapter = new TimeframeAdapter(getActivity(), R.layout.list_item_timespan, timeData);
     }
@@ -75,6 +78,11 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                         .setAdapter(mListAdapter, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                TimeframeDataModel timeframe = (TimeframeDataModel) mListAdapter.getItem(which);
+                                long start = timeframe.getStartTime();
+                                long end = timeframe.getEndTime();
+                                Log.v("Time_Selector", String.format("Start: %d\tEnd: %d", start, end));
+                                SessionModel sm = motionDB.getAllDataBetween(start, 32165879874632L);
                                 dialog.dismiss();
                             }
                         }).show();
