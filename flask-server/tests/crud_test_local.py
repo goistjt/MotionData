@@ -11,7 +11,7 @@ class CrudTest(unittest.TestCase):
         app.config['TESTING'] = True
         t = datetime.datetime.now()
         starting_time = (t - datetime.datetime(1970, 1, 1)).total_seconds()
-        self.starting_time = starting_time
+        self.starting_time = round(starting_time,5)
         self.app = app.test_client()
 
     def tearDown(self):
@@ -26,7 +26,7 @@ class CrudTest(unittest.TestCase):
         query = "DELETE FROM Session WHERE id = %s"
         crud.delete_data(query, [lastid])
         crud.reset_session_auto_index()
-
+ 
     def test_create_record(self):
         session_id = -1
         device_id = "-1"
@@ -35,7 +35,7 @@ class CrudTest(unittest.TestCase):
         query = "DELETE FROM Records WHERE id = %s"
         args = [lastid]
         crud.delete_data(query, args)
-
+ 
     def test_get_sessionId(self):
         description = "test"
         lastid = crud.create_session(description, self.starting_time)
@@ -61,7 +61,7 @@ class CrudTest(unittest.TestCase):
         self.assertEqual(data, (record_id, self.starting_time, x, y, z))
         query = "DELETE FROM AccessPoints WHERE record_id = %s AND timestamp = %s"
         crud.delete_data(query, [record_id, self.starting_time])
-
+ 
     def test_readAll(self):
         description = "test"
         lastid = crud.create_session(description, self.starting_time)
@@ -74,20 +74,22 @@ class CrudTest(unittest.TestCase):
         crud.delete_data(query, [lastid1])
         crud.delete_data(query, [lastid2])
         crud.reset_session_auto_index()
-
+ 
     def test_reset_autoIndex(self):
         description = "test"
         query = "DELETE FROM Session WHERE id = %s"
-
+ 
         lastid = crud.create_session(description, self.starting_time)
         crud.delete_data(query, [lastid])
         crud.reset_session_auto_index()
-
+ 
         lastid1 = crud.create_session(description, self.starting_time + 1)
         self.assertEqual(lastid, lastid1)
-
+ 
         crud.delete_data(query, [lastid1])
         crud.reset_session_auto_index()
+        
+    
 
 
 if __name__ == '__main__':
