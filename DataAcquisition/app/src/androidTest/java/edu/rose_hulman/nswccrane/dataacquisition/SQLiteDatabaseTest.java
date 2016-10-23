@@ -128,9 +128,9 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
 
         motionDB.onUpgrade(motionDB.getWritableDatabase(), 0, 0);
 
-        motionDB.insertAccelData(new AccelDataModel(0, 0, 0, 0));
+        motionDB.insertAccelData(new AccelDataModel(1, 0, 0, 0));
         motionDB.pushAccelData();
-        motionDB.insertGyroData(new GyroDataModel(0, 0, 0, 0));
+        motionDB.insertGyroData(new GyroDataModel(1, 0, 0, 0));
         motionDB.pushGyroData();
 
         SessionModel model = motionDB.getAllDataBetween(0, System.currentTimeMillis());

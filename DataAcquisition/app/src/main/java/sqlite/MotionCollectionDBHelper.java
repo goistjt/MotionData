@@ -8,10 +8,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+
 import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import datamodels.SessionModel;
@@ -67,8 +70,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
             values.put(mContext.getString(R.string.end_time), currentEndTime);
             db.insert(mContext.getString(R.string.timeframe_table_name), null, values);
             db.setTransactionSuccessful();
-        }
-        finally {
+        } finally {
             db.endTransaction();
             Log.d("START", String.valueOf(currentStartTime));
             Log.d("END", String.valueOf(currentEndTime));
@@ -82,20 +84,18 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor timeframeCursor = null;
         try {
-            timeframeCursor = db.rawQuery(mContext.getString(R.string.timeframe_select_query), new String[] {String.valueOf(startTime), String.valueOf(endTime)});
+            timeframeCursor = db.rawQuery(mContext.getString(R.string.timeframe_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)});
             Log.d("TIME", String.valueOf(timeframeCursor.getCount()));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             Log.e("TIMES_BTWN", ex.getMessage());
             return new ArrayList<>();
-        }
-        finally {
+        } finally {
             if (timeframeCursor == null) {
                 return new ArrayList<>();
             }
             List<TimeframeDataModel> modelList = new ArrayList<>();
             timeframeCursor.moveToFirst();
-            while(!timeframeCursor.isAfterLast()){
+            while (!timeframeCursor.isAfterLast()) {
                 TimeframeDataModel newModel = new TimeframeDataModel(timeframeCursor.getLong(timeframeCursor.getColumnIndex(mContext.getString(R.string.start_time))), timeframeCursor.getLong(timeframeCursor.getColumnIndex(mContext.getString(R.string.end_time))));
                 modelList.add(newModel);
                 timeframeCursor.moveToNext();
@@ -106,46 +106,47 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
 
     public SessionModel getAllDataBetween(long startTime, long endTime) {
         SQLiteDatabase db = this.getWritableDatabase();
+        Log.d("getAllDataBetween", String.format("Start: %d\tEnd: %d", startTime, endTime));
         Cursor accelCursor = null;
         Cursor gyroCursor = null;
         List<AccelDataModel> accelModels = new ArrayList<>();
         List<GyroDataModel> gyroModels = new ArrayList<>();
         try {
-            accelCursor = db.rawQuery(mContext.getString(R.string.accel_select_query), new String[] {String.valueOf(startTime), String.valueOf(endTime)});
-            gyroCursor = db.rawQuery(mContext.getString(R.string.gyro_select_query), new String[] {String.valueOf(startTime), String.valueOf(endTime)});
-        }
-        catch (Exception ex) {
+            accelCursor = db.rawQuery(mContext.getString(R.string.accel_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)});
+            gyroCursor = db.rawQuery(mContext.getString(R.string.gyro_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)});
+        } catch (Exception ex) {
             Log.e("TIMES_BTWN", ex.getMessage());
+            return new SessionModel(new ArrayList<AccelDataModel>(), new ArrayList<GyroDataModel>());
         }
-        finally {
-            if (accelCursor != null) {
-                int timestampIndex = accelCursor.getColumnIndex(mContext.getString(R.string.timestamp));
-                int xIndex = accelCursor.getColumnIndex(mContext.getString(R.string.x));
-                int yIndex = accelCursor.getColumnIndex(mContext.getString(R.string.y));
-                int zIndex = accelCursor.getColumnIndex(mContext.getString(R.string.z));
-                accelCursor.moveToFirst();
-                while (!accelCursor.isAfterLast()) {
-                    AccelDataModel newModel = new AccelDataModel(accelCursor.getLong(timestampIndex), accelCursor.getLong(xIndex), accelCursor.getLong(yIndex), accelCursor.getLong(zIndex));
-                    accelModels.add(newModel);
-                    accelCursor.moveToNext();
-                }
-                accelCursor.close();
+
+        if (accelCursor != null) {
+            int timestampIndex = accelCursor.getColumnIndex(mContext.getString(R.string.timestamp));
+            int xIndex = accelCursor.getColumnIndex(mContext.getString(R.string.x));
+            int yIndex = accelCursor.getColumnIndex(mContext.getString(R.string.y));
+            int zIndex = accelCursor.getColumnIndex(mContext.getString(R.string.z));
+            accelCursor.moveToFirst();
+            while (!accelCursor.isAfterLast()) {
+                AccelDataModel newModel = new AccelDataModel(accelCursor.getLong(timestampIndex), accelCursor.getLong(xIndex), accelCursor.getLong(yIndex), accelCursor.getLong(zIndex));
+                accelModels.add(newModel);
+                accelCursor.moveToNext();
             }
-            if (gyroCursor != null) {
-                int timestampIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.timestamp));
-                int pitchIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.pitch));
-                int rollIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.roll));
-                int yawIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.yaw));
-                gyroCursor.moveToFirst();
-                while (!gyroCursor.isAfterLast()) {
-                    GyroDataModel newModel = new GyroDataModel(gyroCursor.getLong(timestampIndex), gyroCursor.getLong(pitchIndex), gyroCursor.getLong(rollIndex), gyroCursor.getLong(yawIndex));
-                    gyroModels.add(newModel);
-                    gyroCursor.moveToNext();
-                }
-                gyroCursor.close();
-            }
-            return new SessionModel(accelModels, gyroModels);
+            accelCursor.close();
         }
+        if (gyroCursor != null) {
+            int timestampIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.timestamp));
+            int pitchIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.pitch));
+            int rollIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.roll));
+            int yawIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.yaw));
+            gyroCursor.moveToFirst();
+            while (!gyroCursor.isAfterLast()) {
+                GyroDataModel newModel = new GyroDataModel(gyroCursor.getLong(timestampIndex), gyroCursor.getLong(pitchIndex), gyroCursor.getLong(rollIndex), gyroCursor.getLong(yawIndex));
+                gyroModels.add(newModel);
+                gyroCursor.moveToNext();
+            }
+            gyroCursor.close();
+        }
+        return new SessionModel(accelModels, gyroModels);
+
     }
 
     public String getAllDataAsJson(long startTime, long endTime) {
@@ -157,7 +158,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
     public void pushAccelData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
-        try{
+        try {
             ContentValues values = new ContentValues();
             while (!mAccelStack.isEmpty()) {
                 AccelDataModel data = mAccelStack.pop();
@@ -168,8 +169,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
                 db.insert(mContext.getString(R.string.acceleration_table_name), null, values);
             }
             db.setTransactionSuccessful();
-        }
-        finally {
+        } finally {
             db.endTransaction();
         }
     }
@@ -177,7 +177,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
     public void pushGyroData() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
-        try{
+        try {
             ContentValues values = new ContentValues();
             while (!mGyroStack.isEmpty()) {
                 GyroDataModel data = mGyroStack.pop();
@@ -188,8 +188,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
                 db.insert(mContext.getString(R.string.gyroscope_table_name), null, values);
             }
             db.setTransactionSuccessful();
-        }
-        finally {
+        } finally {
             db.endTransaction();
         }
     }

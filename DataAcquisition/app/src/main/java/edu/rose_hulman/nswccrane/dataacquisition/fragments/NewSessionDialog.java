@@ -82,8 +82,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                                 long start = timeframe.getStartTime();
                                 long end = timeframe.getEndTime();
                                 Log.v("Time_Selector", String.format("Start: %d\tEnd: %d", start, end));
-                                SessionModel sm = motionDB.getAllDataBetween(start, 32165879874632L);
-                                dialog.dismiss();
+                                SessionModel sm = NewSessionDialog.this.motionDB.getAllDataBetween(start, end);
                             }
                         }).show();
                 break;
