@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.Semaphore;
 
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
@@ -25,11 +26,14 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
  * Created by steve on 9/14/16.
  */
 public class MotionCollectionDBHelper extends SQLiteOpenHelper {
-
+    private final int MAX_STACK_SIZE = 100;
     private final Stack<AccelDataModel> mAccelStack = new Stack<>();
     private final Stack<GyroDataModel> mGyroStack = new Stack<>();
     private Context mContext;
-
+    private Semaphore mBlockAccelPushSemaphore;
+    private Semaphore mBlockGyroPushSemaphore;
+    private Semaphore mBlockAccelCheckSemaphore;
+    private Semaphore mBlockGyroCheckSemaphore;
     private long currentStartTime;
     private long currentEndTime;
 
@@ -38,6 +42,10 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         mContext = context;
         currentStartTime = 0;
         currentEndTime = 0;
+        mBlockGyroPushSemaphore = new Semaphore(1);
+        mBlockAccelPushSemaphore = new Semaphore(1);
+        mBlockGyroCheckSemaphore = new Semaphore(1);
+        mBlockAccelCheckSemaphore = new Semaphore(1);
 //        onUpgrade(getWritableDatabase(), 0, 0);
     }
 
@@ -157,6 +165,12 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
 
     public void pushAccelData() {
         SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            mBlockAccelPushSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return;
+        }
         db.beginTransaction();
         try {
             ContentValues values = new ContentValues();
@@ -171,11 +185,18 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
+            mBlockAccelPushSemaphore.release();
         }
     }
 
     public void pushGyroData() {
         SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            mBlockGyroPushSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return;
+        }
         db.beginTransaction();
         try {
             ContentValues values = new ContentValues();
@@ -190,15 +211,40 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
+            mBlockGyroPushSemaphore.release();
         }
     }
 
     public void insertAccelData(AccelDataModel data) {
         mAccelStack.push(data);
+        try {
+            mBlockAccelCheckSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return;
+        }
+        if (mAccelStack.size() == MAX_STACK_SIZE) {
+            mBlockAccelCheckSemaphore.release();
+            pushAccelData();
+            return;
+        }
+        mBlockAccelCheckSemaphore.release();
     }
 
     public void insertGyroData(GyroDataModel data) {
         mGyroStack.push(data);
+        try {
+            mBlockGyroCheckSemaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return;
+        }
+        if (mGyroStack.size() == MAX_STACK_SIZE) {
+            mBlockGyroCheckSemaphore.release();
+            pushGyroData();
+            return;
+        }
+        mBlockGyroCheckSemaphore.release();
     }
 
     public long deleteCurrentAccelData() {
