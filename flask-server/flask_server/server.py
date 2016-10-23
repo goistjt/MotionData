@@ -69,6 +69,13 @@ def get_record_data():
         headers={"Content-disposition":
                      "attachment; filename=record.csv"})
 
+@app.route("/getExcursion")
+def get_excursion():
+    result = crud.read_one("""SELECT * FROM AccessPoints LIMIT 1""")
+    rows = []
+    if (result != None):
+    	rows.append(result)
+    return jsonify(row=str(da.get_excursions_for_dataset(rows)))
 
 # used to check for sql injection later on
 # def is_possible_injection(attack_vector):
