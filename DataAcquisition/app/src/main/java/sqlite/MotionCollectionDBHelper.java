@@ -46,7 +46,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         mBlockAccelPushSemaphore = new Semaphore(1);
         mBlockGyroCheckSemaphore = new Semaphore(1);
         mBlockAccelCheckSemaphore = new Semaphore(1);
-//        onUpgrade(getWritableDatabase(), 0, 0);
+        //onUpgrade(getWritableDatabase(), 0, 0);
     }
 
     @Override
@@ -88,11 +88,11 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public List<TimeframeDataModel> getAllTimeframesBetween(long startTime, long endTime) {
+    public List<TimeframeDataModel> getAllTimeframesBetween(Long startTime, Long endTime) {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor timeframeCursor = null;
         try {
-            timeframeCursor = db.rawQuery(mContext.getString(R.string.timeframe_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)});
+            timeframeCursor = db.rawQuery(mContext.getString(R.string.timeframe_select_query), new String[]{startTime.toString(), endTime.toString()});
             Log.d("TIME", String.valueOf(timeframeCursor.getCount()));
         } catch (Exception ex) {
             Log.e("TIMES_BTWN", ex.getMessage());
@@ -112,21 +112,23 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public SessionModel getAllDataBetween(long startTime, long endTime) {
+    public SessionModel getAllDataBetween(Long[] times) {
         SQLiteDatabase db = this.getWritableDatabase();
-        Log.d("getAllDataBetween", String.format("Start: %d\tEnd: %d", startTime, endTime));
-        Cursor accelCursor = null;
-        Cursor gyroCursor = null;
+        Log.d("getAllDataBetween", String.format("Start: %d\tEnd: %d", times[0], times[1]));
+        Cursor accelCursor;
+        Cursor gyroCursor;
         List<AccelDataModel> accelModels = new ArrayList<>();
         List<GyroDataModel> gyroModels = new ArrayList<>();
+        Long startTime = times[0];
+        Long endTime = times[1];
         try {
-            accelCursor = db.rawQuery(mContext.getString(R.string.accel_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)});
-            gyroCursor = db.rawQuery(mContext.getString(R.string.gyro_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)});
+            accelCursor = db.query(false, "Accel_Data", new String[] {"timestamp", "x", "y", "z"}, "timestamp >= ? AND timestamp <= ?", new String[] {startTime.toString(), endTime.toString()}, null, null, null, null);
+            //accelCursor = db.rawQuery(mContext.getString(R.string.accel_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)});
+            gyroCursor = db.rawQuery(mContext.getString(R.string.gyro_select_query), new String[]{startTime.toString(), endTime.toString()});
         } catch (Exception ex) {
             Log.e("TIMES_BTWN", ex.getMessage());
             return new SessionModel(new ArrayList<AccelDataModel>(), new ArrayList<GyroDataModel>());
         }
-
         if (accelCursor != null) {
             int timestampIndex = accelCursor.getColumnIndex(mContext.getString(R.string.timestamp));
             int xIndex = accelCursor.getColumnIndex(mContext.getString(R.string.x));
@@ -158,7 +160,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
     }
 
     public String getAllDataAsJson(long startTime, long endTime) {
-        SessionModel session = getAllDataBetween(startTime, endTime);
+        SessionModel session = getAllDataBetween(new Long[]{startTime, endTime});
         Gson gson = new Gson();
         return gson.toJson(session);
     }

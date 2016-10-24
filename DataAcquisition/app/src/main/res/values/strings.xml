@@ -39,7 +39,7 @@
     <string name="yaw_format">Yaw: %f°</string>
     <string name="db_name">MotionCollectionDB</string>
     <string name="timeframe_select_query">SELECT * FROM Timeframe WHERE Timeframe.start_time &gt;= ? AND Timeframe.end_time &lt;= ?</string>
-    <string name="accel_select_query">SELECT * FROM Accel_Data WHERE Accel_Data.timestamp &gt;= ? AND Accel_Data.timestamp &lt;= ?</string>
+    <string name="accel_select_query">timestamp &gt;= ? AND timestamp &lt;= ?</string>
     <string name="gyro_select_query">SELECT * FROM Gyro_Data WHERE Gyro_Data.timestamp &gt;= ? AND Gyro_Data.timestamp &lt;= ?</string>
     <string name="calibration_dialog_title">Calibration</string>
     <string name="cancel">Cancel</string>
