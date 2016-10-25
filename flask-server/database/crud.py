@@ -146,9 +146,33 @@ def get_connection():
 
 
 def delete_entire_session(session_id):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        #select all records links to the sesson id
+        all_records_query= "SELECT id FROM Records WHERE Records.session_id = %s"
+        cursor.execute(all_records_query, [session_id])
+        
+        all_records = cursor.fetchall()
+        for record in all_records:
+            #delete all the access points and gyro points
+            cursor.execute("DELETE FROM AccessPoints WHERE record_id = %s", [record])
+            #remove the record
+            cursor.execute("DELETE FROM GyroPoints WHERE record_id = %s", [record])
+            
+            cursor.execute("DELETE FROM Records WHERE id = %s", [record])
+        #remove the session
+        query = "DELETE FROM Session WHERE id = %s"
+        cursor.execute(query, [session_id])    
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Error as error:
+        print(error)
     #     query = "DELETE FROM Session WHERE id = %s"
     #     delete_data(query, [lastid])
     #     reset_session_autoIndex()
     #     query = ""
     # test
-    pass
+    finally:
+        reset_session_auto_index()

@@ -48,7 +48,7 @@ def gyro():
 
 @app.route('/session')
 def session():
-    result = crud.read_one("SELECT * FROM Session")
+    result = crud.read_all("SELECT * FROM Session")
     return jsonify(row=str(result))
 
 
@@ -56,18 +56,21 @@ def session():
 def index():
     return render_template("index.html")
 
+@app.route("/tables.html")
+def tables():
+    return render_template("tables.html")
 
-@app.route("/getRecord")
-def get_record_data():
+
+@app.route("/getRecord/<record_id>")
+def get_record_data(record_id=[]):
     # with open("outputs/Adjacency.csv") as fp:
     #     csv = fp.read()
-    record_id = '2c2b3609c6a7eefb232d816dd0222f42ee3eaa5b'
-    csv = da.download_record(record_id)
+    txt = da.download_record(record_id)
     return Response(
-        csv,
-        mimetype="text/csv",
+        txt,
+        mimetype="text",
         headers={"Content-disposition":
-                     "attachment; filename=record.csv"})
+                     "attachment; filename=record.txt"})
 
 
 # used to check for sql injection later on

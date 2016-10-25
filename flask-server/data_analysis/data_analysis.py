@@ -4,6 +4,7 @@ Created on Oct 15, 2016
 @author: yangr
 """
 import pandas as pd
+import numpy as np
 
 from database import crud
 
@@ -18,6 +19,6 @@ def select_record(records_id):
     return crud.read_all(query, args)
 
 
-def download_record(record_id):
-    df = pd.DataFrame(select_record(record_id))
-    return df.to_csv()
+def download_record(record_id = []):
+    df = pd.DataFrame(np.array(select_record(record_id)))
+    return df.to_csv(index=False)
