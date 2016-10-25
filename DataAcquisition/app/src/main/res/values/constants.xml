@@ -9,4 +9,5 @@
     <integer name="DEFAULT_PITCH_THRESHOLD">0</integer>
     <integer name="DEFAULT_ROLL_THRESHOLD">0</integer>
     <integer name="DEFAULT_YAW_THRESHOLD">0</integer>
+    <integer name="NANO_TO_MILI_CONVERSION">1000000</integer>
 </resources>

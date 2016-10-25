@@ -36,8 +36,8 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
 
     private void populateArrayAdapter() {
         MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(mRootActivity);
-        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(System.currentTimeMillis() - (24 * 60 * 60 * 1000),
-                System.currentTimeMillis());
+        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(System.nanoTime() - (24 * 60 * 60 * 1000),
+                System.nanoTime());
         mListAdapter = new TimeframeAdapter(getActivity(), R.layout.list_item_timespan, timeData);
     }
 

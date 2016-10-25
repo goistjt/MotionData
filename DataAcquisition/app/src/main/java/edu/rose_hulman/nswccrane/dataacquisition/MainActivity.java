@@ -13,11 +13,9 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
-
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import datamodels.AccelDataModel;
@@ -189,13 +187,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void collectionOff() {
         mStarted = false;
-        mCollectionDBHelper.setEndTime(System.currentTimeMillis());
         mCollectionButton.setText(R.string.collect_data);
         mSensorManager.unregisterListener(this);
         mToggleButtonService.execute(new ServiceShutdownRunnable(this, mCollectionService, mCollectionDBHelper));
     }
 
     public void collectionOn() {
+        mCollectionDBHelper.setStartTime(System.nanoTime());
         if (mAccelerometer != null) {
             mSensorManager.registerListener(this, mAccelerometer, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
         }
@@ -203,7 +201,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             mSensorManager.registerListener(this, mGyroscope, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
         }
         mCollectionButton.setText(R.string.stop_collection);
-        mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         mStarted = true;
         mCollectionButton.setEnabled(true);
     }
@@ -254,11 +251,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                AccelDataModel accelModel = new AccelDataModel(event.timestamp, event.values[0], event.values[1], event.values[2]);
+                AccelDataModel accelModel = new AccelDataModel(System.nanoTime(), event.values[0], event.values[1], event.values[2]);
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
-                GyroDataModel gyroModel = new GyroDataModel(event.timestamp, event.values[0], event.values[1], event.values[2]);
+                GyroDataModel gyroModel = new GyroDataModel(System.nanoTime(), event.values[0], event.values[1], event.values[2]);
                 gyroscopeChanged(gyroModel);
             default:
                 //Empty

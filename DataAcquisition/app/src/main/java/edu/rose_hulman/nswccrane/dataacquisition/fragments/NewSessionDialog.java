@@ -54,8 +54,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
 
     private void populateArrayAdapter() {
         motionDB = new MotionCollectionDBHelper(mRootActivity);
-        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(new Long(0),
-                new Long(System.currentTimeMillis()));
+        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween((long)0, System.nanoTime());
         mListAdapter = new TimeframeAdapter(getActivity(), R.layout.list_item_timespan, timeData);
     }
 
@@ -81,8 +80,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                                 TimeframeDataModel timeframe = (TimeframeDataModel) mListAdapter.getItem(which);
                                 long start = timeframe.getStartTime();
                                 long end = timeframe.getEndTime();
-                                Log.v("Time_Selector", String.format("Start: %d\tEnd: %d", start, end));
-                                SessionModel sm = NewSessionDialog.this.motionDB.getAllDataBetween(new Long[]{new Long(start), new Long(end)});
+                                SessionModel sm = NewSessionDialog.this.motionDB.getAllDataBetween(start, end);
                             }
                         }).show();
                 break;
