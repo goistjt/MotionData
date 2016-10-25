@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/goistjt/MotionData.svg?token=MFyro9vzyExsWPEjugtV&branch=initial-setup)](https://travis-ci.com/goistjt/MotionData)
+[![Build Status](https://travis-ci.com/goistjt/MotionData.svg?token=MFyro9vzyExsWPEjugtV&branch=master-flask)](https://travis-ci.com/goistjt/MotionData)
 # MotionData
 By Brooke Brown, Jeremiah Goist, Steve Trotta and Runzhi Yang
 ## Project Description:
