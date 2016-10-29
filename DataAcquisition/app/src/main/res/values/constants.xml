@@ -2,7 +2,7 @@
 <resources>
     <integer name="DEFAULT_COLLECTION_THREADS">1</integer>
     <integer name="DEFAULT_TOGGLE_THREADS">1</integer>
-    <integer name="DEFAULT_COLLECTION_LATENCY">40</integer>
+    <integer name="DEFAULT_COLLECTION_LATENCY">40000</integer>
     <integer name="DEFAULT_X_THRESHOLD">0</integer>
     <integer name="DEFAULT_Y_THRESHOLD">0</integer>
     <integer name="DEFAULT_Z_THRESHOLD">0</integer>

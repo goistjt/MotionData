@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -249,13 +250,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        long time = System.currentTimeMillis();
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                AccelDataModel accelModel = new AccelDataModel(System.nanoTime(), event.values[0], event.values[1], event.values[2]);
+                AccelDataModel accelModel = new AccelDataModel(time, event.values[0], event.values[1], event.values[2]);
+                Log.d("TIME", String.valueOf(time));
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
-                GyroDataModel gyroModel = new GyroDataModel(System.nanoTime(), event.values[0], event.values[1], event.values[2]);
+                GyroDataModel gyroModel = new GyroDataModel(time, event.values[0], event.values[1], event.values[2]);
                 gyroscopeChanged(gyroModel);
             default:
                 //Empty
