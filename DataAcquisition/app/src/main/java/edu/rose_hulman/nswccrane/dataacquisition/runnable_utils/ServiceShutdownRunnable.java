@@ -34,7 +34,7 @@ public class ServiceShutdownRunnable implements Runnable {
         }
         mCollectionDBHelper.pushAccelData();
         mCollectionDBHelper.pushGyroData();
-        mCollectionDBHelper.setEndTime(System.nanoTime());
+        mCollectionDBHelper.setEndTime(System.currentTimeMillis());
         mCallback.finishToggle();
     }
 }

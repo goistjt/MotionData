@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void collectionOn() {
-        mCollectionDBHelper.setStartTime(System.nanoTime());
+        mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         if (mAccelerometer != null) {
             mSensorManager.registerListener(this, mAccelerometer, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
         }

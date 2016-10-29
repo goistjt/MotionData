@@ -73,7 +73,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
 
         motionDB.setEndTime(5678);
 
-        List<TimeframeDataModel> modelList = motionDB.getAllTimeframesBetween(0, System.nanoTime());
+        List<TimeframeDataModel> modelList = motionDB.getAllTimeframesBetween(0, System.currentTimeMillis());
 
         Assert.assertTrue(modelList.size() == 1);
 
@@ -92,7 +92,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
 
         motionDB.setEndTime(5678);
 
-        List<TimeframeDataModel> modelList = motionDB.getAllTimeframesBetween(5800, System.nanoTime());
+        List<TimeframeDataModel> modelList = motionDB.getAllTimeframesBetween(5800, System.currentTimeMillis());
 
         Assert.assertTrue(modelList.size() == 0);
     }
@@ -133,7 +133,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
         motionDB.insertGyroData(new GyroDataModel(1, 0, 0, 0));
         motionDB.pushGyroData();
 
-        SessionModel model = motionDB.getAllDataBetween((long)0, System.nanoTime());
+        SessionModel model = motionDB.getAllDataBetween((long)0, System.currentTimeMillis());
 
         Assert.assertTrue(model.getAccelModels().size() == 1);
 
@@ -156,7 +156,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
 
         motionDB.onUpgrade(motionDB.getWritableDatabase(), 0, 0);
 
-        SessionModel model = motionDB.getAllDataBetween((long)0, System.nanoTime());
+        SessionModel model = motionDB.getAllDataBetween((long)0, System.currentTimeMillis());
 
         Assert.assertTrue(model.getAccelModels().size() == 0);
 
@@ -175,7 +175,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
         motionDB.insertAccelData(new AccelDataModel(1, 1, 1, 1));
         motionDB.pushAccelData();
 
-        SessionModel model = motionDB.getAllDataBetween((long)0, System.nanoTime());
+        SessionModel model = motionDB.getAllDataBetween((long)0, System.currentTimeMillis());
 
         Assert.assertTrue(model.getAccelModels().size() == 2);
 
@@ -202,7 +202,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
         motionDB.insertGyroData(new GyroDataModel(3, 19, 2, 5));
         motionDB.pushGyroData();
 
-        SessionModel model = motionDB.getAllDataBetween((long)0, System.nanoTime());
+        SessionModel model = motionDB.getAllDataBetween((long)0, System.currentTimeMillis());
 
         Assert.assertTrue(model.getAccelModels().size() == 0);
 
@@ -242,7 +242,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
         motionDB.pushGyroData();
 
         Gson gson = new Gson();
-        SessionModel modelAfter = gson.fromJson(motionDB.getAllDataAsJson(0, System.nanoTime()), SessionModel.class);
+        SessionModel modelAfter = gson.fromJson(motionDB.getAllDataAsJson(0, System.currentTimeMillis()), SessionModel.class);
 
         Assert.assertTrue(modelAfter.getAccelModels().size() == 2);
         Assert.assertTrue(modelAfter.getGyroModels().size() == 2);
@@ -257,7 +257,7 @@ public class SQLiteDatabaseTest extends AMainActivityTest {
         motionDB.onUpgrade(motionDB.getWritableDatabase(), 0, 0);
 
         Gson gson = new Gson();
-        SessionModel modelAfter = gson.fromJson(motionDB.getAllDataAsJson(0, System.nanoTime()), SessionModel.class);
+        SessionModel modelAfter = gson.fromJson(motionDB.getAllDataAsJson(0, System.currentTimeMillis()), SessionModel.class);
 
         Assert.assertTrue(modelAfter.getAccelModels().size() == 0);
         Assert.assertTrue(modelAfter.getGyroModels().size() == 0);

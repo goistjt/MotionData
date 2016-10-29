@@ -90,10 +90,9 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
     }
 
     public List<TimeframeDataModel> getAllTimeframesBetween(long startTime, long endTime) {
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor timeframeCursor;
         List<TimeframeDataModel> timeframeList = new ArrayList<>();
-        try {
+        try (SQLiteDatabase db = this.getReadableDatabase()) {
             timeframeCursor = db.query(false, mContext.getString(R.string.timeframe_table_name), null, mContext.getString(R.string.timeframe_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)}, null, null, null, null);
             if (timeframeCursor == null) {
                 db.close();
@@ -112,20 +111,16 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
             Log.e("TIMES_BTWN", ex.getMessage());
             timeframeList = new ArrayList<>();
         }
-        finally {
-            db.close();
-        }
         return timeframeList;
     }
 
     public SessionModel getAllDataBetween(long startTime, long endTime) {
-        SQLiteDatabase db = this.getReadableDatabase();
         Cursor accelCursor;
         Cursor gyroCursor;
         List<AccelDataModel> accelModels = new ArrayList<>();
         List<GyroDataModel> gyroModels = new ArrayList<>();
         SessionModel sessionModel;
-        try {
+        try (SQLiteDatabase db = this.getReadableDatabase()) {
             accelCursor = db.query(false, mContext.getString(R.string.acceleration_table_name), null, mContext.getString(R.string.accel_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)}, null, null, null, null);
             gyroCursor = db.query(false, mContext.getString(R.string.gyroscope_table_name), null, mContext.getString(R.string.gyro_select_query), new String[]{String.valueOf(startTime), String.valueOf(endTime)}, null, null, null, null);
             if (accelCursor != null) {
@@ -158,8 +153,6 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         } catch (Exception ex) {
             Log.e("TIMES_BTWN", ex.getMessage());
             sessionModel = new SessionModel(new ArrayList<AccelDataModel>(), new ArrayList<GyroDataModel>());
-        } finally {
-            db.close();
         }
         return sessionModel;
 
@@ -266,19 +259,16 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
 
     public long deleteCurrentAccelData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_accel_data));
-        long rowId = statement.executeUpdateDelete();
-        return rowId;
+        return (long) statement.executeUpdateDelete();
     }
 
     public long deleteCurrentGyroData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_gyro_data));
-        long rowId = statement.executeUpdateDelete();
-        return rowId;
+        return (long) statement.executeUpdateDelete();
     }
 
     public long deleteCurrentTimeframeData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_timeframe));
-        long rowId = statement.executeUpdateDelete();
-        return rowId;
+        return (long) statement.executeUpdateDelete();
     }
 }
