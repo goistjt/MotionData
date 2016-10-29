@@ -254,7 +254,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
                 AccelDataModel accelModel = new AccelDataModel(time, event.values[0], event.values[1], event.values[2]);
-                Log.d("TIME", String.valueOf(time));
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
