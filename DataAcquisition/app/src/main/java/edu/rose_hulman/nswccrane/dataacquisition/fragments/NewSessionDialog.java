@@ -8,10 +8,12 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import org.androidannotations.annotations.EFragment;
 
@@ -22,8 +24,11 @@ import datamodels.SessionModel;
 import datamodels.TimeframeDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
+import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
 
@@ -33,9 +38,15 @@ import sqlite.MotionCollectionDBHelper;
 
 @EFragment
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
-    ListAdapter mListAdapter;
+    private ListAdapter mListAdapter;
     private Activity mRootActivity;
     private MotionCollectionDBHelper motionDB;
+    private SessionModel motionDataPostBody;
+
+    private EditText mSessionDescriptionText;
+
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
     public static final String TAG = "NEW_SESSION_DIALOG";
 
     @Override
@@ -61,12 +72,18 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     private void initUIElements(View v) {
         v.findViewById(R.id.new_sess_submit_button).setOnClickListener(this);
         v.findViewById(R.id.collection_time_selector).setOnClickListener(this);
+        mSessionDescriptionText = (EditText) v.findViewById(R.id.description_edit_text);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.new_sess_submit_button:
+                motionDataPostBody
+                        .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
+                        .setSessDesc(mSessionDescriptionText.getText().toString());
+                String jsonBody = new Gson().toJson(motionDataPostBody);
+                new PostNewSession().execute("Server Address", jsonBody);
                 dismiss();
                 break;
             case R.id.collection_time_selector:
@@ -77,7 +94,8 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 TimeframeDataModel timeframe = (TimeframeDataModel) mListAdapter.getItem(which);
-                                String motionData = motionDB.getAllDataAsJson(timeframe.getStartTime(), timeframe.getEndTime());
+                                motionDataPostBody = motionDB.getAllDataBetween(timeframe.getStartTime(), timeframe.getEndTime());
+                                motionDataPostBody.setStartTime(timeframe.getStartTime());
                             }
                         }).show();
                 break;
@@ -89,14 +107,14 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     }
 
     private class PostNewSession extends AsyncTask<String, Void, Response> {
-
         @Override
         protected Response doInBackground(String... params) {
             OkHttpClient client = new OkHttpClient();
+            RequestBody body = RequestBody.create(JSON, params[1]);
             Request request = new Request.Builder()
                     .url(params[0])
+                    .post(body)
                     .build();
-
             try {
                 return client.newCall(request).execute();
             } catch (IOException e) {

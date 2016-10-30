@@ -7,11 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+
 import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.Semaphore;
+
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import datamodels.SessionModel;
@@ -130,7 +133,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
                 int zIndex = accelCursor.getColumnIndex(mContext.getString(R.string.z));
                 accelCursor.moveToFirst();
                 while (!accelCursor.isAfterLast()) {
-                    AccelDataModel newModel = new AccelDataModel(accelCursor.getLong(timestampIndex), accelCursor.getLong(xIndex), accelCursor.getLong(yIndex), accelCursor.getLong(zIndex));
+                    AccelDataModel newModel = new AccelDataModel(accelCursor.getLong(timestampIndex), accelCursor.getDouble(xIndex), accelCursor.getDouble(yIndex), accelCursor.getDouble(zIndex));
                     accelModels.add(newModel);
                     accelCursor.moveToNext();
                 }
@@ -143,7 +146,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
                 int yawIndex = gyroCursor.getColumnIndex(mContext.getString(R.string.yaw));
                 gyroCursor.moveToFirst();
                 while (!gyroCursor.isAfterLast()) {
-                    GyroDataModel newModel = new GyroDataModel(gyroCursor.getLong(timestampIndex), gyroCursor.getLong(pitchIndex), gyroCursor.getLong(rollIndex), gyroCursor.getLong(yawIndex));
+                    GyroDataModel newModel = new GyroDataModel(gyroCursor.getLong(timestampIndex), gyroCursor.getDouble(pitchIndex), gyroCursor.getDouble(rollIndex), gyroCursor.getDouble(yawIndex));
                     gyroModels.add(newModel);
                     gyroCursor.moveToNext();
                 }
@@ -185,7 +188,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
                 db.insert(mContext.getString(R.string.acceleration_table_name), null, values);
             }
             db.setTransactionSuccessful();
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Log.e("PUSH_ACCEL", ex.getMessage());
         } finally {
             db.endTransaction();
@@ -215,7 +218,7 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
                 db.insert(mContext.getString(R.string.gyroscope_table_name), null, values);
             }
             db.setTransactionSuccessful();
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Log.e("PUSH_ACCEL", ex.getMessage());
         } finally {
             db.endTransaction();
