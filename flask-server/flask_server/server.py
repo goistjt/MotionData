@@ -78,8 +78,8 @@ def get_record_data(record_id=[]):
 @app.route("/createSession", methods=["POST"])
 def create_session():
     """ {sess_desc: "",
-         accel_data: [{timestamp: long, x: float, y: float, z: float}],
-         gyro_data: [{timestamp: long, pitch: float, roll: float, yaw: float}],
+         accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
+         gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
          begin: long} """
     data = request.get_json(force=True)
