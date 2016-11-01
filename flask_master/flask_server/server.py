@@ -1,8 +1,8 @@
 from flask import jsonify, request, render_template, Response
 
-from data_analysis import data_analysis as da
-from database import crud
-from flask_server import app
+from flask_master.data_analysis import data_analysis as da
+from flask_master.database import crud
+from flask_master.flask_server import app
 
 
 class InvalidUsage(Exception):
@@ -29,10 +29,10 @@ def handle_missing_argument(error):
 
 
 # /echo?usernames=<insert here>
-@app.route('/echo')
-def echo():
-    users = request.args.get('usernames').split(',')
-    return jsonify(usernames=users)
+# @app.route('/echo')
+# def echo():
+#     users = request.args.get('usernames').split(',')
+#     return jsonify(usernames=users)
 
 
 @app.route('/hello-world')
@@ -48,7 +48,7 @@ def gyro():
 
 @app.route('/session')
 def session():
-    result = crud.read_one("SELECT * FROM Session")
+    result = crud.read_all("SELECT * FROM Session")
     return jsonify(row=str(result))
 
 
@@ -56,26 +56,22 @@ def session():
 def index():
     return render_template("index.html")
 
+@app.route("/tables.html")
+def tables():
+    return render_template("tables.html")
 
-@app.route("/getRecord")
-def get_record_data():
+
+@app.route("/getRecord/<record_id>")
+def get_record_data(record_id=[]):
     # with open("outputs/Adjacency.csv") as fp:
     #     csv = fp.read()
-    record_id = '2c2b3609c6a7eefb232d816dd0222f42ee3eaa5b'
-    csv = da.download_record(record_id)
+    txt = da.download_record(record_id)
     return Response(
-        csv,
-        mimetype="text/csv",
+        txt,
+        mimetype="text",
         headers={"Content-disposition":
-                     "attachment; filename=record.csv"})
+                     "attachment; filename=record.txt"})
 
-@app.route("/getExcursion")
-def get_excursion():
-    result = crud.read_one("""SELECT * FROM AccessPoints LIMIT 1""")
-    rows = []
-    if (result != None):
-    	rows.append(result)
-    return jsonify(row=str(da.get_excursions_for_dataset(rows)))
 
 # used to check for sql injection later on
 # def is_possible_injection(attack_vector):

@@ -1,7 +1,12 @@
 from configparser import ConfigParser
- 
 
-def read_db_config(filename='database\local_config.ini', section='mysql'):
+from pathlib import Path
+
+HERE = Path(__file__).parent.resolve()
+print(str(HERE / 'local_config.ini'))
+CONFIG_PATH = str(HERE / 'local_config.ini') 
+
+def read_db_config(filename=CONFIG_PATH, section='mysql'):
     """ Read database configuration file and return a dictionary object
     :param filename: name of the configuration file
     :param section: section of database configuration
@@ -17,6 +22,7 @@ def read_db_config(filename='database\local_config.ini', section='mysql'):
         items = parser.items(section)
         for item in items:
             db[item[0]] = item[1]
+            print(db)
     else:
         raise Exception('{0} not found in the {1} file'.format(section, filename))
  

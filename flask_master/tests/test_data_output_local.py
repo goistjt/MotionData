@@ -6,8 +6,8 @@ Created on Oct 15, 2016
 import datetime
 import unittest
 
-from data_analysis import data_analysis as da
-from database import crud
+from flask_master.data_analysis import data_analysis as da
+from flask_master.database import crud
 
 
 def get_now():
@@ -23,18 +23,18 @@ class Test(unittest.TestCase):
         pass
 
     def test_Data_Output(self):
-        #         crud.reset_session_autoIndex()
-        #         description = "test_data_output"
+        description = "test_data_output"
         starting_time = get_now()
         test_data = 1
-        #         session_id = crud.create_session(description, starting_time)
-        #         record_id = crud.create_record(session_id, "data_out_test_device_id")
-        record_id = '2c2b3609c6a7eefb232d816dd0222f42ee3eaa5b'
+        session_id = crud.create_session(description, starting_time)
+        device_id = "-1"
+        record_id = crud.create_record(session_id, device_id)
         crud.insert_gyro_points(record_id, starting_time, test_data, test_data, test_data)
         crud.insert_access_points(record_id, starting_time, test_data, test_data, test_data)
-        #         print()
         csv = da.download_record(record_id)
         print(csv)
+        crud.delete_entire_session(session_id)
+        
 
 
 # print(da.select_record('2c2b3609c6a7eefb232d816dd0222f42ee3eaa5b'))
