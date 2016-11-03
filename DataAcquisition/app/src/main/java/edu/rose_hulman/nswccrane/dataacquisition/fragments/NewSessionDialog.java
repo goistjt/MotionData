@@ -19,6 +19,7 @@ import org.androidannotations.annotations.EFragment;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import datamodels.SessionModel;
 import datamodels.TimeframeDataModel;
@@ -83,7 +84,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
                         .setSessDesc(mSessionDescriptionText.getText().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostNewSession().execute("http://137.112.233.173:80/createSession", jsonBody); // TODO: Get IP from settings
+                new PostNewSession().execute("http://137.112.233.53:80/createSession", jsonBody); // TODO: Get IP from settings
                 dismiss();
                 break;
             case R.id.collection_time_selector:
@@ -109,7 +110,11 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     private class PostNewSession extends AsyncTask<String, Void, Response> {
         @Override
         protected Response doInBackground(String... params) {
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                    .readTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                    .build();
             RequestBody body = RequestBody.create(JSON, params[1]);
             Request request = new Request.Builder()
                     .url(params[0])
