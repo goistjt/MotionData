@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.Toast;
@@ -18,7 +19,11 @@ import com.google.gson.Gson;
 import org.androidannotations.annotations.EFragment;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import datamodels.SessionModel;
@@ -88,6 +93,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                 dismiss();
                 break;
             case R.id.collection_time_selector:
+                final Button selector = (Button) v.findViewById(R.id.collection_time_selector);
                 populateArrayAdapter();
                 new AlertDialog.Builder(getActivity())
                         .setTitle("Select a recording period")
@@ -97,6 +103,18 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                                 TimeframeDataModel timeframe = (TimeframeDataModel) mListAdapter.getItem(which);
                                 motionDataPostBody = motionDB.getAllDataBetween(timeframe.getStartTime(), timeframe.getEndTime());
                                 motionDataPostBody.setStartTime(timeframe.getStartTime());
+                                StringBuilder sBuilder = new StringBuilder();
+
+                                DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss", Locale.US);
+
+                                Date date = new Date(timeframe.getStartTime());
+                                String time = dateFormat.format(date);
+                                sBuilder.append(String.format("Start: %s\n", time));
+
+                                date = new Date(timeframe.getEndTime());
+                                time = dateFormat.format(date);
+                                sBuilder.append(String.format("End: %s", time));
+                                selector.setText(sBuilder.toString());
                             }
                         }).show();
                 break;
