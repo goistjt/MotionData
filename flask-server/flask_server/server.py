@@ -1,5 +1,6 @@
 from flask import jsonify, request, render_template, Response
 import re
+import datetime
 
 from data_analysis import data_analysis as da
 from database import crud
@@ -99,6 +100,8 @@ def create_session():
 
     is_possible_injection(desc)
 
+    print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
+
     sess_id = crud.create_session(desc, start)
     rec_id = crud.create_record(sess_id, device_id)
     for point in accel_data:
@@ -106,7 +109,7 @@ def create_session():
         y = point['y_val']
         z = point['z_val']
         time = point['time_val']
-        crud.insert_access_points(rec_id, time, x, y, z)
+        crud.insert_accel_points(rec_id, time, x, y, z)
 
     for point in gyro_data:
         roll = point['roll_val']
@@ -124,6 +127,17 @@ def delete_session():
     sess_id = data["sess_id"]
     crud.delete_entire_session(sess_id)
     return jsonify(session_id=sess_id)
+
+
+@app.route("/getSessions/<device_id>")
+def get_sessions(device_id):
+    result = list(crud.get_sessions(device_id))
+    ret_list = []
+    for row in result:
+        row = list(row)
+        row[2] = datetime.datetime.fromtimestamp(row[2] / 1e3)
+        ret_list.append(dict(id=row[0], desc=row[1], date=row[2]))
+    return jsonify(sessions=ret_list)
 
 
 # used to check for sql injection

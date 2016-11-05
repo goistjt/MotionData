@@ -49,6 +49,11 @@ class FlaskTestCase(unittest.TestCase):
         resp_json = json.loads(response.data.decode("utf-8"))
         self.assertIsNotNone(resp_json)
 
+    def test_get_sessions(self):
+        response = self.app.get('/getSessions/12345')
+        resp_json = json.loads(response.data.decode("utf-8"))
+        self.assertIsNotNone(resp_json)
+
 
 if __name__ == '__main__':
     unittest.main()
