@@ -59,4 +59,5 @@
     <string name="select_all_timeframe">SELECT * FROM Timeframe</string>
     <string name="start_time_label">Start Time: %s</string>
     <string name="end_time_label">End Time: %s</string>
+    <string name="session_desc_format">Description: %s</string>
 </resources>

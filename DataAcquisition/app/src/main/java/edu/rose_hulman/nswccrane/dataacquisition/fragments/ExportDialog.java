@@ -9,7 +9,18 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import datamodels.ResponseSessionListModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
+import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Created by Jeremiah Goist on 10/3/2016.
@@ -19,6 +30,8 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
 
     private Activity mRootActivity;
     public static final String TAG = "EXPORT_DIALOG";
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
 
     public void setActivity(Activity mApplicationContext) {
         this.mRootActivity = mApplicationContext;
@@ -44,26 +57,47 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
                 newSessionDialog.show(mRootActivity.getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
-                (new AddSessionTask()).execute((Void) null);
+                (new AddSessionTask()).execute("http://137.112.233.62:80/getSessions/" + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
                 break;
         }
         dismiss();
     }
 
-    private class AddSessionTask extends AsyncTask<Void, Void, Boolean> {
+    private class AddSessionTask extends AsyncTask<String, Void, Response> {
 
         @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: Get Time frames from SQLite
-            // TODO: Get Session info from server
-            return true;
+        protected Response doInBackground(String... params) {
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(5, TimeUnit.SECONDS)
+                    .readTimeout(5, TimeUnit.SECONDS)
+                    .build();
+            Request request = new Request.Builder()
+                    .url(params[0])
+                    .build();
+            try {
+                return client.newCall(request).execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            AddSessionDialog addSessionDialog = new AddSessionDialog();
-            addSessionDialog.setActivity(mRootActivity);
-            addSessionDialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
+        protected void onPostExecute(Response response) {
+            Gson gson = new Gson();
+            try {
+                ResponseSessionListModel respListModel = gson.fromJson(response.body().string(), ResponseSessionListModel.class);
+                Bundle args = new Bundle();
+                args.putString("Sessions", response.body().string());
+
+                AddSessionDialog dialog = new AddSessionDialog();
+                dialog.setActivity(mRootActivity);
+                // Supply index input as an argument.
+                dialog.setArguments(args);
+                dialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

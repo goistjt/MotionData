@@ -31,12 +31,13 @@ import datamodels.TimeframeDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
 import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
+
+import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
 
 /**
  * Created by Jeremiah Goist on 10/4/2016.
@@ -51,8 +52,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
 
     private EditText mSessionDescriptionText;
 
-    public static final MediaType JSON
-            = MediaType.parse("application/json; charset=utf-8");
+
     public static final String TAG = "NEW_SESSION_DIALOG";
 
     @Override
