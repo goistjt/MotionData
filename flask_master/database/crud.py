@@ -1,9 +1,7 @@
 import hashlib
 from pymysql import Error, connect
-from pathlib import Path
-HERE = Path(__file__).parent.resolve()
-CONFIG_PATH = str(HERE / 'local_config.ini')
-from database.python_mysql_dbconfig import read_db_config
+
+from flask_master.database.python_mysql_dbconfig import read_db_config
 
 
 def create_session(description, starting_time):
@@ -68,7 +66,7 @@ def read_data_points(table, record_id, timestamp):
 
 def read_one(query, args=[]):
     try:
-        db_config = read_db_config(filename = CONFIG_PATH)
+        db_config = read_db_config()
         conn = connect(**db_config)
         cursor = conn.cursor()
         cursor.execute(query, args)
@@ -82,7 +80,7 @@ def read_one(query, args=[]):
 
 def read_all(query, args=[]):
     try:
-        db_config = read_db_config(filename = CONFIG_PATH)
+        db_config = read_db_config()
         conn = connect(**db_config)
         cursor = conn.cursor()
         cursor.execute(query, args)
@@ -99,7 +97,7 @@ def delete_data(query, args=[]):
 
 
 def insert(query, args=[]):
-    db_config = read_db_config(filename = CONFIG_PATH)
+    db_config = read_db_config()
     try:
         conn = connect(**db_config)
         cursor = conn.cursor()
@@ -118,7 +116,7 @@ def insert(query, args=[]):
 
 
 def execute_transaction_query(query, args=[]):
-    db_config = read_db_config(filename = CONFIG_PATH)
+    db_config = read_db_config()
     try:
         conn = connect(**db_config)
         cursor = conn.cursor()
@@ -143,14 +141,38 @@ def reset_session_auto_index():
 
 
 def get_connection():
-    db_config = read_db_config(filename = CONFIG_PATH)
+    db_config = read_db_config()
     return connect(**db_config)
 
 
 def delete_entire_session(session_id):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        #select all records links to the sesson id
+        all_records_query= "SELECT id FROM Records WHERE Records.session_id = %s"
+        cursor.execute(all_records_query, [session_id])
+        
+        all_records = cursor.fetchall()
+        for record in all_records:
+            #delete all the access points and gyro points
+            cursor.execute("DELETE FROM AccessPoints WHERE record_id = %s", [record])
+            #remove the record
+            cursor.execute("DELETE FROM GyroPoints WHERE record_id = %s", [record])
+            
+            cursor.execute("DELETE FROM Records WHERE id = %s", [record])
+        #remove the session
+        query = "DELETE FROM Session WHERE id = %s"
+        cursor.execute(query, [session_id])    
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Error as error:
+        print(error)
     #     query = "DELETE FROM Session WHERE id = %s"
     #     delete_data(query, [lastid])
     #     reset_session_autoIndex()
     #     query = ""
     # test
-    pass
+    finally:
+        reset_session_auto_index()
