@@ -130,8 +130,8 @@ class Crud(object):
             last_id = cursor.lastrowid
             if last_id:
                 print('last insert id', last_id)
-            else:
-                print('last insert id not found')
+            # else:
+            #     print('last insert id not found')
             self.conn.commit()
             cursor.close()
             return last_id
