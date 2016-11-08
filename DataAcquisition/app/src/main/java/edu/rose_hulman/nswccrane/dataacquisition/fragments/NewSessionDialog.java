@@ -89,7 +89,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
                         .setSessDesc(mSessionDescriptionText.getText().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostNewSession().execute("http://137.112.233.53:80/createSession", jsonBody); // TODO: Get IP from settings
+                new PostNewSession().execute("http://137.112.233.167:80/createSession", jsonBody); // TODO: Get IP from settings
                 dismiss();
                 break;
             case R.id.collection_time_selector:

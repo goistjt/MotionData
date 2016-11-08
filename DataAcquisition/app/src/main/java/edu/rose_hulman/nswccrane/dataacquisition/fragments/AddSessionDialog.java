@@ -13,11 +13,13 @@ import android.widget.ListAdapter;
 
 import com.google.gson.Gson;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import datamodels.ResponseSessionListModel;
 import datamodels.ResponseSessionModel;
@@ -27,8 +29,13 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.SessionAdapter;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
 import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
+
+import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
 
 /**
  * Created by Jeremiah Goist on 10/4/2016.
@@ -41,11 +48,13 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
     public static final String TAG = "ADD_SESSION_DIALOG";
     private ResponseSessionListModel responseSessionListModel;
     private SessionAdapter mSessionAdapter;
+    private Button sessionSelector;
+    private Button timeSelector;
+    private Button submitButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        responseSessionListModel = (new Gson()).fromJson(savedInstanceState.getString("Sessions"), ResponseSessionListModel.class);
     }
 
     @Override
@@ -54,6 +63,7 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
         View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_add_session, null);
         builder.setView(v);
         initUIElements(v);
+        responseSessionListModel = (new Gson()).fromJson(getArguments().getString("Sessions"), ResponseSessionListModel.class);
         return builder.create();
     }
 
@@ -70,21 +80,24 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
     }
 
     private void initUIElements(View v) {
-        v.findViewById(R.id.add_sess_submit_button).setOnClickListener(this);
-        v.findViewById(R.id.collection_time_selector2).setOnClickListener(this);
+        sessionSelector = ((Button) v.findViewById(R.id.session_selector));
+        timeSelector = ((Button) v.findViewById(R.id.collection_time_selector2));
+        submitButton = ((Button) v.findViewById(R.id.add_sess_submit_button));
+        sessionSelector.setOnClickListener(this);
+        timeSelector.setOnClickListener(this);
+        submitButton.setOnClickListener(this);
+        submitButton.setEnabled(false);
+        sessionSelector.setEnabled(false);
     }
 
     @Override
     public void onClick(View v) {
-        final Button sessionSelector = ((Button) v.findViewById(R.id.session_selector));
-        final Button timeSelector = ((Button) v.findViewById(R.id.collection_time_selector2));
-        final Button submitButton = ((Button) v.findViewById(R.id.add_sess_submit_button));
         switch (v.getId()) {
             case R.id.add_sess_submit_button:
                 motionDataPostBody
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostAddSession().execute("http://137.112.233.62:80/addToSession", jsonBody); // TODO: Get IP from settings
+                new PostAddSession().execute("http://137.112.233.167:80/addToSession", jsonBody); // TODO: Get IP from settings
                 dismiss();
                 break;
             case R.id.session_selector:
@@ -139,8 +152,23 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
     private class PostAddSession extends AsyncTask<String, Void, Response> {
 
         @Override
-        protected Response doInBackground(String... strings) {
-            return null;
+        protected Response doInBackground(String... params) {
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                    .readTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                    .build();
+            RequestBody body = RequestBody.create(JSON, params[1]);
+            Request request = new Request.Builder()
+                    .url(params[0])
+                    .post(body)
+                    .build();
+            try {
+                return client.newCall(request).execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
         }
     }
 }

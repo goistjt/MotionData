@@ -27,7 +27,7 @@ public class SessionAdapter extends ArrayAdapter<ResponseSessionModel> {
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = convertView;
         if (v == null) {
-            v = LayoutInflater.from(getContext()).inflate(R.layout.list_item_timespan, null);
+            v = LayoutInflater.from(getContext()).inflate(R.layout.list_item_session, null);
         }
         ResponseSessionModel session = getItem(position);
         if (session != null) {

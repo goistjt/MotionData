@@ -13,7 +13,7 @@ public class SessionModel {
     private String device_id;
     private String sess_desc;
     private long begin;
-    private long sessId;
+    private long sess_id;
 
     public SessionModel(List<AccelDataModel> accels, List<GyroDataModel> gyros) {
         accelModels = accels;
@@ -44,10 +44,10 @@ public class SessionModel {
     }
 
     public void setSessId(long sessId) {
-        this.sessId = sessId;
+        this.sess_id = sessId;
     }
 
     public long getSessId() {
-        return sessId;
+        return sess_id;
     }
 }

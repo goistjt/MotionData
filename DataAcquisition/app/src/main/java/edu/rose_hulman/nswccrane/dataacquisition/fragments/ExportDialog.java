@@ -14,7 +14,6 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import datamodels.ResponseSessionListModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
 import okhttp3.MediaType;
@@ -57,7 +56,7 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
                 newSessionDialog.show(mRootActivity.getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
-                (new AddSessionTask()).execute("http://137.112.233.62:80/getSessions/" + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
+                (new AddSessionTask()).execute("http://137.112.233.167:80/getSessions/" + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
                 break;
         }
         dismiss();
@@ -86,7 +85,6 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
         protected void onPostExecute(Response response) {
             Gson gson = new Gson();
             try {
-                ResponseSessionListModel respListModel = gson.fromJson(response.body().string(), ResponseSessionListModel.class);
                 Bundle args = new Bundle();
                 args.putString("Sessions", response.body().string());
 
