@@ -6,8 +6,8 @@ Created on Oct 15, 2016
 import datetime
 import unittest
 
-from flask_master.data_analysis import data_analysis as da
-from flask_master.database import crud
+from data_analysis import data_analysis as da
+from database import crud
 
 
 def get_now():
