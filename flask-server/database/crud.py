@@ -36,8 +36,8 @@ def insert_gyro_points(record_id, timestamp, roll, pitch, yaw):
     return insert(query, args)
 
 
-def insert_access_points(record_id, timestamp, x, y, z):
-    query = "INSERT INTO AccessPoints" \
+def insert_accel_points(record_id, timestamp, x, y, z):
+    query = "INSERT INTO AccelPoints" \
             "(record_id, timestamp, surge, sway, heave) " \
             "VALUES(%s,%s, %s, %s, %s)"
     args = (record_id, timestamp, x, y, z)
@@ -56,6 +56,12 @@ def get_session_id(description, starting_time):
     query = "SELECT * FROM Session WHERE description = %s AND starting_time = %s"
     args = [description, starting_time]
     return read_one(query, args)
+
+
+def get_sessions(device_id):
+    query = "SELECT * FROM Session WHERE id in (SELECT session_id FROM Records WHERE device_id != %s)"
+    args = [device_id]
+    return read_all(query, args)
 
 
 def read_data_points(table, record_id, timestamp):
@@ -105,8 +111,8 @@ def insert(query, args=[]):
         last_id = cursor.lastrowid
         if last_id:
             print('last insert id', last_id)
-        else:
-            print('last insert id not found')
+        # else:
+            # print('last insert id not found')
         conn.commit()
         cursor.close()
         conn.close()
@@ -156,7 +162,7 @@ def delete_entire_session(session_id):
         all_records = cursor.fetchall()
         for record in all_records:
             #delete all the access points and gyro points
-            cursor.execute("DELETE FROM AccessPoints WHERE record_id = %s", [record])
+            cursor.execute("DELETE FROM AccelPoints WHERE record_id = %s", [record])
             #remove the record
             cursor.execute("DELETE FROM GyroPoints WHERE record_id = %s", [record])
             
