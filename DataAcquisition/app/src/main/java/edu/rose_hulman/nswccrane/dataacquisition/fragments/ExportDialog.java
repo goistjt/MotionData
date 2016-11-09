@@ -56,7 +56,7 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
                 newSessionDialog.show(mRootActivity.getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
-                (new AddSessionTask()).execute("http://137.112.233.167:80/getSessions/" + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
+                (new AddSessionTask()).execute("http://137.112.233.68:80/getSessions/" + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
                 break;
         }
         dismiss();

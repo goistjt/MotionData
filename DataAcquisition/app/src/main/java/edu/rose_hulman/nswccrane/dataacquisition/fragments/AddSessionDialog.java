@@ -97,7 +97,7 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
                 motionDataPostBody
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostAddSession().execute("http://137.112.233.167:80/addToSession", jsonBody); // TODO: Get IP from settings
+                new PostAddSession().execute("http://137.112.233.68:80/addToSession", jsonBody); // TODO: Get IP from settings
                 dismiss();
                 break;
             case R.id.session_selector:

@@ -36,7 +36,7 @@ public class TimeframeAdapter extends ArrayAdapter<TimeframeDataModel> {
         }
         TimeframeDataModel timeframeDataModel = getItem(position);
         if (timeframeDataModel != null) {
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss", Locale.US);
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);
 
             Date date = new Date(timeframeDataModel.getStartTime());
             String time = dateFormat.format(date);
