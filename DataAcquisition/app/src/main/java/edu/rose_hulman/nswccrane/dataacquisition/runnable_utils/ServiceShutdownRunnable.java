@@ -1,13 +1,8 @@
 package edu.rose_hulman.nswccrane.dataacquisition.runnable_utils;
 
-import android.widget.Button;
-
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import edu.rose_hulman.nswccrane.dataacquisition.MainActivity;
-import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.interfaces.ICollectionCallback;
 import sqlite.MotionCollectionDBHelper;
 
@@ -39,7 +34,7 @@ public class ServiceShutdownRunnable implements Runnable {
         }
         mCollectionDBHelper.pushAccelData();
         mCollectionDBHelper.pushGyroData();
-        //mCollectionDBHelper.setEndTime(System.currentTimeMillis());
+        mCollectionDBHelper.setEndTime(System.currentTimeMillis());
         mCallback.finishToggle();
     }
 }

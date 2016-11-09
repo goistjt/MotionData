@@ -9,21 +9,35 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import org.androidannotations.annotations.EFragment;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
+import datamodels.SessionModel;
 import datamodels.TimeframeDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
+import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
+
+import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
 
 /**
  * Created by Jeremiah Goist on 10/4/2016.
@@ -31,8 +45,14 @@ import sqlite.MotionCollectionDBHelper;
 
 @EFragment
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
-    ListAdapter mListAdapter;
+    private ListAdapter mListAdapter;
     private Activity mRootActivity;
+    private MotionCollectionDBHelper motionDB;
+    private SessionModel motionDataPostBody;
+
+    private EditText mSessionDescriptionText;
+
+
     public static final String TAG = "NEW_SESSION_DIALOG";
 
     @Override
@@ -50,32 +70,51 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     }
 
     private void populateArrayAdapter() {
-        MotionCollectionDBHelper motionDB = new MotionCollectionDBHelper(mRootActivity);
-        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween(System.currentTimeMillis() - (24 * 60 * 60 * 1000),
-                System.currentTimeMillis());
+        motionDB = new MotionCollectionDBHelper(mRootActivity);
+        List<TimeframeDataModel> timeData = motionDB.getAllTimeframesBetween((long) 0, System.currentTimeMillis());
         mListAdapter = new TimeframeAdapter(getActivity(), R.layout.list_item_timespan, timeData);
     }
 
     private void initUIElements(View v) {
         v.findViewById(R.id.new_sess_submit_button).setOnClickListener(this);
         v.findViewById(R.id.collection_time_selector).setOnClickListener(this);
+        mSessionDescriptionText = (EditText) v.findViewById(R.id.description_edit_text);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.new_sess_submit_button:
-//                new PostNewSession().execute("http://six-dof.csse.rose-hulman.edu/hello-world");
+                motionDataPostBody
+                        .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
+                        .setSessDesc(mSessionDescriptionText.getText().toString());
+                String jsonBody = new Gson().toJson(motionDataPostBody);
+                new PostNewSession().execute("http://137.112.233.68:80/createSession", jsonBody); // TODO: Get IP from settings
                 dismiss();
                 break;
             case R.id.collection_time_selector:
+                final Button selector = (Button) v.findViewById(R.id.collection_time_selector);
                 populateArrayAdapter();
                 new AlertDialog.Builder(getActivity())
                         .setTitle("Select a recording period")
                         .setAdapter(mListAdapter, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
+                                TimeframeDataModel timeframe = (TimeframeDataModel) mListAdapter.getItem(which);
+                                motionDataPostBody = motionDB.getAllDataBetween(timeframe.getStartTime(), timeframe.getEndTime());
+                                motionDataPostBody.setStartTime(timeframe.getStartTime());
+                                StringBuilder sBuilder = new StringBuilder();
+
+                                DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss", Locale.US);
+
+                                Date date = new Date(timeframe.getStartTime());
+                                String time = dateFormat.format(date);
+                                sBuilder.append(String.format("Start: %s\n", time));
+
+                                date = new Date(timeframe.getEndTime());
+                                time = dateFormat.format(date);
+                                sBuilder.append(String.format("End: %s", time));
+                                selector.setText(sBuilder.toString());
                             }
                         }).show();
                 break;
@@ -87,14 +126,18 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     }
 
     private class PostNewSession extends AsyncTask<String, Void, Response> {
-
         @Override
         protected Response doInBackground(String... params) {
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .writeTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                    .readTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                    .build();
+            RequestBody body = RequestBody.create(JSON, params[1]);
             Request request = new Request.Builder()
                     .url(params[0])
+                    .post(body)
                     .build();
-
             try {
                 return client.newCall(request).execute();
             } catch (IOException e) {

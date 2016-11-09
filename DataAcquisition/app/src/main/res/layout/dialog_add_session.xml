@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_dropdown"
         android:gravity="start"
-        android:text="Select an existing session." />
+        android:text="Select an existing session."/>
 
     <Button
         android:id="@+id/collection_time_selector2"
