@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -56,6 +57,7 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
                 newSessionDialog.show(mRootActivity.getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
+                Toast.makeText(mRootActivity, "Retrieving existing Sessions from the server", Toast.LENGTH_SHORT).show();
                 (new AddSessionTask()).execute("http://137.112.233.68:80/getSessions/" + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
                 break;
         }
@@ -83,16 +85,18 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
 
         @Override
         protected void onPostExecute(Response response) {
-            Gson gson = new Gson();
+            Bundle args = new Bundle();
             try {
-                Bundle args = new Bundle();
-                args.putString("Sessions", response.body().string());
-
-                AddSessionDialog dialog = new AddSessionDialog();
-                dialog.setActivity(mRootActivity);
-                // Supply index input as an argument.
-                dialog.setArguments(args);
-                dialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
+                if (response != null) {
+                    args.putString("Sessions", response.body().string());
+                    AddSessionDialog dialog = new AddSessionDialog();
+                    dialog.setActivity(mRootActivity);
+                    // Supply index input as an argument.
+                    dialog.setArguments(args);
+                    dialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
+                } else {
+                    Toast.makeText(mRootActivity, "Unable to retrieve existing Sessions from the server", Toast.LENGTH_SHORT).show();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
