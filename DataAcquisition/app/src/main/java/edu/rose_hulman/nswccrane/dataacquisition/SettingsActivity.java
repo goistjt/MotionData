@@ -1,5 +1,6 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,6 +25,11 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
+        SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
+        String ip = settings.getString("IP_ADDRESS", null);
+        if (ip != null) {
+            mIpAddressView.setText(ip);
+        }
     }
 
     @Override
@@ -35,12 +41,13 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.confirm_settings:
                 SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("IP_ADDRESS", mIpAddressView.getText().toString());
                 editor.apply();
+                startActivity(new Intent(this, MainActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }

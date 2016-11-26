@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static android.support.test.espresso.action.ViewActions.click;

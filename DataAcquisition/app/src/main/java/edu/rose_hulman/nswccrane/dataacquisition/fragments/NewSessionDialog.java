@@ -89,8 +89,13 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
                         .setSessDesc(mSessionDescriptionText.getText().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostNewSession().execute("http://137.112.233.68:80/createSession", jsonBody); // TODO: Get IP from settings
-                dismiss();
+                String ip = mRootActivity.getSharedPreferences("Settings", 0).getString("IP_ADDRESS", null);
+                if (ip.isEmpty()) { // Don't change this. For some reason it converts null to the empty string
+                    Toast.makeText(mRootActivity, "Please enter the Ip Address of the server in the Settings page", Toast.LENGTH_SHORT).show();
+                } else {
+                    new PostNewSession().execute(String.format("http://%s:80/createSession", ip), jsonBody); // TODO: Get IP from settings
+                    dismiss();
+                }
                 break;
             case R.id.collection_time_selector:
                 final Button selector = (Button) v.findViewById(R.id.collection_time_selector);
