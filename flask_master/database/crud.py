@@ -1,7 +1,7 @@
 import hashlib
 from pymysql import Error, connect
 
-from flask_master.database.python_mysql_dbconfig import read_db_config
+from database.python_mysql_dbconfig import read_db_config
 
 
 def create_session(description, starting_time):

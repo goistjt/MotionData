@@ -1,8 +1,8 @@
 from flask import jsonify, request, render_template, Response
 
-from flask_master.data_analysis import data_analysis as da
-from flask_master.database import crud
-from flask_master.flask_server import app
+from data_analysis import data_analysis as da
+from database import crud
+from flask_server import app
 
 
 class InvalidUsage(Exception):

@@ -4,22 +4,75 @@ Created on Oct 29, 2016
 @author: steve
 '''
 import unittest
-from flask_master.data_analysis import kinematics_keeper as kk
-import flask_master.data_analysis.data_analysis as da
+from data_analysis import kinematics_keeper as kk
+import data_analysis.data_analysis as da
+import numpy as np
+import decimal as dc
+import time
 
 
 class TestKinematics(unittest.TestCase):
-    
-    MAX_EPSILON = 0.000001
 
     def setUp(self):
-        self.kin_keep = kk.KinematicsKeeper(0)
+        dc.getcontext().prec = 4
+        self.kin_keep = kk.KinematicsKeeper(0, None)
+        self.MAX_EPSILON = 0.000001
 
     def tearDown(self):
         self.kin_keep = None
-
+    
+     
+    def test_point_normalizer_perfect_input(self):
+        points = np.array([[0.0, 1.0, 2.0, 3.0], [1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0], [3.0, 4.0, 5.0, 6.0]])
+        points_exp = np.array([[0.0, 1.0, 2.0, 3.0], [1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0], [3.0, 0.0, 0.0, 0.0]])
+        points = da.process_accelerations(0.0, 3.0, 1.0, points)
+        print(points)
+        self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
+        
+    def test_points_normalizer_beginning(self):
+        points = np.array([[0.5, 0.5, 0.5, 0.5], [1.0, 1.0, 1.0, 1.0], [2.0, 2.0, 2.0, 2.0]])
+        points_exp = np.array([[0.0, 0.0, 0.0, 0.0]])
+        for x in range(20):
+            points_exp = np.append(points_exp, np.array([[0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1)]]), axis=0)
+        points = da.process_accelerations(0.0, 2.0, 0.1, points)
+        print(points_exp)
+        self.assertTrue(np.allclose(points_exp, points, self.MAX_EPSILON))
+                
+    def test_points_normalizer_ending(self):
+        points = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0], [2.5, 2.5, 2.5, 2.5]])
+        points_exp = np.array([[0.0, 0.0, 0.0, 0.0]])
+        for x in range(25):
+            points_exp = np.append(points_exp, np.array([[0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1)]]), axis=0)
+        for y in range(5):
+            points_exp = np.append(points_exp, np.array([[2.6 + (y * 0.1), 2.0 - (y * 0.5), 2.0 - (y * 0.5), 2.0 - (y * 0.5)]]), axis=0)
+        points = da.process_accelerations(0.0, 3.0, 0.1, points)
+        print(points_exp)
+        self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
+        
+    def test_points_normalizer_both(self):
+        points = np.array([[0.3, 0.3, 0.3, 0.3], [1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0]])
+        print(da.process_accelerations(0.0, 2.1, .5, points))
+        
+    def test_points_normalizer_everything(self):
+        points = np.array([[0.3, 1.0, 2.0, 3.0], [1.4, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0], [3.4, 4.0, 5.1, 7.3]])
+        print(da.process_accelerations(0.4, 2.0, 1.0, points))
+     
+    def test_points_under_everything(self):
+        points = np.array([[0.3, 1.0, 2.0, 3.0], [0.999, 2.0, 3.0, 4.0], [1.999, 3.0, 4.0, 5.0], [3.4, 4.0, 5.1, 7.3]])
+        print(da.process_accelerations(0.0, 2.0, 0.5, points))
+         
+    def test_points_large_set(self):
+        points = np.array([[0, 0, 0, 0]])
+        for x in range(20000):
+            points = np.append(points, [[x * 0.1, x, x, x]], axis=0)
+        start = time.time()
+        res = da.process_accelerations(0.2, 20000, 0.5, points)
+        end = time.time()
+        print(end - start)
+    
+    """
     def test_kinetics_keeper_init(self):
-        self.kin_keep = kk.KinematicsKeeper(200)
+        self.kin_keep = kk.KinematicsKeeper(200, None)
         self.assertEqual(self.kin_keep.get_excursion(), 0)
         self.assertEqual(self.kin_keep.get_velocity(), 0)
         self.assertEqual(self.kin_keep.get_acceleration(), 0)
@@ -166,6 +219,7 @@ class TestKinematics(unittest.TestCase):
             for j in range(len(exc_set_expected[k])):
                 ans_diff = abs(exc_set_expected[k][j] - excursion_set[k][j])
                 self.assertTrue(ans_diff < self.MAX_EPSILON)
+    """
         
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
