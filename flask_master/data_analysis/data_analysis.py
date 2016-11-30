@@ -43,11 +43,9 @@ def process_accelerations(start, end, interval, points):
     dc.getcontext().prec = 6
     zero = dc.Decimal(0.0)
     interval_d = dc.Decimal(interval) * dc.Decimal(1.0)
-    start_d = dc.Decimal(start) * dc.Decimal(1.0)
-    end_d = dc.Decimal(end) * dc.Decimal(1.0)
-    real_end_d = (end_d // interval_d) * interval_d
+    real_end_d = ((dc.Decimal(end) * dc.Decimal(1.0)) // interval_d) * interval_d
     end_index = determine_end(points, real_end_d)
-    start_index = determine_start(points, start_d, end_index)
+    start_index = determine_start(points, dc.Decimal(start) * dc.Decimal(1.0), end_index)
     points = points[start_index:end_index]
     points = np.insert(points, 0, [[start, 0.0, 0.0, 0.0]], axis=0)
     points = np.append(points, [[float(real_end_d), 0.0, 0.0, 0.0]], axis=0)
@@ -69,15 +67,9 @@ def process_accelerations(start, end, interval, points):
             next_point = points[n + 1]
             raw_ratio = time_diff / interval_d
             num_elements = math.floor(raw_ratio)
-            cp1 = dc.Decimal(curr_point[1])
-            cp2 = dc.Decimal(curr_point[2])
-            cp3 = dc.Decimal(curr_point[3])
-            next_one = (cp1 + (dc.Decimal(next_point[1]) - cp1) * (num_elements / raw_ratio))
-            next_two = (cp2 + (dc.Decimal(next_point[2]) - cp2) * (num_elements / raw_ratio))
-            next_three = (cp3 + (dc.Decimal(next_point[3]) - cp3) * (num_elements / raw_ratio))
-            fv1 = float((next_one - cp1) / num_elements)
-            fv2 = float((next_two - cp2) / num_elements)
-            fv3 = float((next_three - cp3) / num_elements)
+            fv1 = float(((dc.Decimal(curr_point[1]) + (dc.Decimal(next_point[1]) - dc.Decimal(curr_point[1])) * (num_elements / raw_ratio)) - dc.Decimal(curr_point[1])) / num_elements)
+            fv2 = float(((dc.Decimal(curr_point[2]) + (dc.Decimal(next_point[2]) - dc.Decimal(curr_point[2])) * (num_elements / raw_ratio)) - dc.Decimal(curr_point[2])) / num_elements)
+            fv3 = float(((dc.Decimal(curr_point[3]) + (dc.Decimal(next_point[3]) - dc.Decimal(curr_point[3])) * (num_elements / raw_ratio)) - dc.Decimal(curr_point[3])) / num_elements)
             stoppage_time = dc.Decimal(points[n + 1][0]) * dc.Decimal(1.0)
             while(True):
                 next_time = dc.Decimal(points[n][0] + interval) * dc.Decimal(1.0)
