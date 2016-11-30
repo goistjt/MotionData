@@ -41,7 +41,6 @@ def download_record(record_id = []):
 
 def process_accelerations(start, end, interval, points):
     dc.getcontext().prec = 6
-    one = dc.Decimal(1.0)
     zero = dc.Decimal(0.0)
     interval_d = dc.Decimal(interval) * dc.Decimal(1.0)
     start_d = dc.Decimal(start) * dc.Decimal(1.0)
@@ -49,22 +48,11 @@ def process_accelerations(start, end, interval, points):
     real_end_d = (end_d // interval_d) * interval_d
     total_diff = end_d - start_d
     total_elements = math.floor(dc.Decimal(total_diff / interval_d)) + 1
-    end_index = len(points) - 1
-    while(end_index >= 0):
-        curr_comparison = dc.Decimal(points[end_index][0]) * one
-        if(curr_comparison <= real_end_d):
-            break
-        end_index = end_index - 1
-    start_index = 0
-    while(start_index <= end_index):
-        curr_comparison = dc.Decimal(points[start_index][0]) * one
-        if(curr_comparison >= start_d):
-            break
-        start_index = start_index + 1
+    end_index = determine_end(points, real_end_d)
+    start_index = determine_start(points, start_d, end_index)
     points = points[start_index:end_index]
-    points[0] = np.array([start, 0.0, 0.0, 0.0])
-    points = np.append(points, np.array([[float(real_end_d), 0.0, 0.0, 0.0]]), axis=0)
-    print(points)
+    points = np.insert(points, 0, [[start, 0.0, 0.0, 0.0]], axis=0)
+    points = np.append(points, [[float(real_end_d), 0.0, 0.0, 0.0]], axis=0)
     n = 0
     while(True):
         if(n + 1 == len(points)):
@@ -101,6 +89,26 @@ def process_accelerations(start, end, interval, points):
                 num_elements = num_elements - 1
                 if(num_elements != 0):
                     n = n + 1
+                    
+def determine_end(points, real_end):
+    one = dc.Decimal(1.0)
+    end_index = len(points) - 1
+    while(end_index >= 0):
+        curr_comparison = dc.Decimal(points[end_index][0]) * one
+        if(curr_comparison <= real_end):
+            break
+        end_index = end_index - 1
+    return end_index
+
+def determine_start(points, start, end_index):
+    one = dc.Decimal(1.0)
+    start_index = 0
+    while(start_index <= end_index):
+        curr_comparison = dc.Decimal(points[start_index][0]) * one
+        if(curr_comparison > start):
+            break
+        start_index = start_index + 1
+    return start_index
 
 def get_excursions(start_time, accel_points, gyro_points):
     max_collection_factory = set_up_factories()
