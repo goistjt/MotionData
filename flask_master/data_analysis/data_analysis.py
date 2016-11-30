@@ -53,7 +53,6 @@ def process_accelerations(start, end, interval, points):
     points = np.append(points, [[float(real_end_d), 0.0, 0.0, 0.0]], axis=0)
     n = 0
     while(True):
-        print(points)
         if(n == len(points) - 1):
             return points
         time_diff = dc.Decimal(points[n + 1][0]) - dc.Decimal(points[n][0])
@@ -61,7 +60,7 @@ def process_accelerations(start, end, interval, points):
             points = np.delete(points, n + 1, 0)
         elif (time_diff == zero):
             points = np.delete(points, n, 0)
-        elif (time_diff < interval_d and n + 1 != len(points) - 1):
+        elif (time_diff < interval_d):
             points = np.delete(points, n + 1, 0)
         elif (time_diff == interval_d):
             n = n + 1
@@ -79,9 +78,9 @@ def process_accelerations(start, end, interval, points):
             fv1 = float((next_one - cp1) / num_elements)
             fv2 = float((next_two - cp2) / num_elements)
             fv3 = float((next_three - cp3) / num_elements)
-            stoppage_time = points[n + 1][0]
+            stoppage_time = dc.Decimal(points[n + 1][0]) * dc.Decimal(1.0)
             while(True):
-                next_time = points[n][0] + interval
+                next_time = dc.Decimal(points[n][0] + interval) * dc.Decimal(1.0)
                 if(next_time >= stoppage_time):
                     break
                 points = np.insert(points, n + 1, [next_time, points[n][1] + fv1, points[n][2] + fv2, points[n][3] + fv3], axis=0)
