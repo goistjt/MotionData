@@ -23,15 +23,22 @@ public class SettingsActivity extends AppCompatActivity {
     @BindView(R.id.sample_rate_edit)
     EditText mSampleRateView;
 
+    public static final String SETTINGS_IP = "IP_ADDRESS";
+    public static final String SETTINGS_RATE = "POLL_RATE";
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         ButterKnife.bind(this);
         SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
-        String ip = settings.getString("IP_ADDRESS", null);
+        String ip = settings.getString(SETTINGS_IP, null);
         if (ip != null) {
             mIpAddressView.setText(ip);
+        }
+        int rate = settings.getInt(SETTINGS_RATE, -1);
+        if (rate != -1) {
+            mSampleRateView.setText(String.valueOf(rate));
         }
     }
 
@@ -48,8 +55,12 @@ public class SettingsActivity extends AppCompatActivity {
             case R.id.confirm_settings:
                 SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString("IP_ADDRESS", mIpAddressView.getText().toString());
-                editor.putInt("POLL_RATE", Integer.parseInt(mSampleRateView.getText().toString()));
+                if (!mIpAddressView.getText().toString().isEmpty()) {
+                    editor.putString(SETTINGS_IP, mIpAddressView.getText().toString());
+                }
+                if (!mSampleRateView.getText().toString().isEmpty()) {
+                    editor.putInt(SETTINGS_RATE, Integer.parseInt(mSampleRateView.getText().toString()));
+                }
                 editor.apply();
                 startActivity(new Intent(this, MainActivity.class));
         }
