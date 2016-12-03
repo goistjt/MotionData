@@ -20,6 +20,9 @@ public class SettingsActivity extends AppCompatActivity {
     @BindView(R.id.ip_address_edit)
     EditText mIpAddressView;
 
+    @BindView(R.id.sample_rate_edit)
+    EditText mSampleRateView;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +49,7 @@ public class SettingsActivity extends AppCompatActivity {
                 SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("IP_ADDRESS", mIpAddressView.getText().toString());
+                editor.putInt("POLL_RATE", Integer.parseInt(mSampleRateView.getText().toString()));
                 editor.apply();
                 startActivity(new Intent(this, MainActivity.class));
         }

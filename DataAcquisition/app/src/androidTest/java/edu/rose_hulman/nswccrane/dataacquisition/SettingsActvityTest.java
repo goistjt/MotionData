@@ -41,7 +41,7 @@ public class SettingsActvityTest extends JUnitTestCase<SettingsActivity> {
     }
 
     @Test
-    public void confirmPrefs() {
+    public void confirmIpPrefs() {
         onView(withId(R.id.ip_address_edit)).perform(ViewActions.typeText("192.168.1.1"));
         onView(withId(R.id.ip_address_edit)).check(matches(withText("192.168.1.1")));
         openActionBarOverflowOrOptionsMenu(mActivity);
