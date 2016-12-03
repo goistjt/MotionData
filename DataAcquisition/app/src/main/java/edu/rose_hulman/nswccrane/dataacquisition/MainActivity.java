@@ -34,6 +34,8 @@ import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.GyroRunnable;
 import edu.rose_hulman.nswccrane.dataacquisition.runnable_utils.ServiceShutdownRunnable;
 import sqlite.MotionCollectionDBHelper;
 
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_RATE;
+
 public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener, ICollectionCallback {
 
     @BindView(R.id.collection_button)
@@ -85,6 +87,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private boolean mStarted;
 
+    private int pollRate;
+    public static final int MS_TO_US = 1000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
+        pollRate = settings.getInt(SETTINGS_RATE, 40);
     }
 
     @Override
@@ -220,10 +227,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void collectionOn() {
         mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         if (mAccelerometer != null) {
-            mSensorManager.registerListener(this, mAccelerometer, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
+            mSensorManager.registerListener(this, mAccelerometer, pollRate * MS_TO_US);
         }
         if (mGyroscope != null) {
-            mSensorManager.registerListener(this, mGyroscope, getResources().getInteger(R.integer.DEFAULT_COLLECTION_LATENCY));
+            mSensorManager.registerListener(this, mGyroscope, pollRate * MS_TO_US);
         }
         mCollectionButton.setText(R.string.stop_collection);
         mStarted = true;
