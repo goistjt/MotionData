@@ -5,6 +5,7 @@ import android.support.test.espresso.action.ViewActions;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
@@ -22,6 +23,7 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
  * Created by Jeremiah Goist on 11/25/2016.
  */
 
+@Ignore // Remove this to test locally
 public class SettingsActvityTest extends JUnitTestCase<SettingsActivity> {
     private SettingsActivity mActivity;
 
