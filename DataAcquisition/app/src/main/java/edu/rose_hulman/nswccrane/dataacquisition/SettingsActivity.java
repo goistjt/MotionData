@@ -1,6 +1,7 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -59,7 +60,10 @@ public class SettingsActivity extends AppCompatActivity {
                     editor.putString(SETTINGS_IP, mIpAddressView.getText().toString());
                 }
                 if (!mSampleRateView.getText().toString().isEmpty()) {
-                    editor.putInt(SETTINGS_RATE, Integer.parseInt(mSampleRateView.getText().toString()));
+                    int rate = Integer.parseInt(mSampleRateView.getText().toString());
+                    if (rate > 0) {
+                        editor.putInt(SETTINGS_RATE, Integer.parseInt(mSampleRateView.getText().toString()));
+                    }
                 }
                 editor.apply();
                 startActivity(new Intent(this, MainActivity.class));
