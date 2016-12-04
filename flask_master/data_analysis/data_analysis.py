@@ -50,39 +50,39 @@ def process_accelerations(start, end, interval, points):
     real_end_d = dc.Decimal(start) + ((dc.Decimal(end) * one) // interval_d) * interval_d
     end_index = determine_end(points, real_end_d)
     start_index = determine_start(points, dc.Decimal(start) * one, end_index)
-    points = points[start_index:end_index]
-    points = np.insert(points, 0, [[start, 0.0, 0.0, 0.0]], axis=0)
-    points = np.append(points, [[float(real_end_d), 0.0, 0.0, 0.0]], axis=0)
+    points = points[start_index:end_index].tolist()
+    final_points = []
+    final_points.append([start, 0.0, 0.0, 0.0])
+    points.append([float(real_end_d), 0.0, 0.0, 0.0])
     n = 0
+    z = 0
     while(True):
-        if(n == len(points) - 1):
-            return points
-        time_diff = dc.Decimal(points[n + 1][0]) * one - dc.Decimal(points[n][0]) * one
-        if (time_diff < zero):
-            points = np.delete(points, n + 1, 0)
-        elif (time_diff == zero):
-            points = np.delete(points, n, 0)
-        elif (time_diff < interval_d):
-            points = np.delete(points, n + 1, 0)
+        if(n >= len(points)):
+            return final_points
+        curr_point = final_points[z]
+        next_point = points[n]
+        time_diff = dc.Decimal(next_point[0]) * one - dc.Decimal(curr_point[0]) * one
+        if (time_diff == zero):
+            final_points[z] = next_point
         elif (time_diff == interval_d):
-            n = n + 1
-        else:
-            curr_point = points[n]
-            next_point = points[n + 1]
+            final_points.append(next_point)
+            z = z + 1
+        elif (time_diff > zero and time_diff > interval_d):
             raw_ratio = time_diff / interval_d
             num_elements = math.floor(raw_ratio)
             last_time = (dc.Decimal(curr_point[0]) * one) + (num_elements * interval_d)
-            print(last_time)
             time_ratio = last_time / dc.Decimal(next_point[0])
             fv1 = float(((dc.Decimal(next_point[1]) * time_ratio) - dc.Decimal(curr_point[1])) / num_elements)
             fv2 = float(((dc.Decimal(next_point[2]) * time_ratio) - dc.Decimal(curr_point[2])) / num_elements)
             fv3 = float(((dc.Decimal(next_point[3]) * time_ratio) - dc.Decimal(curr_point[3])) / num_elements)
             while(True):
-                next_time = dc.Decimal(points[n][0]) * dc.Decimal(1.0) + interval_d
+                next_time = dc.Decimal(curr_point[0]) * dc.Decimal(1.0) + interval_d
                 if(next_time > last_time):
                     break
-                points = np.insert(points, n + 1, [next_time, points[n][1] + fv1, points[n][2] + fv2, points[n][3] + fv3], axis=0)
-                n = n + 1
+                curr_point = [float(next_time), curr_point[1] + fv1, curr_point[2] + fv2, curr_point[3] + fv3]
+                final_points.append(curr_point)
+            z = len(final_points) - 1
+        n = n + 1
 
 def determine_end(points, real_end):
     one = dc.Decimal(1.0)

@@ -57,17 +57,15 @@ class TestKinematics(unittest.TestCase):
         points = da.process_accelerations(0.5, 3.5, 1.0, points)
         print(points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
-    
-    """
+        
     def test_points_large_set(self):
         points = np.array([[0, 0, 0, 0]])
-        for x in range(200000):
+        for x in range(100000):
             points = np.append(points, [[x * 0.1, x, x, x]], axis=0)
         start = time.time()
-        da.process_accelerations(0.2, 200000, 0.5, points)
+        da.process_accelerations(0.2, 100000, 0.5, points)
         end = time.time()
         print(end - start)
-    """
     
     """
     def test_kinetics_keeper_init(self):
