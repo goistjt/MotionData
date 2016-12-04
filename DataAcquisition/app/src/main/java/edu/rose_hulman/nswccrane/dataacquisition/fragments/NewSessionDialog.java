@@ -37,6 +37,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
 
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_IP;
 import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
 
 /**
@@ -89,8 +90,8 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
                         .setSessDesc(mSessionDescriptionText.getText().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                String ip = mRootActivity.getSharedPreferences("Settings", 0).getString("IP_ADDRESS", null);
-                if (ip.isEmpty()) { // Don't change this. For some reason it converts null to the empty string
+                String ip = mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_IP, null);
+                if (ip == null || ip.isEmpty()) { // Don't change this. For some reason it converts null to the empty string
                     Toast.makeText(mRootActivity, "Please enter the Ip Address of the server in the Settings page", Toast.LENGTH_SHORT).show();
                 } else {
                     new PostNewSession().execute(String.format("http://%s:80/createSession", ip), jsonBody); // TODO: Get IP from settings
@@ -153,7 +154,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
 
         @Override
         protected void onPostExecute(Response response) {
-            if (response != null) {
+            if (response != null && response.isSuccessful()) {
                 try {
                     Toast.makeText(mRootActivity, response.body().string(), Toast.LENGTH_SHORT).show();
                 } catch (IOException e) {

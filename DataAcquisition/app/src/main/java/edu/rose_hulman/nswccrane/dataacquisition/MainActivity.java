@@ -9,6 +9,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.support.annotation.IntegerRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.Locale;
@@ -64,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @BindView(R.id.export_button)
     Button mExportButton;
+
+    @BindView(R.id.record_time_edit)
+    EditText mRecordTimeEdit;
 
     private double max_x_noise;
     private double max_y_noise;
@@ -136,11 +143,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     mCollectionButton.setEnabled(false);
                     collectionOff();
                 } else {
-                    mCollectionButton.setEnabled(false);
-                    collectionOn();
+                    handleRecordingTimer();
                 }
             default:
                 //Empty
+        }
+    }
+
+    private void handleRecordingTimer() {
+        mCollectionButton.setEnabled(false);
+        collectionOn();
+        if (!mRecordTimeEdit.getText().toString().isEmpty() && Integer.parseInt(mRecordTimeEdit.getText().toString()) != 0) {
+
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (mStarted) {
+                        mCollectionButton.setEnabled(false);
+                        collectionOff();
+                    }
+                }
+            };
+            Handler handler = new Handler();
+            handler.postDelayed(runnable, Integer.parseInt(mRecordTimeEdit.getText().toString()) * 60 * 1000);
+
         }
     }
 

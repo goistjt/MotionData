@@ -18,20 +18,36 @@
         android:layout_marginTop="18dp"
         android:text="@string/calibrate" />
 
-    <Button
-        android:id="@+id/collection_button"
-        android:layout_width="200dp"
+    <LinearLayout
+        android:id="@+id/collection_row"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/calibration_button"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="28dp"
-        android:text="@string/collect_data" />
+        android:layout_below="@id/calibration_button"
+        android:layout_marginTop="28dp">
+
+        <EditText
+            android:id="@+id/record_time_edit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Minutes to record\n(Empty = 0 = Indefinite)"
+            android:inputType="number"
+            android:textSize="12sp" />
+
+
+        <Button
+            android:id="@+id/collection_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/collect_data" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/export_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/collection_button"
+        android:layout_below="@+id/collection_row"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="28dp"
         android:text="@string/export_data" />

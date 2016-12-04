@@ -22,6 +22,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_IP;
+
 /**
  * Created by Jeremiah Goist on 10/3/2016.
  */
@@ -58,8 +60,8 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
                 break;
             case R.id.add_to_session_button:
                 Toast.makeText(mRootActivity, "Retrieving existing Sessions from the server", Toast.LENGTH_SHORT).show();
-                String ip = mRootActivity.getSharedPreferences("Settings", 0).getString("IP_ADDRESS", null);
-                if (ip.isEmpty()) { // Don't change this. For some reason it converts null to the empty string
+                String ip = mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_IP, null);
+                if (ip == null || ip.isEmpty()) {
                     Toast.makeText(mRootActivity, "Please enter the Ip Address of the server in the Settings page", Toast.LENGTH_SHORT).show();
                 } else {
                     (new AddSessionTask()).execute(String.format("http://%s:80/getSessions/", ip) + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
@@ -92,7 +94,7 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
         protected void onPostExecute(Response response) {
             Bundle args = new Bundle();
             try {
-                if (response != null) {
+                if (response != null && response.isSuccessful()) {
                     args.putString("Sessions", response.body().string());
                     AddSessionDialog dialog = new AddSessionDialog();
                     dialog.setActivity(mRootActivity);
