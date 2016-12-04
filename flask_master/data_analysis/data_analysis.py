@@ -14,6 +14,8 @@ import data_analysis.max_collections as mc
 import decimal as dc
 
 import math
+import time
+from astropy.units import one
 
 def set_up_factories():
     maxColFact = mcf.MaxCollectionFactory()
@@ -43,17 +45,22 @@ def _comparator(element):
     return element[0]
 
 def process_accelerations(start, end, interval, points):
+    start_time = time.time()
     dc.getcontext().prec = 6
     zero = dc.Decimal(0.0)
     one = dc.Decimal(1.0)
     interval_d = dc.Decimal(interval) * one
-    real_end_d = dc.Decimal(start) + ((dc.Decimal(end) * one) // interval_d) * interval_d
+    start_d = dc.Decimal(start) * one
+    end_d = dc.Decimal(end) * one
+    real_end_d = start_d + (end_d // interval_d) * interval_d
     end_index = determine_end(points, real_end_d)
-    start_index = determine_start(points, dc.Decimal(start) * one, end_index)
-    points = points[start_index:end_index].tolist()
+    start_index = determine_start(points, start_d, end_index)
+    points = points[start_index:end_index]
     final_points = []
     final_points.append([start, 0.0, 0.0, 0.0])
     points.append([float(real_end_d), 0.0, 0.0, 0.0])
+    end_time = time.time()
+    print(end_time - start_time)
     n = 0
     z = 0
     while(True):
@@ -98,6 +105,8 @@ def determine_start(points, start, end_index):
     one = dc.Decimal(1.0)
     start_index = 0
     while(start_index <= end_index):
+        if(start_index >= len(points)):
+            return end_index
         curr_comparison = dc.Decimal(points[start_index][0]) * one
         if(curr_comparison > start):
             break
