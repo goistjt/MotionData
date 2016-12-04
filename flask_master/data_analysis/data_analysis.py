@@ -39,13 +39,17 @@ def download_record(record_id = []):
     df = pd.DataFrame(np.array(select_record(record_id)))
     return df.to_csv(index=False)
 
+def _comparator(element):
+    return element[0]
+
 def process_accelerations(start, end, interval, points):
     dc.getcontext().prec = 6
     zero = dc.Decimal(0.0)
-    interval_d = dc.Decimal(interval) * dc.Decimal(1.0)
-    real_end_d = ((dc.Decimal(end) * dc.Decimal(1.0)) // interval_d) * interval_d
+    one = dc.Decimal(1.0)
+    interval_d = dc.Decimal(interval) * one
+    real_end_d = dc.Decimal(start) + ((dc.Decimal(end) * one) // interval_d) * interval_d
     end_index = determine_end(points, real_end_d)
-    start_index = determine_start(points, dc.Decimal(start) * dc.Decimal(1.0), end_index)
+    start_index = determine_start(points, dc.Decimal(start) * one, end_index)
     points = points[start_index:end_index]
     points = np.insert(points, 0, [[start, 0.0, 0.0, 0.0]], axis=0)
     points = np.append(points, [[float(real_end_d), 0.0, 0.0, 0.0]], axis=0)
@@ -53,7 +57,7 @@ def process_accelerations(start, end, interval, points):
     while(True):
         if(n == len(points) - 1):
             return points
-        time_diff = dc.Decimal(points[n + 1][0]) - dc.Decimal(points[n][0])
+        time_diff = dc.Decimal(points[n + 1][0]) * one - dc.Decimal(points[n][0]) * one
         if (time_diff < zero):
             points = np.delete(points, n + 1, 0)
         elif (time_diff == zero):
@@ -67,17 +71,19 @@ def process_accelerations(start, end, interval, points):
             next_point = points[n + 1]
             raw_ratio = time_diff / interval_d
             num_elements = math.floor(raw_ratio)
-            fv1 = float(((dc.Decimal(curr_point[1]) + (dc.Decimal(next_point[1]) - dc.Decimal(curr_point[1])) * (num_elements / raw_ratio)) - dc.Decimal(curr_point[1])) / num_elements)
-            fv2 = float(((dc.Decimal(curr_point[2]) + (dc.Decimal(next_point[2]) - dc.Decimal(curr_point[2])) * (num_elements / raw_ratio)) - dc.Decimal(curr_point[2])) / num_elements)
-            fv3 = float(((dc.Decimal(curr_point[3]) + (dc.Decimal(next_point[3]) - dc.Decimal(curr_point[3])) * (num_elements / raw_ratio)) - dc.Decimal(curr_point[3])) / num_elements)
-            stoppage_time = dc.Decimal(points[n + 1][0]) * dc.Decimal(1.0)
+            last_time = (dc.Decimal(curr_point[0]) * one) + (num_elements * interval_d)
+            print(last_time)
+            time_ratio = last_time / dc.Decimal(next_point[0])
+            fv1 = float(((dc.Decimal(next_point[1]) * time_ratio) - dc.Decimal(curr_point[1])) / num_elements)
+            fv2 = float(((dc.Decimal(next_point[2]) * time_ratio) - dc.Decimal(curr_point[2])) / num_elements)
+            fv3 = float(((dc.Decimal(next_point[3]) * time_ratio) - dc.Decimal(curr_point[3])) / num_elements)
             while(True):
-                next_time = dc.Decimal(points[n][0] + interval) * dc.Decimal(1.0)
-                if(next_time >= stoppage_time):
+                next_time = dc.Decimal(points[n][0]) * dc.Decimal(1.0) + interval_d
+                if(next_time > last_time):
                     break
                 points = np.insert(points, n + 1, [next_time, points[n][1] + fv1, points[n][2] + fv2, points[n][3] + fv3], axis=0)
                 n = n + 1
-                    
+
 def determine_end(points, real_end):
     one = dc.Decimal(1.0)
     end_index = len(points) - 1
@@ -86,7 +92,7 @@ def determine_end(points, real_end):
         if(curr_comparison <= real_end):
             break
         end_index = end_index - 1
-    return end_index
+    return end_index + 1
 
 def determine_start(points, start, end_index):
     one = dc.Decimal(1.0)

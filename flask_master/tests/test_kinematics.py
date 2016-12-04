@@ -20,54 +20,54 @@ class TestKinematics(unittest.TestCase):
 
     def tearDown(self):
         self.kin_keep = None
-     
-    def test_point_normalizer_perfect_input(self):
-        points = np.array([[0.0, 1.0, 2.0, 3.0], [1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0], [3.0, 4.0, 5.0, 6.0]])
-        points_exp = np.array([[0.0, 1.0, 2.0, 3.0], [1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0], [3.0, 0.0, 0.0, 0.0]])
-        points = da.process_accelerations(0.0, 3.0, 1.0, points)
-        print(points)
+        
+    def test_points_normalizer_same(self):
+        points = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]])
+        points_exp = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]])
+        points = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
         
-    def test_points_normalizer_beginning(self):
-        points = np.array([[0.5, 0.5, 0.5, 0.5], [1.0, 1.0, 1.0, 1.0], [2.0, 2.0, 2.0, 2.0]])
-        points_exp = np.array([[0.0, 0.0, 0.0, 0.0]])
-        for x in range(20):
-            points_exp = np.append(points_exp, np.array([[0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1)]]), axis=0)
-        points = da.process_accelerations(0.0, 2.0, 0.1, points)
-        print(points)
-        self.assertTrue(np.allclose(points_exp, points, self.MAX_EPSILON))
-                
-    def test_points_normalizer_ending(self):
-        points = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 1.0, 1.0, 1.0], [2.5, 2.5, 2.5, 2.5]])
-        points_exp = np.array([[0.0, 0.0, 0.0, 0.0]])
-        for x in range(25):
-            points_exp = np.append(points_exp, np.array([[0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1), 0.1 + (x * 0.1)]]), axis=0)
-        for y in range(5):
-            points_exp = np.append(points_exp, np.array([[2.6 + (y * 0.1), 2.0 - (y * 0.5), 2.0 - (y * 0.5), 2.0 - (y * 0.5)]]), axis=0)
-        points = da.process_accelerations(0.0, 3.0, 0.1, points)
-        print(points)
+    def test_points_normalizer_beginning_off(self):
+        points = np.array([[0.2, 0.4, 100.2, 32.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]])
+        points_exp = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]])
+        points = da.process_accelerations(0.0, 4.0, 1.0, points)
+        self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
+        
+    def test_points_normalizer_end_off(self):
+        points = np.array([[0.2, 0.4, 100.2, 32.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [3.9, 22.0, 0.42, 42.0]])
+        points_exp = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]])
+        points = da.process_accelerations(0.0, 4.0, 1.0, points)
+        self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
+        
+    def test_points_simple_shift(self):
+        points = np.array([[0.1, 0.0, 0.0, 0.0], [0.8, 2.0, 1.0, 8.0], [1.2, 1.2, 1.2, 1.2], [1.5, 2.0, 8.0, 9.0], [2.3, 43.0, 42.1, 42.0]])
+        points_exp = np.array([[0.0, 0.0, 0.0, 0.0], [1.1, 1.1, 1.1, 1.1], [2.2, 0.0, 0.0, 0.0]])
+        points = da.process_accelerations(0.0, 2.2, 1.1, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
         
     def test_points_normalizer_both(self):
-        points = np.array([[0.3, 0.3, 0.3, 0.3], [1.0, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0]])
-        print(da.process_accelerations(0.0, 2.1, .5, points))
+        points = np.array([[2.0, 1.0, 1.0, 1.0]])
+        points_exp = np.array([[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]])
+        points = da.process_accelerations(0.0, 4.0, 1.0, points)
+        self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
         
-    def test_points_normalizer_everything(self):
-        points = np.array([[0.3, 1.0, 2.0, 3.0], [1.4, 2.0, 3.0, 4.0], [2.0, 3.0, 4.0, 5.0], [3.4, 4.0, 5.1, 7.3]])
-        print(da.process_accelerations(0.4, 2.0, 1.0, points))
-     
-    def test_points_under_everything(self):
-        points = np.array([[0.3, 1.0, 2.0, 3.0], [0.999, 2.0, 3.0, 4.0], [1.999, 3.0, 4.0, 5.0], [3.4, 4.0, 5.1, 7.3]])
-        print(da.process_accelerations(0.0, 2.0, 0.5, points))
-         
+    def test_complex_shift(self):
+        points = np.array([[0.4, 0.0, 0.0, 0.0], [0.6, 1.0, 2.0, 3.0], [0.9, 4.0, 5.0, 6.0], [0.7, 1.0, 1.0, 1.0], [0.9, 8.0, 2.0, 3.0], [1.3, 0.0, 1.0, 2.0], [2.9, 2.32, 2.32, 2.32], [3.0, 8.0, 2.0, 3.0], [3.5, 1.0, 4.0, 9.2]])
+        points_exp = np.array([[0.5, 0.0, 0.0, 0.0], [1.5, 1.0, 1.0, 1.0], [2.5, 2.0, 2.0, 2.0], [3.5, 0.0, 0.0, 0.0]])
+        points = da.process_accelerations(0.5, 3.5, 1.0, points)
+        print(points)
+        self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
+    
+    """
     def test_points_large_set(self):
         points = np.array([[0, 0, 0, 0]])
-        for x in range(20000):
+        for x in range(200000):
             points = np.append(points, [[x * 0.1, x, x, x]], axis=0)
         start = time.time()
-        res = da.process_accelerations(0.2, 20000, 0.5, points)
+        da.process_accelerations(0.2, 200000, 0.5, points)
         end = time.time()
         print(end - start)
+    """
     
     """
     def test_kinetics_keeper_init(self):
