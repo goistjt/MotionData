@@ -45,50 +45,71 @@ def _comparator(element):
     return element[0]
 
 def process_accelerations(start, end, interval, points):
-    start_time = time.time()
+    # Sets the precision level for operations referencing the Decimal datatype
     dc.getcontext().prec = 6
+    
+    #Default one and zero values
     zero = dc.Decimal(0.0)
     one = dc.Decimal(1.0)
+    
     interval_d = dc.Decimal(interval) * one
+    
     start_d = dc.Decimal(start) * one
     end_d = dc.Decimal(end) * one
+    
     real_end_d = start_d + (end_d // interval_d) * interval_d
+    
     end_index = determine_end(points, real_end_d)
     start_index = determine_start(points, start_d, end_index)
+    
     points = points[start_index:end_index]
+    
     final_points = []
     final_points.append([start, 0.0, 0.0, 0.0])
+    
     points.append([float(real_end_d), 0.0, 0.0, 0.0])
-    end_time = time.time()
-    print(end_time - start_time)
+    
     n = 0
     z = 0
     while(True):
+        # At end of original
         if(n >= len(points)):
             return final_points
+        
         curr_point = final_points[z]
         next_point = points[n]
+        
+        # Current time difference
         time_diff = dc.Decimal(next_point[0]) * one - dc.Decimal(curr_point[0]) * one
+        
+        
         if (time_diff == zero):
             final_points[z] = next_point
+        
         elif (time_diff == interval_d):
             final_points.append(next_point)
             z = z + 1
+        
         elif (time_diff > zero and time_diff > interval_d):
             raw_ratio = time_diff / interval_d
             num_elements = math.floor(raw_ratio)
+            
             last_time = (dc.Decimal(curr_point[0]) * one) + (num_elements * interval_d)
             time_ratio = last_time / dc.Decimal(next_point[0])
+            
             fv1 = float(((dc.Decimal(next_point[1]) * time_ratio) - dc.Decimal(curr_point[1])) / num_elements)
             fv2 = float(((dc.Decimal(next_point[2]) * time_ratio) - dc.Decimal(curr_point[2])) / num_elements)
             fv3 = float(((dc.Decimal(next_point[3]) * time_ratio) - dc.Decimal(curr_point[3])) / num_elements)
+            
             while(True):
                 next_time = dc.Decimal(curr_point[0]) * dc.Decimal(1.0) + interval_d
                 if(next_time > last_time):
                     break
                 curr_point = [float(next_time), curr_point[1] + fv1, curr_point[2] + fv2, curr_point[3] + fv3]
                 final_points.append(curr_point)
+            
             z = len(final_points) - 1
+        
         n = n + 1
 
 def determine_end(points, real_end):

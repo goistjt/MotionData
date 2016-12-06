@@ -60,13 +60,14 @@ class TestKinematics(unittest.TestCase):
     
     def test_points_large_set(self):
         points = [[0, 0, 0, 0]]
-        for x in range(100000):
+        for x in range(2000):
             points.append([x * 0.000001, x, x, x])
         print(points)
         start = time.time()
-        da.process_accelerations(0.2, 20000, 0.5, points)
+        z = da.process_accelerations(0.2, 50000, 0.5, points)
         end = time.time()
         print(end - start)
+        print(len(z))
     
     """
     def test_kinetics_keeper_init(self):
