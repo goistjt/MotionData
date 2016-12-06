@@ -1,6 +1,6 @@
 import json
 import unittest
-import flask_master.run_server as rs
+import run_server as rs
 
 
 class FlaskTestCase(unittest.TestCase):

@@ -1,7 +1,7 @@
 from flask import jsonify, request, render_template, Response
 
-from data_analysis import data_analysis as da
-from database import crud
+# from data_analysis import data_analysis as da
+from database import crud_class
 from flask_server import app
 
 
@@ -42,12 +42,14 @@ def hello_world():
 
 @app.route('/gyro')
 def gyro():
+    crud = crud_class.Crud()
     result = crud.read_one("""SELECT * FROM GyroPoints LIMIT 1""")
     return jsonify(row=str(result))
 
 
 @app.route('/session')
 def session():
+    crud = crud_class.Crud()
     result = crud.read_all("SELECT * FROM Session")
     return jsonify(row=str(result))
 
@@ -56,22 +58,21 @@ def session():
 def index():
     return render_template("index.html")
 
+
 @app.route("/tables.html")
 def tables():
     return render_template("tables.html")
 
 
-@app.route("/getRecord/<record_id>")
-def get_record_data(record_id=[]):
-    # with open("outputs/Adjacency.csv") as fp:
-    #     csv = fp.read()
-    txt = da.download_record(record_id)
-    return Response(
-        txt,
-        mimetype="text",
-        headers={"Content-disposition":
-                     "attachment; filename=record.txt"})
-
+# @app.route("/getRecord/<record_id>")
+# def get_record_data(record_id=[]):
+#     # with open("outputs/Adjacency.csv") as fp:
+#     #     csv = fp.read()
+#     txt = da.download_record(record_id)
+#     return Response(
+#         txt,
+#         mimetype="text",
+#         headers={"Content-disposition": "attachment; filename=record.txt"})
 
 # used to check for sql injection later on
 # def is_possible_injection(attack_vector):
@@ -79,4 +80,3 @@ def get_record_data(record_id=[]):
 #         raise InvalidUsage(
 #             "Invalid characters contained in query parameters",
 #             status_code=666)
-

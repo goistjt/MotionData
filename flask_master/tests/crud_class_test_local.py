@@ -1,8 +1,8 @@
 import datetime
 import unittest
 
-from flask_master.flask_server import server
-from flask_master.database import crud_class
+from flask_server import server
+from database import crud_class
 
 
 class CrudTest(unittest.TestCase):

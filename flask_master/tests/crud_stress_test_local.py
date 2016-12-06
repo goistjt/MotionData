@@ -3,8 +3,8 @@ import unittest
 import pandas as pd
 import os
 
-from flask_master.flask_server import server
-from flask_master.database import crud_class
+from flask_server import server
+from database import crud_class
 
 def get_now():
     t = datetime.datetime.now()

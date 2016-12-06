@@ -1,8 +1,7 @@
 import hashlib
 from pymysql import Error, connect
 
-from flask_master.database.python_mysql_dbconfig import read_db_config
-
+from database.python_mysql_dbconfig import read_db_config
 
 '''
 Created on Nov 4, 2016
@@ -10,17 +9,19 @@ Created on Nov 4, 2016
 @author: yangr
 '''
 
+
 class Crud(object):
-    '''
+    """
     This class handles the crud operation of the six-dof database
-    '''
+    """
+
     def __init__(self):
-        '''
+        """
         Constructor
-        '''
+        """
         self.conn = self.get_connection()
-    
-    ########### connections ##########
+
+    # ********* connections ********#
     def start(self):
         self.conn = self.get_connection()
 
@@ -29,10 +30,9 @@ class Crud(object):
 
     def get_connection(self):
         db_config = read_db_config()
-        return connect(**db_config) 
-    
+        return connect(**db_config)
 
-    ############  session  ###########
+    # ********* session ********#
     def create_session(self, description, starting_time):
         query = "INSERT INTO Session" \
                 "( description, starting_time) " \
@@ -45,13 +45,13 @@ class Crud(object):
         # EX: 'Test'
         query = "SELECT * FROM Session WHERE id = %s"
         args = [sess_id]
-        return self.read_one(query, args)  
+        return self.read_one(query, args)
 
-    def get_allSessions(self):
+    def get_all_sessions(self):
         query = "SELECT * FROM Session"
-        return self.read_all(query) 
+        return self.read_all(query)
 
-    def getAllRecordsFromSession(self, session_id):
+    def get_all_records_from_session(self, session_id):
         query = "SELECT * FROM Records where session_id = %s"
         args = [session_id]
         return self.read_all(query, args)
@@ -70,10 +70,9 @@ class Crud(object):
         else:
             num_of_row = [num_of_row[0] + 1]
         query = "ALTER TABLE Session AUTO_INCREMENT = %s"
-        self.execute_transaction_query(query, num_of_row) 
+        self.execute_transaction_query(query, num_of_row)
 
-
-    ############  record  ###########
+    # ********* record ********#
     def create_record(self, session_id, device_id):
         record_id = self.sha1(str(session_id) + device_id)
         query = "INSERT INTO Records" \
@@ -81,30 +80,29 @@ class Crud(object):
                 "VALUES(%s, %s, %s)"
         args = [record_id, session_id, device_id]
         self.insert(query, args)
-        return record_id    
+        return record_id
 
-    def getRecord_data(self, record_id):
-        queryAccel = "SELECT * FROM AccelPoints where record_id = %s"
-        queryGyro = "SELECT * FROM GyroPoints where record_id = %s"
+    def get_record_data(self, record_id):
+        query_accel = "SELECT * FROM AccelPoints where record_id = %s"
+        query_gyro = "SELECT * FROM GyroPoints where record_id = %s"
         args = [record_id]
-        accesPoints = self.read_all(queryAccel, args)
-        gyroPoints = self.read_all(queryGyro, args)
-        return (accesPoints, gyroPoints)    
+        access_points = self.read_all(query_accel, args)
+        gyro_points = self.read_all(query_gyro, args)
+        return access_points, gyro_points
 
     def sha1(self, sha_input):
         m = hashlib.sha1()
         m.update(sha_input.encode('utf-8'))
-        return m.hexdigest()    
-    
+        return m.hexdigest()
 
-    ############  gyro_points  ###########
+    # ********* gyro_points ********#
     def insert_gyro_points(self, record_id, timestamp, roll, pitch, yaw):
         query = "INSERT INTO GyroPoints" \
                 "(record_id, timestamp, roll, pitch, yaw) " \
                 "VALUES(%s,%s, %s, %s, %s)"
         args = (record_id, timestamp, roll, pitch, yaw)
         return self.insert(query, args)
-    
+
     def insert_many_gyro_points(self, data):
         query = "INSERT INTO GyroPoints" \
                 "(record_id, timestamp, roll, pitch, yaw) " \
@@ -112,17 +110,15 @@ class Crud(object):
         args = data
         return self.insert(query, args, multiRow=True)
 
-    def bulk_insert_gyro_points(self, data_path, local = False):
+    def bulk_insert_gyro_points(self, data_path, local=False):
         if local:
             lo = 'LOCAL'
-        else :
-            lo =''
-        args = []
-        args.append("GyroPoints")
-        args.append('(record_id, timestamp, roll, pitch, yaw)')
+        else:
+            lo = ''
+        args = ["GyroPoints", '(record_id, timestamp, roll, pitch, yaw)']
         self.load_csv_data(lo, data_path, args)
 
-    ############  accel_points  ###########
+    # ********* accel_points ********#
     def insert_accel_points(self, record_id, timestamp, x, y, z):
         query = "INSERT INTO AccelPoints " \
                 "(record_id, timestamp, surge, sway, heave) " \
@@ -130,41 +126,39 @@ class Crud(object):
         args = (record_id, timestamp, x, y, z)
         return self.insert(query, args)
 
-    #Local means insert outside of server, 
-    def bulk_insert_accel_points(self, data_path, local = False):
+    # Local means insert outside of server,
+    def bulk_insert_accel_points(self, data_path, local=False):
         if local:
             lo = 'LOCAL'
-        else :
+        else:
             lo = ''
-        args = []
-        args.append("AccelPoints")
-        args.append('(record_id, timestamp, surge, sway, heave)')
+        args = ["AccelPoints", '(record_id, timestamp, surge, sway, heave)']
         self.load_csv_data(lo, data_path, args)
-    
-    ###########  intergration ############
+
+    # ********* integration ********#
     def delete_entire_session(self, session_id):
         try:
             cursor = self.conn.cursor()
-            #select all records links to the sesson id
-            all_records_query= "SELECT id FROM Records WHERE Records.session_id = %s"
+            # select all records links to the sesson id
+            all_records_query = "SELECT id FROM Records WHERE Records.session_id = %s"
             cursor.execute(all_records_query, [session_id])
-            
+
             all_records = cursor.fetchall()
             for record in all_records:
-                #delete all the accel points and gyro points
+                # delete all the accel points and gyro points
                 cursor.execute("DELETE FROM AccelPoints WHERE record_id = %s", [record])
-                #remove the record
+                # remove the record
                 cursor.execute("DELETE FROM GyroPoints WHERE record_id = %s", [record])
-                
+
                 cursor.execute("DELETE FROM Records WHERE id = %s", [record])
-            #remove the session
+            # remove the session
             query = "DELETE FROM Session WHERE id = %s"
-            cursor.execute(query, [session_id])    
+            cursor.execute(query, [session_id])
             self.conn.commit()
             cursor.close()
         except Error as error:
             print(error)
-        #     query = "DELETE FROM Session WHERE id = %s"
+        # query = "DELETE FROM Session WHERE id = %s"
         #     delete_data(query, [lastid])
         #     reset_session_autoIndex()
         #     query = ""
@@ -172,12 +166,11 @@ class Crud(object):
         finally:
             self.reset_session_auto_index()
 
-    ############  read  ###########     
+    # ********* read ********#
     def read_data_points(self, table, record_id, timestamp):
         query = "SELECT * FROM " + table + " WHERE record_id = %s AND timestamp = %s"
         args = [record_id, timestamp]
-        return self.read_one(query, args)    
-    
+        return self.read_one(query, args)
 
     def read_one(self, query, args=[]):
         try:
@@ -187,8 +180,7 @@ class Crud(object):
             cursor.close()
             return data
         except Error as error:
-            print(error)    
-    
+            print(error)
 
     def read_all(self, query, args=[]):
         try:
@@ -198,21 +190,20 @@ class Crud(object):
             cursor.close()
             return data
         except Error as error:
-            print(error)    
-    
-    ############ delete ############
-    def delete_data(self, query, args=[]):
-        self.execute_transaction_query(query, args)  
-    
+            print(error)
 
-    ############ insert ############
-    def insert(self, query, args=[], multiRow = False):
+    # ********* delete ********#
+    def delete_data(self, query, args=[]):
+        self.execute_transaction_query(query, args)
+
+    # ********* insert ********#
+    def insert(self, query, args=[], multiRow=False):
         try:
             cursor = self.conn.cursor()
             if multiRow:
                 print(query)
                 cursor.executemany(query, args)
-            else :
+            else:
                 cursor.execute(query, args)
             last_id = cursor.lastrowid
             if last_id:
@@ -224,19 +215,20 @@ class Crud(object):
             return last_id
         except Error as error:
             print(error)
-    
+
     def load_csv_data(self, local, path, args):
-#         path has to be surrounded by single quotation mark '
-#         "LOAD DATA LOCAL INFILE" \
-#                 "'testdata.csv'"  \
-#                 "INTO TABLE Session FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'"\
-#                 "(description, starting_time) SET ID = NULL;"
-        query = "LOAD DATA "+local+" INFILE '"+path+"' INTO " \
-        "TABLE " + args[0] +" FIELDS TERMINATED BY ',' LINES "\
-        "TERMINATED BY '\r\n' IGNORE 1 LINES "+args[1] +";"
+        #         path has to be surrounded by single quotation mark '
+        #         "LOAD DATA LOCAL INFILE" \
+        #                 "'testdata.csv'"  \
+        #                 "INTO TABLE Session FIELDS TERMINATED BY ',' LINES TERMINATED BY '\r\n'"\
+        #                 "(description, starting_time) SET ID = NULL;"
+        query = "LOAD DATA " + local + " INFILE '" + path + "' INTO " \
+                                                            "TABLE " + args[0] + " FIELDS TERMINATED BY ',' LINES " \
+                                                                                 "TERMINATED BY '\r\n' IGNORE 1 LINES " + \
+                args[1] + ";"
         self.execute_transaction_query(query, [])
-      
-    ########### generic query ##########
+
+    # ********* generic query ********#
     def execute_transaction_query(self, query, args=[]):
         try:
             cursor = self.conn.cursor()
@@ -244,4 +236,4 @@ class Crud(object):
             self.conn.commit()
             cursor.close()
         except Error as error:
-            print(error)  
+            print(error)
