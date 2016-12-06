@@ -4,7 +4,6 @@ Created on Oct 29, 2016
 @author: steve
 '''
 import unittest
-from data_analysis import kinematics_keeper as kk
 import data_analysis.data_analysis as da
 import numpy as np
 import decimal as dc
@@ -15,7 +14,6 @@ class TestKinematics(unittest.TestCase):
 
     def setUp(self):
         dc.getcontext().prec = 4
-        self.kin_keep = kk.KinematicsKeeper(0, None)
         self.MAX_EPSILON = 0.000001
 
     def tearDown(self):
@@ -58,17 +56,16 @@ class TestKinematics(unittest.TestCase):
         points = da.process_accelerations(0.5, 3.5, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
     
+    """
     def test_points_large_set(self):
         points = [[0, 0, 0, 0]]
         for x in range(2000):
             points.append([x * 0.000001, x, x, x])
-        print(points)
         start = time.time()
         z = da.process_accelerations(0.2, 50000, 0.5, points)
         end = time.time()
-        print(end - start)
-        print(len(z))
-
+    """
+    
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
