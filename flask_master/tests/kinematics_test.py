@@ -64,8 +64,8 @@ class TestKinematics(unittest.TestCase):
         start = time.time()
         z = da.process_accelerations(0.2, 50000, 0.5, points)
         end = time.time()
-    """
-    
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
+"""
