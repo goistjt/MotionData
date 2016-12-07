@@ -31,10 +31,10 @@ def handle_missing_argument(error):
 
 
 # /echo?usernames=<insert here>
-@app.route('/echo')
-def echo():
-    users = request.args.get('usernames').split(',')
-    return jsonify(usernames=users)
+# @app.route('/echo')
+# def echo():
+#     users = request.args.get('usernames').split(',')
+#     return jsonify(usernames=users)
 
 
 @app.route('/hello-world')
@@ -62,11 +62,9 @@ def session():
 def index():
     return render_template("index.html")
 
-
 @app.route("/tables.html")
 def tables():
     return render_template("tables.html")
-
 
 @app.route("/getRecord/<record_id>")
 def get_record_data(record_id=[]):
@@ -78,7 +76,6 @@ def get_record_data(record_id=[]):
         mimetype="text",
         headers={"Content-disposition":
                      "attachment; filename=record.txt"})
-
 
 @app.route("/createSession", methods=["POST"])
 def create_session():
