@@ -14,8 +14,6 @@ import data_analysis.max_collections as mc
 import decimal as dc
 
 import math
-import time
-from astropy.units import one
 
 def set_up_factories():
     maxColFact = mcf.MaxCollectionFactory()
