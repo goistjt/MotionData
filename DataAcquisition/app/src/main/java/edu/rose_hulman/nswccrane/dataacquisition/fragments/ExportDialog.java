@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -20,6 +21,8 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_IP;
 
 /**
  * Created by Jeremiah Goist on 10/3/2016.
@@ -56,7 +59,13 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
                 newSessionDialog.show(mRootActivity.getFragmentManager(), NewSessionDialog.TAG);
                 break;
             case R.id.add_to_session_button:
-                (new AddSessionTask()).execute("http://137.112.233.68:80/getSessions/" + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
+                Toast.makeText(mRootActivity, "Retrieving existing Sessions from the server", Toast.LENGTH_SHORT).show();
+                String ip = mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_IP, null);
+                if (ip == null || ip.isEmpty()) {
+                    Toast.makeText(mRootActivity, "Please enter the Ip Address of the server in the Settings page", Toast.LENGTH_SHORT).show();
+                } else {
+                    (new AddSessionTask()).execute(String.format("http://%s:80/getSessions/", ip) + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
+                }
                 break;
         }
         dismiss();
@@ -83,16 +92,18 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
 
         @Override
         protected void onPostExecute(Response response) {
-            Gson gson = new Gson();
+            Bundle args = new Bundle();
             try {
-                Bundle args = new Bundle();
-                args.putString("Sessions", response.body().string());
-
-                AddSessionDialog dialog = new AddSessionDialog();
-                dialog.setActivity(mRootActivity);
-                // Supply index input as an argument.
-                dialog.setArguments(args);
-                dialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
+                if (response != null && response.isSuccessful()) {
+                    args.putString("Sessions", response.body().string());
+                    AddSessionDialog dialog = new AddSessionDialog();
+                    dialog.setActivity(mRootActivity);
+                    // Supply index input as an argument.
+                    dialog.setArguments(args);
+                    dialog.show(mRootActivity.getFragmentManager(), AddSessionDialog.TAG);
+                } else {
+                    Toast.makeText(mRootActivity, "Unable to retrieve existing Sessions from the server. Verify the server is running and the Ip Address is correct", Toast.LENGTH_LONG).show();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

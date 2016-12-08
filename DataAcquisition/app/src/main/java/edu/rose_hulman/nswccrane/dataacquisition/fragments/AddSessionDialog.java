@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListAdapter;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -35,6 +36,7 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
 
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_IP;
 import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
 
 /**
@@ -97,8 +99,13 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
                 motionDataPostBody
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostAddSession().execute("http://137.112.233.68:80/addToSession", jsonBody); // TODO: Get IP from settings
-                dismiss();
+                String ip = mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_IP, null);
+                if (ip == null || ip.isEmpty()) {
+                    Toast.makeText(mRootActivity, "Please enter the Ip Address of the server in the Settings page", Toast.LENGTH_SHORT).show();
+                } else {
+                    new PostAddSession().execute(String.format("http://%s:80/addToSession", ip), jsonBody);
+                    dismiss();
+                }
                 break;
             case R.id.session_selector:
                 populateSessionInfoAdapter();

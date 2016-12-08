@@ -16,6 +16,9 @@ import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static edu.rose_hulman.nswccrane.dataacquisition.MainActivity.MS_TO_US;
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_RATE;
+
 /**
  * Created by Jeremiah Goist on 9/24/2016.
  */
@@ -34,11 +37,14 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     private float[] prev_accel = new float[]{0, 0, 0};
     private float[] prev_gyro = new float[]{0, 0, 0};
 
+    private int pollRate;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration);
         ButterKnife.bind(this);
+        pollRate = getSharedPreferences("Settings", 0).getInt(SETTINGS_RATE, 40);
         int CALIBRATION_TIME = 30;
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
@@ -71,7 +77,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     private void initAccelerometer(SensorManager sensorManager) {
         if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
             Sensor mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-            sensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(this, mAccelerometer, pollRate * MS_TO_US);
         } else {
             Log.d("Calibration", "Linear Accelerometer does not exist");
         }
@@ -80,7 +86,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     private void initGyroscope(SensorManager sensorManager) {
         if (sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) != null) {
             Sensor mGyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-            sensorManager.registerListener(this, mGyroscope, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(this, mGyroscope, pollRate * MS_TO_US);
         } else {
             Log.d("Calibration", "Gyroscope does not exist");
         }
