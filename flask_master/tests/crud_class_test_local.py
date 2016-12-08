@@ -12,7 +12,7 @@ class CrudTest(unittest.TestCase):
         t = datetime.datetime.now()
         starting_time = (t - datetime.datetime(1970, 1, 1)).total_seconds()
         self.crud = crud_class.Crud()
-        self.starting_time = round(starting_time,5)
+        self.starting_time = round(starting_time, 5)
         self.app = app.test_client()
 
     def tearDown(self):
@@ -27,7 +27,7 @@ class CrudTest(unittest.TestCase):
         query = "DELETE FROM Session WHERE id = %s"
         self.crud.delete_data(query, [lastid])
         self.crud.reset_session_auto_index()
- 
+
     def test_create_record(self):
         session_id = -1
         device_id = "-1"
@@ -36,8 +36,8 @@ class CrudTest(unittest.TestCase):
         query = "DELETE FROM Records WHERE id = %s"
         args = [lastid]
         self.crud.delete_data(query, args)
- 
-    def test_get_sessionId(self):
+
+    def test_get_session_id(self):
         description = "test"
         lastid = self.crud.create_session(description, self.starting_time)
         self.assertEqual(lastid, self.crud.get_session_id(description, self.starting_time)[0])
@@ -45,7 +45,7 @@ class CrudTest(unittest.TestCase):
         self.crud.delete_data(query, [lastid])
         self.crud.reset_session_auto_index()
 
-    def test_insert_GyroPoints_and_readDataPoints(self):
+    def test_insert_gyro_points_and_read_data_points(self):
         record_id = 'test'
         roll, pitch, yaw = 1.0, 1.0, 1.0;
         last_id = self.crud.insert_gyro_points(record_id, self.starting_time, roll, pitch, yaw)
@@ -54,7 +54,7 @@ class CrudTest(unittest.TestCase):
         query = "DELETE FROM GyroPoints WHERE record_id = %s AND timestamp = %s"
         self.crud.delete_data(query, [record_id, self.starting_time])
 
-    def test_insert_AccelPoints_and_readDataPoints(self):
+    def test_insert_accel_points_and_read_data_points(self):
         record_id = 'test'
         x, y, z = 1.0, 1.0, 1.0;
         last_id = self.crud.insert_accel_points(record_id, self.starting_time, x, y, z)
@@ -62,8 +62,8 @@ class CrudTest(unittest.TestCase):
         self.assertEqual(data, (record_id, self.starting_time, x, y, z))
         query = "DELETE FROM AccelPoints WHERE record_id = %s AND timestamp = %s"
         self.crud.delete_data(query, [record_id, self.starting_time])
- 
-    def test_readAll(self):
+
+    def test_read_all(self):
         description = "test"
         lastid = self.crud.create_session(description, self.starting_time)
         lastid1 = self.crud.create_session(description, self.starting_time + 1)
@@ -75,22 +75,20 @@ class CrudTest(unittest.TestCase):
         self.crud.delete_data(query, [lastid1])
         self.crud.delete_data(query, [lastid2])
         self.crud.reset_session_auto_index()
- 
-    def test_reset_autoIndex(self):
+
+    def test_reset_auto_index(self):
         description = "test"
         query = "DELETE FROM Session WHERE id = %s"
- 
+
         lastid = self.crud.create_session(description, self.starting_time)
         self.crud.delete_data(query, [lastid])
         self.crud.reset_session_auto_index()
- 
+
         lastid1 = self.crud.create_session(description, self.starting_time + 1)
         self.assertEqual(lastid, lastid1)
- 
+
         self.crud.delete_data(query, [lastid1])
         self.crud.reset_session_auto_index()
-        
-    
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertEqual(test_input, resp_json)
 
     def test_db_select_access(self):
-        response = self.app.get('/gyro')
+        response = self.app.get('/session')
         resp_json = json.loads(response.data.decode("utf-8"))
         self.assertIsNotNone(resp_json)
 

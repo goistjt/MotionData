@@ -50,6 +50,11 @@ class Crud(object):
         query = "SELECT * FROM Session"
         return self.read_all(query)
 
+    def get_sessions(self, device_id):
+        query = "SELECT * FROM Session WHERE id in (SELECT session_id FROM Records WHERE device_id != %s)"
+        args = [device_id]
+        return self.read_all(query, args)
+
     def get_all_records_from_session(self, session_id):
         query = "SELECT * FROM Records where session_id = %s"
         args = [session_id]
@@ -196,10 +201,10 @@ class Crud(object):
         self.execute_transaction_query(query, args)
 
     # ********* insert ********#
-    def insert(self, query, args=[], multiRow=False):
+    def insert(self, query, args=[], multi_row=False):
         try:
             cursor = self.conn.cursor()
-            if multiRow:
+            if multi_row:
                 print(query)
                 cursor.executemany(query, args)
             else:
