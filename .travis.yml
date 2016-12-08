@@ -5,7 +5,7 @@ python:
 before_install:
     - export PYTHONPATH='.'
 install:
-    - cd flask-server
+    - cd flask_master
     - pip install -r requirements.txt
 script:
     - python -m unittest discover -p "*_test.py"
