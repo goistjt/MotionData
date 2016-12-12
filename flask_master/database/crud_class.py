@@ -132,6 +132,7 @@ class Crud(object):
 
     # Local means insert outside of server,
     def bulk_insert_accel_points(self, data_path, local=False):
+        print(data_path, local)
         if local:
             lo = 'LOCAL'
         else:

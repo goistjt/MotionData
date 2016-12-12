@@ -1,6 +1,9 @@
-from flask_server import app
+import flask_server
 
 if __name__ == '__main__':
     # todo: adjust which *_config.ini file is being used in python_mysql_dbconfig.py
-    app.run(host='0.0.0.0', port=80, debug=True)  # Use this for production
-    # app.run()  # This is for local execution
+    # flask_server.local = False
+    # app.run(host='0.0.0.0', port=80, debug=True)  # Use this for production
+
+    flask_server.local = True
+    flask_server.app.run()  # This is for local execution
