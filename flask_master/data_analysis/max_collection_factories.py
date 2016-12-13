@@ -6,18 +6,26 @@ Created on Oct 31, 2016
 # Polymorphic factory methods.
 
 from __future__ import generators
+import data_analysis.max_collections as mc
 
 class MaxCollectionFactory:
-    factories = {}
     
-    def addFactory(fid, maxCollectionFactory):
-        MaxCollectionFactory.factories.put[fid] = maxCollectionFactory
+    def __init__(self):
+        self.SURGE = 'surge'
+        self.SWAY = 'sway'
+        self.HEAVE = 'heave'
+        self.ROLL = 'roll'
+        self.PITCH = 'pitch'
+        self.YAW = 'yaw'
+        self.factories = {self.SURGE:mc.SurgeCollection, 
+                          self.SWAY:mc.SwayCollection, 
+                          self.HEAVE:mc.HeaveCollection, 
+                          self.ROLL:mc.RollCollection, 
+                          self.PITCH:mc.PitchCollection, 
+                          self.YAW:mc.YawCollection}
         
-    addFactory = staticmethod(addFactory)
+    def addCollection(self, fid, maxCollection):
+        self.factories.put[fid] = maxCollection
     
-    def createMaxCollection(fid):
-        if not MaxCollectionFactory.factories.has_key(fid):
-            MaxCollectionFactory.factories[fid] = eval(fid + '.Factory()')
-        return MaxCollectionFactory.factories[fid].create()
-    
-    createMaxCollection = staticmethod(createMaxCollection)
+    def createMaxCollection(self, fid):
+        return self.factories[fid]()

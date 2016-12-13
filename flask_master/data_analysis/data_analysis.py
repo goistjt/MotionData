@@ -10,20 +10,9 @@ from database import crud
 
 import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
-import data_analysis.max_collections as mc
 import decimal as dc
 
 import math
-
-def set_up_factories():
-    maxColFact = mcf.MaxCollectionFactory()
-    maxColFact.addFactory(0, mc.SurgeCollection)
-    maxColFact.addFactory(1, mc.SwayCollection)
-    maxColFact.addFactory(2, mc.HeaveCollection)
-    maxColFact.addFactory(3, mc.RollCollection)
-    maxColFact.addFactory(4, mc.PitchCollection)
-    maxColFact.addFactory(5, mc.YawCollection)
-    return maxColFact
 
 def select_record(records_id):
     query = "SELECT GyroPoints.roll, GyroPoints.pitch, GyroPoints.yaw, AccessPoints.surge, AccessPoints.sway, AccessPoints.heave " \
@@ -38,9 +27,6 @@ def select_record(records_id):
 def download_record(record_id = []):
     df = pd.DataFrame(np.array(select_record(record_id)))
     return df.to_csv(index=False)
-
-def _comparator(element):
-    return element[0]
 
 def process_accelerations(start, end, interval, points):
     # Sets the precision level for operations referencing the Decimal datatype
@@ -132,15 +118,21 @@ def determine_start(points, start, end_index):
         start_index = start_index + 1
     return start_index
 
-def get_excursions(start_time, accel_points, gyro_points):
-    max_collection_factory = set_up_factories()
+def get_excursions(start_time, end_time, accel_points, gyro_points):
+    maxCF = mcf.MaxCollectionFactory()
+    
     raw_excursion_sets = np.array([[0, 0, 0, 0, 0, 0]])
-    surge_keeper = kk.KinematicsKeeper(start_time, max_collection_factory.createMaxCollection(0))
-    sway_keeper = kk.KinematicsKeeper(start_time, max_collection_factory.createMaxCollection(1))
-    heave_keeper = kk.KinematicsKeeper(start_time, max_collection_factory.createMaxCollection(2))
-    pitch_keeper = kk.KinematicsKeeper(start_time, max_collection_factory.createMaxCollection(3))
-    roll_keeper = kk.KinematicsKeeper(start_time, max_collection_factory.createMaxCollection(4))
-    yaw_keeper = kk.KinematicsKeeper(start_time, max_collection_factory.createMaxCollection(5))
+    surge_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SURGE))
+    sway_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SWAY))
+    heave_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.HEAVE))
+    pitch_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.ROLL))
+    roll_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.PITCH))
+    yaw_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.YAW))
+    
+    interval = 0.04
+    accel_points = process_accelerations(start_time, end_time, interval, accel_points)
+    gyro_points = process_accelerations(start_time, end_time, interval, gyro_points)
+    
     x = 0
     while (x < len(accel_points) and x < len(gyro_points)):
         accel_point = accel_points[x]
@@ -155,5 +147,6 @@ def get_excursions(start_time, accel_points, gyro_points):
         next_excursions = [surge_keeper.get_excursion(), sway_keeper.get_excursion(), heave_keeper.get_excursion(), pitch_keeper.get_excursion(), roll_keeper.get_excursion(), yaw_keeper.get_excursion()]
         raw_excursion_sets = np.append(raw_excursion_sets, np.array([next_excursions]), axis=0)
         x = x + 1
+    
     return raw_excursion_sets
         
