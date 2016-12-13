@@ -9,3 +9,4 @@ install:
     - pip install -r requirements.txt
 script:
     - python -m unittest -v tests.kinematics_test
+	- python -m unittest -v tests.factories_test

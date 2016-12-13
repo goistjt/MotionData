@@ -9,10 +9,8 @@ from data_analysis import max_collection_factories as mcf, max_collections as mc
 
 class Test(unittest.TestCase):
 
-
     def setUp(self):
         self.mcfactory = mcf.MaxCollectionFactory()
-
 
     def tearDown(self):
         self.mcfactory = None
