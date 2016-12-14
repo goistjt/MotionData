@@ -12,11 +12,13 @@ upload_files = []
 data_lock = threading.Lock()
 t = threading.Thread()
 local = False
-crud = crud_class.Crud()
+crud = None
 
 
 def create_app():
     app = Flask(__name__)
+    global crud
+    crud = crud_class.Crud()
 
     def interrupt():
         global t
