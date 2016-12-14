@@ -7,8 +7,6 @@ import unittest
 import data_analysis.data_analysis as da
 import numpy as np
 import decimal as dc
-import time
-
 
 class TestKinematics(unittest.TestCase):
 

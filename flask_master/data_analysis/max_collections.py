@@ -4,60 +4,74 @@ Created on Oct 31, 2016
 @author: steve
 '''
 
-class MaxCollection(object): pass
-
 GRAVITY = 9.8
 
+class MaxCollection(object):
+    
+    def __init__(self):
+        self._max_vel = 0.0
+        self._max_neg_exc = 0.0
+        self._max_pos_exc = 0.0
+        self._max_accel = 0.0
+        self._max_accel_diff = 0.0
+    
+    def get_max_vel(self): return self._max_vel
+    def get_max_neg_exc(self): return self._max_neg_exc
+    def get_max_pos_exc(self): return self._max_pos_exc
+    def get_max_accel(self): return self._max_accel
+    def get_max_accel_diff(self): return self._max_accel_diff
+
 class SurgeCollection(MaxCollection):
-    def get_max_vel(self): return 0.8
-    def get_max_neg_exc(self): return -0.307
-    def get_max_pos_exc(self): return 0.408
-    def get_max_accel(self): return 0.65 * GRAVITY
-    def get_max_accel_diff(self): return 8.0 * GRAVITY
-    class Factory:
-        def create(self): return SurgeCollection()
+    
+    def __init__(self):
+        self._max_vel = 0.8
+        self._max_neg_exc = -0.307
+        self._max_pos_exc = 0.408
+        self._max_accel = 0.65 * GRAVITY
+        self._max_accel_diff = 8.0 * GRAVITY
+    
 
 class SwayCollection(MaxCollection):
-    def get_max_vel(self): return 0.8
-    def get_max_neg_exc(self): return -0.318
-    def get_max_pos_exc(self): return 0.318
-    def get_max_accel(self): return 0.60 * GRAVITY
-    def get_max_accel_diff(self): return 8.0 * GRAVITY
-    class Factory:
-        def create(self): return SwayCollection()
+    
+    def __init__(self):
+        self._max_vel = 0.8
+        self._max_neg_exc = -0.318
+        self._max_pos_exc = 0.318
+        self._max_accel = 0.60 * GRAVITY
+        self._max_accel_diff = 8.0 * GRAVITY
         
 class HeaveCollection(MaxCollection):
-    def get_max_vel(self): return 0.6
-    def get_max_neg_exc(self): return -0.240
-    def get_max_pos_exc(self): return 0.261
-    def get_max_accel(self): return 0.60 * GRAVITY
-    def get_max_accel_diff(self): return 8.0 * GRAVITY
-    class Factory:
-        def create(self): return HeaveCollection()
+    
+    def __init__(self):
+        self._max_vel = 0.6
+        self._max_neg_exc = -0.240
+        self._max_pos_exc = 0.261
+        self._max_accel = 0.60 * GRAVITY
+        self._max_accel_diff = 8.0 * GRAVITY
         
 class RollCollection(MaxCollection):
-    def get_max_vel(self): return 40.0
-    def get_max_neg_exc(self): return -16.5
-    def get_max_pos_exc(self): return 16.5
-    def get_max_accel(self): return 300.0
-    def get_max_accel_diff(self): return 3000.0
-    class Factory:
-        def create(self): return RollCollection()
+    
+    def __init__(self):
+        self._max_vel = 40.0
+        self._max_neg_exc = -16.5
+        self._max_pos_exc = 16.5
+        self._max_accel = 300.0
+        self._max_accel_diff = 3000.0
         
 class PitchCollection(MaxCollection):
-    def get_max_vel(self): return 40.0
-    def get_max_neg_exc(self): return -16.5
-    def get_max_pos_exc(self): return 16.5
-    def get_max_accel(self): return 300.0
-    def get_max_accel_diff(self): return 3000.0
-    class Factory:
-        def create(self): return PitchCollection()
+    
+    def __init__(self):
+        self._max_vel = 40.0
+        self._max_neg_exc = -16.5
+        self._max_pos_exc = 16.5
+        self._max_accel = 300.0
+        self._max_accel_diff = 3000.0
         
 class YawCollection(MaxCollection):
-    def get_max_vel(self): return 50.0
-    def get_max_neg_exc(self): return -20.5
-    def get_max_pos_exc(self): return 20.5
-    def get_max_accel(self): return 350.0
-    def get_max_accel_diff(self): return 3000.0
-    class Factory:
-        def create(self): return YawCollection()
+    
+    def __init__(self):
+        self._max_vel = 50.0
+        self._max_neg_exc = -20.5
+        self._max_pos_exc = 20.5
+        self._max_accel = 350.0
+        self._max_accel_diff = 3000.0
