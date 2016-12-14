@@ -73,6 +73,9 @@ def create_app():
     atexit.register(interrupt)
     return app
 
+if os.environ.get('TRAVIS') is None:
+    app = create_app()
+else:
+    app = Flask(__name__)
 
-app = create_app()
 import flask_server.server
