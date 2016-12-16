@@ -3,7 +3,6 @@ from pymysql import Error, connect
 
 from database.python_mysql_dbconfig import read_db_config
 
-
 def create_session(description, starting_time):
     query = "INSERT INTO Session" \
             "( description, starting_time) " \
