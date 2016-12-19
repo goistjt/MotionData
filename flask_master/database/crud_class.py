@@ -115,6 +115,7 @@ class Crud(object):
         return self.insert(query, args, multiRow=True)
 
     def bulk_insert_gyro_points(self, data_path, local=False):
+        print(data_path, local)
         if local:
             lo = 'LOCAL'
         else:
@@ -211,10 +212,10 @@ class Crud(object):
             else:
                 cursor.execute(query, args)
             last_id = cursor.lastrowid
-            if last_id:
-                print('last insert id', last_id)
-            else:
-                print('last insert id not found')
+            # if last_id:
+            #     print('last insert id', last_id)
+            # else:
+            #     print('last insert id not found')
             self.conn.commit()
             cursor.close()
             return last_id

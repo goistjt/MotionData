@@ -2,9 +2,9 @@ import datetime
 import unittest
 import pandas as pd
 import os
+import time
 
-from flask_server import server
-from database import crud_class
+import flask_server as server
 
 
 def get_now():
@@ -15,25 +15,28 @@ def get_now():
 class CrudTest(unittest.TestCase):
     def setUp(self):
         app = server.app
+        server.POOL_TIME = 10
         app.config['TESTING'] = True
         t = datetime.datetime.now()
         starting_time = (t - datetime.datetime(1970, 1, 1)).total_seconds()
-        self.crud = crud_class.Crud()
+        self.crud = server.crud
         self.starting_time = round(starting_time, 5)
         self.app = app.test_client()
+        self.session_id = None
 
     def tearDown(self):
-        self.crud.close()
+        time.sleep(30)
+        self.crud.delete_entire_session(self.session_id)
+        server.t.cancel()
 
     def test_load_infile(self):
-        crud = self.crud
         starting_time = get_now()
 
         description = "test_data_output"
         test_data = -1
-        session_id = crud.create_session(description, starting_time)
+        self.session_id = self.crud.create_session(description, starting_time)
         device_id = "-1"
-        record_id = crud.create_record(session_id, device_id)
+        record_id = self.crud.create_record(self.session_id, device_id)
 
         gyro_points = []
         access_points = []
@@ -53,13 +56,10 @@ class CrudTest(unittest.TestCase):
         accel.to_csv(path_accel, index=False)
         gyro.to_csv(path_gyro, index=False)
 
-        crud.bulk_insert_gyro_points(path_gyro, True)
-        crud.bulk_insert_accel_points(path_accel, True)
-
+        self.crud.bulk_insert_gyro_points(path_gyro, True)
+        self.crud.bulk_insert_accel_points(path_accel, True)
         os.remove(path_accel)
         os.remove(path_gyro)
-
-        crud.delete_entire_session(session_id)
 
 
 if __name__ == '__main__':

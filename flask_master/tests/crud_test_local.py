@@ -1,95 +1,83 @@
 import datetime
 import unittest
 
-from flask_server import server
-from database import crud
+import flask_server as server
 
 
 class CrudTest(unittest.TestCase):
     def setUp(self):
         app = server.app
+        self.crud = server.crud
         app.config['TESTING'] = True
         t = datetime.datetime.now()
         starting_time = (t - datetime.datetime(1970, 1, 1)).total_seconds()
-        self.starting_time = round(starting_time,5)
+        self.starting_time = round(starting_time, 5)
+        self.description = "test"
         self.app = app.test_client()
 
     def tearDown(self):
-        pass
+        server.t.cancel()
 
     def test_create_and_read_session(self):
-        description = "test"
-        lastid = crud.create_session(description, self.starting_time)
-        data = crud.read_session(lastid)
-        self.assertEqual(description, data[1])
+        last_id = self.crud.create_session(self.description, self.starting_time)
+        data = self.crud.read_session(last_id)
+        self.assertEqual(self.description, data[1])
         self.assertEqual(self.starting_time, data[2])
-        query = "DELETE FROM Session WHERE id = %s"
-        crud.delete_data(query, [lastid])
-        crud.reset_session_auto_index()
- 
+        self.crud.delete_entire_session(last_id)
+        self.crud.reset_session_auto_index()
+
     def test_create_record(self):
-        session_id = -1
         device_id = "-1"
-        lastid = crud.create_record(session_id, device_id)
-        self.assertEqual(lastid, crud.sha1(str(session_id) + device_id))
-        query = "DELETE FROM Records WHERE id = %s"
-        args = [lastid]
-        crud.delete_data(query, args)
- 
-    def test_get_sessionId(self):
-        description = "test"
-        lastid = crud.create_session(description, self.starting_time)
-        self.assertEqual(lastid, crud.get_session_id(description, self.starting_time)[0])
-        query = "DELETE FROM Session WHERE id = %s"
-        crud.delete_data(query, [lastid])
-        crud.reset_session_auto_index()
+        session_id = self.crud.create_session(self.description, self.starting_time)
+        last_id = self.crud.create_record(session_id, device_id)
+        self.assertEqual(last_id, self.crud.sha1(str(session_id) + device_id))
+        self.crud.delete_entire_session(session_id)
 
-    def test_insert_GyroPoints_and_readDataPoints(self):
-        record_id = 'test'
-        roll, pitch, yaw = 1.0, 1.0, 1.0;
-        last_id = crud.insert_gyro_points(record_id, self.starting_time, roll, pitch, yaw)
-        data = crud.read_data_points("GyroPoints", record_id, self.starting_time)
+    def test_get_session_id(self):
+        last_id = self.crud.create_session(self.description, self.starting_time)
+        self.assertEqual(last_id, self.crud.get_session_id(self.description, self.starting_time)[0])
+        self.crud.delete_entire_session(last_id)
+        self.crud.reset_session_auto_index()
+
+    def test_insert_gyro_points_and_read_data_points(self):
+        device_id = 'test'
+        sess_id = self.crud.create_session(self.description, self.starting_time)
+        record_id = self.crud.create_record(sess_id, device_id)
+        roll, pitch, yaw = 1.0, 1.0, 1.0
+        self.crud.insert_gyro_points(record_id, self.starting_time, roll, pitch, yaw)
+        data = self.crud.read_data_points("GyroPoints", record_id, self.starting_time)
         self.assertEqual(data, (record_id, self.starting_time, roll, pitch, yaw))
-        query = "DELETE FROM GyroPoints WHERE record_id = %s AND timestamp = %s"
-        crud.delete_data(query, [record_id, self.starting_time])
+        self.crud.delete_entire_session(sess_id)
 
-    def test_insert_AccessPoints_and_readDataPoints(self):
-        record_id = 'test'
-        x, y, z = 1.0, 1.0, 1.0;
-        last_id = crud.insert_access_points(record_id, self.starting_time, x, y, z)
-        data = crud.read_data_points("AccessPoints", record_id, self.starting_time)
+    def test_insert_accel_points_and_read_data_points(self):
+        device_id = 'test'
+        x, y, z = 1.0, 1.0, 1.0
+        sess_id = self.crud.create_session(self.description, self.starting_time)
+        record_id = self.crud.create_record(sess_id, device_id)
+        self.crud.insert_accel_points(record_id, self.starting_time, x, y, z)
+        data = self.crud.read_data_points("AccelPoints", record_id, self.starting_time)
         self.assertEqual(data, (record_id, self.starting_time, x, y, z))
-        query = "DELETE FROM AccessPoints WHERE record_id = %s AND timestamp = %s"
-        crud.delete_data(query, [record_id, self.starting_time])
- 
-    def test_readAll(self):
-        description = "test"
-        lastid = crud.create_session(description, self.starting_time)
-        lastid1 = crud.create_session(description, self.starting_time + 1)
-        lastid2 = crud.create_session(description, self.starting_time + 2)
-        data = crud.read_all("SELECT * FROM Session")
+        self.crud.delete_entire_session(sess_id)
+
+    def test_read_all(self):
+        last_id = self.crud.create_session(self.description, self.starting_time)
+        last_id1 = self.crud.create_session(self.description, self.starting_time + 1)
+        last_id2 = self.crud.create_session(self.description, self.starting_time + 2)
+        data = self.crud.read_all("SELECT * FROM Session")
         self.assertGreaterEqual(len(data), 3)
-        query = "DELETE FROM Session WHERE id = %s"
-        crud.delete_data(query, [lastid])
-        crud.delete_data(query, [lastid1])
-        crud.delete_data(query, [lastid2])
-        crud.reset_session_auto_index()
- 
-    def test_reset_autoIndex(self):
-        description = "test"
-        query = "DELETE FROM Session WHERE id = %s"
- 
-        lastid = crud.create_session(description, self.starting_time)
-        crud.delete_data(query, [lastid])
-        crud.reset_session_auto_index()
- 
-        lastid1 = crud.create_session(description, self.starting_time + 1)
-        self.assertEqual(lastid, lastid1)
- 
-        crud.delete_data(query, [lastid1])
-        crud.reset_session_auto_index()
-        
-    
+        self.crud.delete_entire_session(last_id)
+        self.crud.delete_entire_session(last_id1)
+        self.crud.delete_entire_session(last_id2)
+        self.crud.reset_session_auto_index()
+
+    def test_reset_auto_index(self):
+        last_id = self.crud.create_session(self.description, self.starting_time)
+        self.crud.delete_entire_session(last_id)
+        self.crud.reset_session_auto_index()
+        last_id_1 = self.crud.create_session(self.description, self.starting_time + 1)
+        self.assertEqual(last_id, last_id_1)
+        self.crud.delete_entire_session(last_id_1)
+        self.crud.reset_session_auto_index()
 
 
 if __name__ == '__main__':
