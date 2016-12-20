@@ -1,16 +1,25 @@
 import json
 import unittest
-import run_server as rs
+import flask_server as fs
+import time
 
 
 class FlaskTestCase(unittest.TestCase):
     def setUp(self):
-        app = rs.app
+        app = fs.app
+        fs.local = True
+        fs.POOL_TIME = 5
         app.config['TESTING'] = True
         self.app = app.test_client()
+        self.session = None
 
     def tearDown(self):
-        pass
+        time.sleep(30)
+        delete_data = {"sess_id": self.session}
+        response = self.app.delete('/deleteSession', data=json.dumps(delete_data), content_type='application/json')
+        resp_json = json.loads(response.data.decode("utf-8"))
+        self.assertIsNotNone(resp_json)
+        fs.t.cancel()
 
     def test_hello_world(self):
         response = self.app.get('/hello-world')
@@ -22,11 +31,6 @@ class FlaskTestCase(unittest.TestCase):
         resp_json = json.loads(response.data.decode("utf-8"))
         self.assertEqual(test_input, resp_json)
 
-    def test_gyro(self):
-        response = self.app.get('/gyro')
-        resp_json = json.loads(response.data.decode("utf-8"))
-        self.assertIsNotNone(resp_json)
-
     def test_session(self):
         pass
 
@@ -34,7 +38,7 @@ class FlaskTestCase(unittest.TestCase):
         pass
 
     def test_create_delete_session(self):
-        create_data = {"device_id": "oqewiruo",
+        create_data = {"device_id": "oqewiruo_t1",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
                        "sess_desc": "This is a description that I'm typing for no reason whatsoever",
@@ -44,13 +48,15 @@ class FlaskTestCase(unittest.TestCase):
         session_id = resp_json['session_id']
         self.assertIsNotNone(resp_json)
 
-        delete_data = {"sess_id": session_id}
-        response = self.app.delete('/deleteSession', data=json.dumps(delete_data), content_type='application/json')
-        resp_json = json.loads(response.data.decode("utf-8"))
-        self.assertIsNotNone(resp_json)
+        self.session = session_id
+
+        # delete_data = {"sess_id": session_id}
+        # response = self.app.delete('/deleteSession', data=json.dumps(delete_data), content_type='application/json')
+        # resp_json = json.loads(response.data.decode("utf-8"))
+        # self.assertIsNotNone(resp_json)
 
     def test_create_add_delete_session(self):
-        create_data = {"device_id": "oqewiruo",
+        create_data = {"device_id": "oqewiruo_t2",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
                        "sess_desc": "This is a description that I'm typing for no reason whatsoever",
@@ -61,7 +67,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
 
         add_data = {"sess_id": session_id,
-                    "device_id": "oqewiruo2",
+                    "device_id": "oqewiruo_t2_2",
                     "gyroModels": [{"time_val": 123876098235, "roll_val": 2, "pitch_val": 2, "yaw_val": 2}],
                     "accelModels": [{"time_val": 123876098235, "x_val": 2, "y_val": 2, "z_val": 2}],
                     "sess_desc": "This is a description that I'm typing for no reason whatsoever too"}
@@ -70,10 +76,11 @@ class FlaskTestCase(unittest.TestCase):
         session_id = resp_json['session_id']
         self.assertIsNotNone(resp_json)
 
-        delete_data = {"sess_id": session_id}
-        response = self.app.delete('/deleteSession', data=json.dumps(delete_data), content_type='application/json')
-        resp_json = json.loads(response.data.decode("utf-8"))
-        self.assertIsNotNone(resp_json)
+        self.session = session_id
+        # delete_data = {"sess_id": session_id}
+        # response = self.app.delete('/deleteSession', data=json.dumps(delete_data), content_type='application/json')
+        # resp_json = json.loads(response.data.decode("utf-8"))
+        # self.assertIsNotNone(resp_json)
 
     def test_get_sessions(self):
         response = self.app.get('/getSessions/12345')
