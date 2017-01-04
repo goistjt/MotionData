@@ -8,10 +8,8 @@ import numpy as np
 
 from database import crud
 
-"""
 import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
-"""
 
 import decimal as dc
 
@@ -125,11 +123,25 @@ def determine_start(points, start, end_index):
     return start_index
 
 
-def get_excursions(start_time, end_time, accel_points, gyro_points):
+def get_excursions(start_time, end_time, accel_points, gyro_points, basic):
     
-    raw_excursion_sets = np.array([[0, 0, 0, 0, 0, 0]])
+    interval = 1 # 1 unit of whatever units are submitted
     
-    """
+    if(start_time >= end_time):
+        return []
+    
+    accel_list = process_accelerations(start_time, end_time, interval, accel_points)
+    
+    gyro_list = process_accelerations(start_time, end_time, interval, gyro_points)
+    
+    if(accel_list == None or len(accel_list == 0)):
+        return []
+    
+    if(gyro_list == None or len(gyro_list == 0)):
+        return []
+    
+    final_list = []
+    
     maxCF = mcf.MaxCollectionFactory()
     surge_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SURGE))
     sway_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SWAY))
@@ -137,11 +149,30 @@ def get_excursions(start_time, end_time, accel_points, gyro_points):
     pitch_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.ROLL))
     roll_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.PITCH))
     yaw_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.YAW))
-    """
     
-    interval = 0.04
-    accel_points = process_accelerations(start_time, end_time, interval, accel_points)
-    gyro_points = process_accelerations(start_time, end_time, interval, gyro_points)
+    keeps = [surge_keeper, sway_keeper, heave_keeper, pitch_keeper, roll_keeper, yaw_keeper]
     
-    return raw_excursion_sets
+    for i in range(len(gyro_list)):
+        next_set = []
+        for x in range(len(keeps)):
+            time_val = -1
+            accel_val = 0
+            if(x >= 3):
+                time_val = gyro_list[i][0]
+                accel_val = gyro_list[i][x + 1]
+            else:
+                time_val = accel_list[i][0]
+                accel_val = accel_list[i][(x - 3) + 1] 
+            curr_keep = keeps[x]
+            curr_keep.generate_next_state(time_val, accel_val)
+            if(curr_keep.rollback):
+                curr_ind = curr_keep.sect_ind
+                end_ind = curr_keep.sect_end
+                while(curr_ind < end_ind):
+                    curr_ind = curr_ind + 1
+                    if(curr_keep.average >= 0):
+                        final_list[curr_ind][x] = final_list[curr_ind][x] - curr_keep.average
+                    else:
+                        final_list[curr_ind][x] = final_list[curr_ind][x] + curr_keep.average
+    return final_list
         
