@@ -27,7 +27,13 @@ def select_record(records_id):
     return crud.read_all(query, args)
 
 
-def download_record(record_id=[]):
+def download_record_raw(record_id=[]):
+    df = pd.DataFrame(np.array(select_record(record_id)))
+    return df.to_csv(index=False)
+
+
+def download_record_analyzed(record_id=[]):
+    # TODO : update this to actually analyze the selected data
     df = pd.DataFrame(np.array(select_record(record_id)))
     return df.to_csv(index=False)
 
