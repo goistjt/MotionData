@@ -1,4 +1,4 @@
-from flask import jsonify, request, render_template, Response
+from flask import jsonify, request, render_template, Response, make_response
 import re
 from pathlib import Path
 import datetime
@@ -51,7 +51,26 @@ def session():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    sessions = crud.get_all_sessions()
+    return render_template("index.html", table=get_html(sessions))
+
+
+def get_html(sessions):
+    html = ""
+    for s in sessions:
+        records = crud.get_all_records_from_session(s[0])
+        date = datetime.datetime.fromtimestamp(s[2] / 1e3)
+        desc = s[1]
+        for r in records:
+            rid = r[0]
+            curr = '<tr><td>{}-{}</td><td>{}</td><td>{}</td><td>' \
+                   '<input id="raw_button" type="submit" name="r_{}" ' \
+                   'onclick=clicked_raw("{}") value="Download Raw" />' \
+                   '<input id="analyzed_button" type="submit" name="a_{}" ' \
+                   'onclick=clicked_analyzed("{}") value="Download Analyzed" />' \
+                   '</td></tr>'.format(r[1], r[2], desc, date, rid, rid, rid, rid)
+            html += curr
+    return html
 
 
 @app.route("/tables.html")
@@ -59,15 +78,24 @@ def tables():
     return render_template("tables.html")
 
 
-@app.route("/getRecord/<record_id>")
-def get_record_data(record_id=[]):
-    # with open("outputs/Adjacency.csv") as fp:
-    #     csv = fp.read()
-    txt = da.download_record(record_id)
-    return Response(
-        txt,
-        mimetype="text",
-        headers={"Content-disposition": "attachment; filename=record.txt"})
+@app.route("/getRecordRaw/<record_id>")
+def get_record_data_raw(record_id=[]):
+    txt = da.download_record_raw(record_id)
+    response = {'Content-Disposition': 'attachment;',
+                'filename': 'record.txt',
+                'mimetype': 'text/csv',
+                'data': txt}
+    return jsonify(response)
+
+
+@app.route("/getRecordAnalyzed/<record_id>")
+def get_record_data_analyzed(record_id=[]):
+    txt = da.download_record_analyzed(record_id)
+    response = {'Content-Disposition': 'attachment;',
+                'filename': 'record.txt',
+                'mimetype': 'text/csv',
+                'data': txt}
+    return jsonify(response)
 
 
 @app.route("/createSession_old", methods=["POST"])

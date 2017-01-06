@@ -56,7 +56,7 @@ class Crud(object):
         return self.read_all(query, args)
 
     def get_all_records_from_session(self, session_id):
-        query = "SELECT * FROM Records where session_id = %s"
+        query = "SELECT Records.id, Records.session_id, Records.device_id FROM Records where session_id = %s"
         args = [session_id]
         return self.read_all(query, args)
 
