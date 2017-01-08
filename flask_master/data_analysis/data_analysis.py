@@ -123,7 +123,7 @@ def determine_start(points, start, end_index):
     return start_index
 
 
-def get_excursions(start_time, end_time, accel_points, gyro_points, basic):
+def clean_session(start_time, end_time, accel_points, gyro_points):
     
     interval = 1 # 1 unit of whatever units are submitted
     
@@ -134,45 +134,72 @@ def get_excursions(start_time, end_time, accel_points, gyro_points, basic):
     
     gyro_list = process_accelerations(start_time, end_time, interval, gyro_points)
     
-    if(accel_list == None or len(accel_list == 0)):
+    print(accel_list)
+    print(gyro_list)
+    
+    if(accel_list == None or len(accel_list) == 0):
         return []
     
-    if(gyro_list == None or len(gyro_list == 0)):
+    if(gyro_list == None or len(gyro_list) == 0):
         return []
     
-    final_list = []
+    # mini_sessions = []
     
     maxCF = mcf.MaxCollectionFactory()
+    
     surge_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SURGE))
     sway_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SWAY))
     heave_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.HEAVE))
-    pitch_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.ROLL))
-    roll_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.PITCH))
-    yaw_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.YAW))
+    keeps_accel = [surge_keeper, sway_keeper, heave_keeper]
     
-    keeps = [surge_keeper, sway_keeper, heave_keeper, pitch_keeper, roll_keeper, yaw_keeper]
+    roll_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.ROLL))
+    pitch_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.PITCH))
+    yaw_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.YAW))
+    keeps_gyro = [roll_keeper, pitch_keeper, yaw_keeper]
+    
+    session = []
     
     for i in range(len(gyro_list)):
+        # can_has = True
         next_set = []
-        for x in range(len(keeps)):
-            time_val = -1
-            accel_val = 0
-            if(x >= 3):
-                time_val = gyro_list[i][0]
-                accel_val = gyro_list[i][x + 1]
-            else:
-                time_val = accel_list[i][0]
-                accel_val = accel_list[i][(x - 3) + 1] 
-            curr_keep = keeps[x]
+        
+        for x in range(len(keeps_accel)):
+            time_val = accel_list[i][0]
+            accel_val = accel_list[i][x + 1]
+            curr_keep = keeps_accel[x]
             curr_keep.generate_next_state(time_val, accel_val)
+            """
             if(curr_keep.rollback):
-                curr_ind = curr_keep.sect_ind
-                end_ind = curr_keep.sect_end
-                while(curr_ind < end_ind):
-                    curr_ind = curr_ind + 1
-                    if(curr_keep.average >= 0):
-                        final_list[curr_ind][x] = final_list[curr_ind][x] - curr_keep.average
-                    else:
-                        final_list[curr_ind][x] = final_list[curr_ind][x] + curr_keep.average
-    return final_list
+                if(session != None and len(session) > 0):
+                    mini_sessions.append(session)
+                session = []
+                can_has = False
+                break
+            """
+            next_set.append(curr_keep.get_position())
+        
+        # if(not can_has):
+        for y in range(len(keeps_gyro)):
+            time_val = gyro_list[i][0]
+            accel_val = gyro_list[i][y + 1]
+            curr_keep = keeps_gyro[y]
+            curr_keep.generate_next_state(time_val, accel_val)
+            """
+            if(curr_keep.rollback):
+                if(session != None and len(session) > 0):
+                    mini_sessions.append(session)
+                session = []
+                can_has = False
+                break
+            """
+            next_set.append(curr_keep.get_position())
+        
+        session.append(next_set)
+        
+        """
+        if(can_has):
+            session.append(next_set)
+        """
+        
+    return session
         

@@ -63,6 +63,14 @@ class TestKinematics(unittest.TestCase):
         z = da.process_accelerations(0.2, 50000, 0.5, points)
         end = time.time()
     """
-
+    
+    def test_typical_session_cleaning(self):
+        accel_list = [[0, 0, 0, 0], [1, 0.002, 0.003, 0.004], [2, 0.003, 0.004, 0.005], [3, 0.002, 0.004, 0.006]]
+        gyro_list = [[0, 0, 0, 0], [1, 2, 3, 1], [2, 1, 4, 4], [3, 2, 2, 2]]
+        start_time = 0
+        end_time = 3
+        result = da.clean_session(start_time, end_time, accel_list, gyro_list)
+        print(result)
+    
 if __name__ == "__main__":
     unittest.main()
