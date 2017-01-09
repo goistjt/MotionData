@@ -7,15 +7,20 @@ import unittest
 import data_analysis.data_analysis as da
 import numpy as np
 import decimal as dc
+import data_analysis.kinematics_keeper as kk
+import data_analysis.max_collection_factories as mcf
 
 class TestKinematics(unittest.TestCase):
 
     def setUp(self):
-        dc.getcontext().prec = 4
+        dc.getcontext().prec = 6
         self.MAX_EPSILON = 0.000001
+        self.max_coll_fact = mcf.MaxCollectionFactory()
+        self.kin_keep = kk.KinematicsKeeper(0, self.max_coll_fact.createMaxCollection(self.max_coll_fact.SURGE))
 
     def tearDown(self):
         self.kin_keep = None
+        self.max_coll_fact = None
         
     def test_points_normalizer_same(self):
         points = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
@@ -71,6 +76,14 @@ class TestKinematics(unittest.TestCase):
         end_time = 3
         result = da.clean_session(start_time, end_time, accel_list, gyro_list)
         print(result)
+    
+    def test_kk_determine_next_acceleration_by_pos(self):
+        time_diff = dc.Decimal(0.0001)
+        new_pos = dc.Decimal(1.0)
+        actual = self.kin_keep._determine_next_acceleration_by_pos(time_diff, new_pos)
+        expected = dc.Decimal(6000000000000)
+        self.assertEqual(expected, actual)
+        
     
 if __name__ == "__main__":
     unittest.main()

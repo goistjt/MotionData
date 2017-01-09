@@ -47,7 +47,7 @@ class KinematicsKeeper(object):
             self._curr_vel = dc.Decimal(0.0)
             return
         
-        time_diff = new_time - self._curr_time
+        time_diff = (new_time - self._curr_time) / dc.Decimal(1000)
         
         #Acceleration
         if(self._max_collection.get_max_accel() < dc.Decimal(abs(new_accel))):
@@ -105,7 +105,7 @@ class KinematicsKeeper(object):
     
     
     def _determine_next_acceleration_by_pos(self, time_diff, new_pos):
-        return ((dc.Decimal(6) * (new_pos - self._curr_pos - (self._curr_vel * time_diff) - (dc.Decimal(1 / 2) * (self._curr_accel * (time_diff ** dc.Decimal(2)))))) / (time_diff ** dc.Decimal(2))) + self._curr_accel
+        return ((dc.Decimal(-6) * (self._curr_pos + (self._curr_vel * time_diff) + (dc.Decimal(1 / 2) * (self._curr_accel * (time_diff ** dc.Decimal(2)))) - new_pos)) / (time_diff ** dc.Decimal(3))) + self._curr_accel
     
     def _determine_next_acceleration_by_vel(self, time_diff, new_vel):
         return ((dc.Decimal(2) * (new_vel - self._curr_vel - (self._curr_accel * time_diff))) / (time_diff ** dc.Decimal(2))) + self._curr_accel
