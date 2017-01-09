@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private int pollRate;
     public static final int MS_TO_US = 1000;
+    private float yawOffset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
+        yawOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0);
         pollRate = settings.getInt(SETTINGS_RATE, 40);
     }
 
@@ -310,7 +312,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         long time = System.currentTimeMillis();
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                AccelDataModel accelModel = new AccelDataModel(time, event.values[0], event.values[1], event.values[2]);
+                float x = event.values[0];
+                float y = event.values[1];
+                float z = event.values[2];
+                float xP = (float) (Math.cos(yawOffset) * x - Math.sin(yawOffset) * y);
+                float yP = (float) (Math.sin(yawOffset) * x + Math.cos(yawOffset) * y);
+                AccelDataModel accelModel = new AccelDataModel(time, xP, yP, event.values[2]);
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
