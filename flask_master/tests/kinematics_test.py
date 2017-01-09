@@ -12,15 +12,25 @@ import data_analysis.max_collection_factories as mcf
 
 class TestKinematics(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
+        super(TestKinematics, cls).setUpClass()
         dc.getcontext().prec = 6
-        self.MAX_EPSILON = 0.000001
-        self.max_coll_fact = mcf.MaxCollectionFactory()
+        cls.MAX_EPSILON = 0.000001
+        cls.max_coll_fact = mcf.MaxCollectionFactory()
+        
+    def setUp(self):
+        unittest.TestCase.setUp(self)
         self.kin_keep = kk.KinematicsKeeper(0, self.max_coll_fact.createMaxCollection(self.max_coll_fact.SURGE))
 
     def tearDown(self):
+        unittest.TestCase.tearDown(self)
         self.kin_keep = None
-        self.max_coll_fact = None
+        
+    @classmethod
+    def tearDownClass(cls):
+        super(TestKinematics, cls).tearDownClass()
+        cls.max_coll_fact = None
         
     def test_points_normalizer_same(self):
         points = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
@@ -81,9 +91,69 @@ class TestKinematics(unittest.TestCase):
         time_diff = dc.Decimal(0.0001)
         new_pos = dc.Decimal(1.0)
         actual = self.kin_keep._determine_next_acceleration_by_pos(time_diff, new_pos)
-        expected = dc.Decimal(6000000000000)
+        expected = dc.Decimal(600000000)
+        self.assertEqual(expected, actual)
+    
+    def test_kk_determine_next_acceleration_by_pos_nontrivial(self):
+        self.kin_keep._curr_pos = dc.Decimal(1.0)
+        self.kin_keep._curr_accel = dc.Decimal(-0.0023)
+        self.kin_keep._curr_vel = dc.Decimal(-0.124)
+        time_diff = dc.Decimal(0.0001)
+        new_pos = dc.Decimal(2.0)
+        actual = self.kin_keep._determine_next_acceleration_by_pos(time_diff, new_pos)
+        expected = dc.Decimal(600006000) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
         
+    def test_kk_determine_next_acceleration_by_vel(self):
+        time_diff = dc.Decimal(0.0001)
+        new_vel = dc.Decimal(0.1)
+        actual = self.kin_keep._determine_next_acceleration_by_vel(time_diff, new_vel)
+        expected = dc.Decimal(2000)
+        self.assertEqual(expected, actual)
+        
+    def test_kk_determine_next_acceleration_by_vel_nontrivial(self):
+        self.kin_keep._curr_pos = dc.Decimal(1.0)
+        self.kin_keep._curr_accel = dc.Decimal(-0.0023)
+        self.kin_keep._curr_vel = dc.Decimal(-0.124)
+        time_diff = dc.Decimal(0.0001)
+        new_pos = dc.Decimal(2.0)
+        actual = self.kin_keep._determine_next_acceleration_by_vel(time_diff, new_pos)
+        expected = dc.Decimal(42480.0023) * dc.Decimal(1.0)
+        self.assertEqual(expected, actual)
+        
+    def test_kk_determine_next_position(self):
+        time_diff = dc.Decimal(0.0001)
+        new_accel = dc.Decimal(1)
+        actual = self.kin_keep._determine_next_position(time_diff, new_accel)
+        expected = dc.Decimal(0.00000000166667) * dc.Decimal(1.0)
+        self.assertEqual(expected, actual)
+        
+    def test_kk_determine_next_position_nontrivial(self):
+        self.kin_keep._curr_pos = dc.Decimal(1.0)
+        self.kin_keep._curr_accel = dc.Decimal(-0.0023)
+        self.kin_keep._curr_vel = dc.Decimal(-0.124)
+        time_diff = dc.Decimal(0.0001)
+        new_pos = dc.Decimal(2.0)
+        actual = self.kin_keep._determine_next_position(time_diff, new_pos)
+        expected = dc.Decimal(0.9999876016) * dc.Decimal(1.0)
+        self.assertEqual(expected, actual)
+        
+    def test_kk_determine_next_velocity(self):
+        time_diff = dc.Decimal(0.0001)
+        new_accel = dc.Decimal(1)
+        actual = self.kin_keep._determine_next_velocity(time_diff, new_accel)
+        expected = dc.Decimal(0.00005) * dc.Decimal(1.0)
+        self.assertEqual(expected, actual)
+        
+    def test_kk_determine_next_velocity_nontrivial(self):
+        self.kin_keep._curr_pos = dc.Decimal(1.0)
+        self.kin_keep._curr_accel = dc.Decimal(-0.0023)
+        self.kin_keep._curr_vel = dc.Decimal(-0.124)
+        time_diff = dc.Decimal(0.0001)
+        new_vel = dc.Decimal(2.0)
+        actual = self.kin_keep._determine_next_velocity(time_diff, new_vel)
+        expected = dc.Decimal(-0.123900) * dc.Decimal(1.0)
+        self.assertEqual(expected, actual)
     
 if __name__ == "__main__":
     unittest.main()

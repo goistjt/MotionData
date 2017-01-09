@@ -47,6 +47,7 @@ class KinematicsKeeper(object):
             self._curr_vel = dc.Decimal(0.0)
             return
         
+        #Must convert time difference to milliseconds
         time_diff = (new_time - self._curr_time) / dc.Decimal(1000)
         
         #Acceleration
@@ -105,13 +106,13 @@ class KinematicsKeeper(object):
     
     
     def _determine_next_acceleration_by_pos(self, time_diff, new_pos):
-        return ((dc.Decimal(-6) * (self._curr_pos + (self._curr_vel * time_diff) + (dc.Decimal(1 / 2) * (self._curr_accel * (time_diff ** dc.Decimal(2)))) - new_pos)) / (time_diff ** dc.Decimal(3))) + self._curr_accel
+        return ((dc.Decimal(-6) * (self._curr_pos + (self._curr_vel * time_diff) + (dc.Decimal(1 / 2) * (self._curr_accel * (time_diff ** dc.Decimal(2)))) - new_pos)) / (time_diff ** dc.Decimal(2))) + self._curr_accel
     
     def _determine_next_acceleration_by_vel(self, time_diff, new_vel):
-        return ((dc.Decimal(2) * (new_vel - self._curr_vel - (self._curr_accel * time_diff))) / (time_diff ** dc.Decimal(2))) + self._curr_accel
+        return ((dc.Decimal(-2) * (self._curr_vel + (self._curr_accel * time_diff) - new_vel)) / (time_diff)) + self._curr_accel
     
     def _determine_next_position(self, time_diff, new_accel):
-        return self._curr_pos + self._curr_vel * time_diff + dc.Decimal(1 / 2) * self._curr_accel * (time_diff ** dc.Decimal(2)) + dc.Decimal(1/6) * ((new_accel - self._curr_accel) / time_diff) * (time_diff ** dc.Decimal(3))
+        return self._curr_pos + (self._curr_vel * time_diff) + (dc.Decimal(1 / 2) * self._curr_accel * (time_diff ** dc.Decimal(2))) + (dc.Decimal(1/6) * ((new_accel - self._curr_accel) * (time_diff ** dc.Decimal(2))))
     
     def _determine_next_velocity(self, time_diff, new_accel):
-        return self._curr_vel + self._curr_accel * time_diff + dc.Decimal(1 / 2) * ((new_accel - self._curr_accel) / time_diff) * (time_diff ** dc.Decimal(2))
+        return self._curr_vel + self._curr_accel * time_diff + dc.Decimal(1 / 2) * ((new_accel - self._curr_accel) * (time_diff))
