@@ -38,6 +38,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     private float[] prev_gyro = new float[]{0, 0, 0};
 
     private int pollRate;
+    private float yaw_offset;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,6 +46,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         setContentView(R.layout.activity_calibration);
         ButterKnife.bind(this);
         pollRate = getSharedPreferences("Settings", 0).getInt(SETTINGS_RATE, 40);
+        yaw_offset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0);
         int CALIBRATION_TIME = 30;
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
@@ -114,10 +116,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     }
 
     public void accelerometerChanged(float[] floats) {
-        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
-        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
-        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
-        prev_accel = floats;
+        float[] floatsPrime = floats;
+        floatsPrime[0] = (float) (Math.cos(yaw_offset) * floats[0] - Math.sin(yaw_offset) * floats[1]);
+        floatsPrime[1] = (float) (Math.sin(yaw_offset) * floats[0] + Math.cos(yaw_offset) * floats[1]);
+        max_x_noise = Math.abs(Math.max(max_x_noise, floatsPrime[0] - prev_accel[0]));
+        max_y_noise = Math.abs(Math.max(max_y_noise, floatsPrime[1] - prev_accel[1]));
+        max_z_noise = Math.abs(Math.max(max_z_noise, floatsPrime[2] - prev_accel[2]));
+        prev_accel = floatsPrime;
     }
 
     public void gyroscopeChanged(float[] floats) {

@@ -41,10 +41,10 @@ public class CalibrationDialog extends DialogFragment implements View.OnClickLis
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.calibrate_cancel_dialog_button:
-                setYawOffset(calculateYawOffset());
                 this.dismiss();
                 break;
             case R.id.calibrate_accept_dialog_button:
+                setYawOffset(calculateYawOffset());
                 Intent startCalibrationIntent = new Intent(getActivity(), CalibrationActivity
                         .class);
                 startActivity(startCalibrationIntent);
