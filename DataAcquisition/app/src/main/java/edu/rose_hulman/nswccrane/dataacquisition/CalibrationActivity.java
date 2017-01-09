@@ -46,7 +46,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         setContentView(R.layout.activity_calibration);
         ButterKnife.bind(this);
         pollRate = getSharedPreferences("Settings", 0).getInt(SETTINGS_RATE, 40);
-        yaw_offset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0);
+        yaw_offset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
         int CALIBRATION_TIME = 30;
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);

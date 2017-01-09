@@ -108,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         SharedPreferences settings = getApplicationContext().getSharedPreferences("Settings", 0);
-        yawOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0);
         pollRate = settings.getInt(SETTINGS_RATE, 40);
     }
 
@@ -155,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void handleRecordingTimer() {
         mCollectionButton.setEnabled(false);
         collectionOn();
+        yawOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
         if (!mRecordTimeEdit.getText().toString().isEmpty() && Integer.parseInt(mRecordTimeEdit.getText().toString()) != 0) {
 
             Runnable runnable = new Runnable() {

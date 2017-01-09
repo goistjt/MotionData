@@ -56,7 +56,7 @@ public class CalibrationDialog extends DialogFragment implements View.OnClickLis
     private void setYawOffset(int offset) {
         SharedPreferences prefs = getActivity().getSharedPreferences(getString(R.string.calibration_prefs), 0);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("yaw_offset", offset);
+        editor.putFloat("yaw_offset", (float) Math.toRadians(offset));
         editor.apply();
     }
 
