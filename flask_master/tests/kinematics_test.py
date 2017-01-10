@@ -21,7 +21,7 @@ class TestKinematics(unittest.TestCase):
         
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.kin_keep = kk.KinematicsKeeper(0, self.max_coll_fact.createMaxCollection(self.max_coll_fact.SURGE))
+        self.kin_keep = kk.KinematicsKeeper(0.0, self.max_coll_fact.createMaxCollection(self.max_coll_fact.SURGE))
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -78,14 +78,6 @@ class TestKinematics(unittest.TestCase):
         z = da.process_accelerations(0.2, 50000, 0.5, points)
         end = time.time()
     """
-    
-    def test_typical_session_cleaning(self):
-        accel_list = [[0, 0, 0, 0], [1, 0.002, 0.003, 0.004], [2, 0.003, 0.004, 0.005], [3, 0.002, 0.004, 0.006]]
-        gyro_list = [[0, 0, 0, 0], [1, 2, 3, 1], [2, 1, 4, 4], [3, 2, 2, 2]]
-        start_time = 0
-        end_time = 3
-        result = da.clean_session(start_time, end_time, accel_list, gyro_list)
-        print(result)
     
     def test_kk_determine_next_acceleration_by_pos(self):
         time_diff = dc.Decimal(0.0001)
@@ -154,6 +146,23 @@ class TestKinematics(unittest.TestCase):
         actual = self.kin_keep._determine_next_velocity(time_diff, new_vel)
         expected = dc.Decimal(-0.123900) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
-    
+        
+    def test_kk_generate_next_state_exceeds_max_accel(self):
+        self.kin_keep._curr_accel = dc.Decimal(-4.000)
+        self.kin_keep.generate_next_state(100, 4.000)
+        actual_vel = self.kin_keep.get_velocity()
+        actual_pos = self.kin_keep.get_position()
+        actual_accel = self.kin_keep.get_acceleration()
+        self.kin_keep._curr_accel = dc.Decimal(-4.000)
+        self.kin_keep._curr_pos = dc.Decimal(0.0)
+        self.kin_keep._curr_vel = dc.Decimal(0.0)
+        self.kin_keep._curr_time = dc.Decimal(0.0)
+        expected_vel = self.kin_keep._determine_next_velocity(dc.Decimal(0.1), dc.Decimal(3.848)) * dc.Decimal(1.0)
+        expected_pos = self.kin_keep._determine_next_position(dc.Decimal(0.1), dc.Decimal(3.848)) * dc.Decimal(1.0)
+        expected_accel = dc.Decimal(dc.Decimal(3.848)) * dc.Decimal(1.0)
+        self.assertEqual(float(expected_pos), actual_pos)
+        self.assertEqual(float(expected_accel), actual_accel)
+        self.assertEqual(float(expected_vel), actual_vel)
+        
 if __name__ == "__main__":
     unittest.main()

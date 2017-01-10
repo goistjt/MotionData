@@ -6,7 +6,7 @@ Created on Oct 31, 2016
 
 import decimal as dc
 
-GRAVITY = 9.8
+GRAVITY = 9.81
 
 class MaxCollection(object):
     
