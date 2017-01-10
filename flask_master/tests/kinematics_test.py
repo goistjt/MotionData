@@ -147,7 +147,7 @@ class TestKinematics(unittest.TestCase):
         expected = dc.Decimal(-0.123900) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
         
-    def test_kk_generate_next_state_exceeds_max_accel(self):
+    def test_kk_generate_next_state_exceeds_max_accel_onset(self):
         self.kin_keep._curr_accel = dc.Decimal(-4.000)
         self.kin_keep.generate_next_state(100, 4.000)
         actual_vel = self.kin_keep.get_velocity()
@@ -160,6 +160,84 @@ class TestKinematics(unittest.TestCase):
         expected_vel = self.kin_keep._determine_next_velocity(dc.Decimal(0.1), dc.Decimal(3.848)) * dc.Decimal(1.0)
         expected_pos = self.kin_keep._determine_next_position(dc.Decimal(0.1), dc.Decimal(3.848)) * dc.Decimal(1.0)
         expected_accel = dc.Decimal(dc.Decimal(3.848)) * dc.Decimal(1.0)
+        self.assertEqual(float(expected_pos), actual_pos)
+        self.assertEqual(float(expected_accel), actual_accel)
+        self.assertEqual(float(expected_vel), actual_vel)
+    
+    def test_kk_generate_next_state_exceeds_max_accel(self):
+        self.kin_keep.generate_next_state(100, 8.000)
+        actual_vel = self.kin_keep.get_velocity()
+        actual_pos = self.kin_keep.get_position()
+        actual_accel = self.kin_keep.get_acceleration()
+        self.kin_keep._curr_accel = dc.Decimal(0.0)
+        self.kin_keep._curr_pos = dc.Decimal(0.0)
+        self.kin_keep._curr_vel = dc.Decimal(0.0)
+        self.kin_keep._curr_time = dc.Decimal(0.0)
+        expected_vel = self.kin_keep._determine_next_velocity(dc.Decimal(0.1), dc.Decimal(6.3765)) * dc.Decimal(1.0)
+        expected_pos = self.kin_keep._determine_next_position(dc.Decimal(0.1), dc.Decimal(6.3765)) * dc.Decimal(1.0)
+        expected_accel = dc.Decimal(dc.Decimal(6.3765)) * dc.Decimal(1.0)
+        self.assertEqual(float(expected_pos), actual_pos)
+        self.assertEqual(float(expected_accel), actual_accel)
+        self.assertEqual(float(expected_vel), actual_vel)
+    
+    def test_kk_generate_next_state_exceeds_max_vel(self):
+        self.kin_keep._curr_vel = dc.Decimal(0.8)
+        self.kin_keep.generate_next_state(100, 1.0)
+        actual_vel = self.kin_keep.get_velocity()
+        actual_pos = self.kin_keep.get_position()
+        actual_accel = self.kin_keep.get_acceleration()
+        self.kin_keep._curr_accel = dc.Decimal(0.0)
+        expected_vel = dc.Decimal(0.8) * dc.Decimal(1.0)
+        self.kin_keep._curr_vel = dc.Decimal(0.8) * dc.Decimal(1.0)
+        self.kin_keep._curr_pos = dc.Decimal(0.0)
+        self.kin_keep._curr_time = dc.Decimal(0.0)
+        expected_accel = self.kin_keep._determine_next_acceleration_by_vel(dc.Decimal(0.1) * dc.Decimal(1.0), dc.Decimal(0.8) * dc.Decimal(1.0)) * dc.Decimal(1.0)
+        self.kin_keep.curr_accel = expected_accel
+        expected_pos = self.kin_keep._determine_next_position(dc.Decimal(0.1) * dc.Decimal(1.0), expected_accel) * dc.Decimal(1.0)
+        self.kin_keep._curr_pos = expected_pos
+        self.kin_keep._curr_time = dc.Decimal(1.0)
+        self.assertEqual(float(expected_pos), actual_pos)
+        self.assertEqual(float(expected_accel), actual_accel)
+        self.assertEqual(float(expected_vel), actual_vel)
+        
+    def test_kk_generate_next_state_exceeds_max_neg_exc(self):
+        self.kin_keep._curr_pos = dc.Decimal(-0.306)
+        self.kin_keep.generate_next_state(100, -1.0)
+        actual_vel = self.kin_keep.get_velocity()
+        actual_pos = self.kin_keep.get_position()
+        actual_accel = self.kin_keep.get_acceleration()
+        self.kin_keep._curr_accel = dc.Decimal(0.0)
+        self.kin_keep._curr_vel = dc.Decimal(0.0)
+        self.kin_keep._curr_pos = dc.Decimal(-0.306)
+        self.kin_keep._curr_time = dc.Decimal(0.0)
+        expected_accel = self.kin_keep._determine_next_acceleration_by_pos(dc.Decimal(0.1) * dc.Decimal(1.0), dc.Decimal(-0.307) * dc.Decimal(1.0)) * dc.Decimal(1.0)
+        self.kin_keep.curr_accel = expected_accel
+        expected_vel = self.kin_keep._determine_next_velocity(dc.Decimal(0.1) * dc.Decimal(1.0), expected_accel) * dc.Decimal(1.0)
+        self.kin_keep.curr_vel = expected_vel
+        expected_pos = dc.Decimal(-0.307) * dc.Decimal(1.0)
+        self.kin_keep._curr_pos = expected_pos
+        self.kin_keep._curr_time = dc.Decimal(1.0)
+        self.assertEqual(float(expected_pos), actual_pos)
+        self.assertEqual(float(expected_accel), actual_accel)
+        self.assertEqual(float(expected_vel), actual_vel)
+    
+    def test_kk_generate_next_state_exceeds_max_pos_exc(self):
+        self.kin_keep._curr_pos = dc.Decimal(0.407)
+        self.kin_keep.generate_next_state(100, 1.0)
+        actual_vel = self.kin_keep.get_velocity()
+        actual_pos = self.kin_keep.get_position()
+        actual_accel = self.kin_keep.get_acceleration()
+        self.kin_keep._curr_accel = dc.Decimal(0.0)
+        self.kin_keep._curr_vel = dc.Decimal(0.0)
+        self.kin_keep._curr_pos = dc.Decimal(0.407)
+        self.kin_keep._curr_time = dc.Decimal(0.0)
+        expected_accel = self.kin_keep._determine_next_acceleration_by_pos(dc.Decimal(0.1) * dc.Decimal(1.0), dc.Decimal(0.408) * dc.Decimal(1.0)) * dc.Decimal(1.0)
+        self.kin_keep.curr_accel = expected_accel
+        expected_vel = self.kin_keep._determine_next_velocity(dc.Decimal(0.1) * dc.Decimal(1.0), expected_accel) * dc.Decimal(1.0)
+        self.kin_keep.curr_vel = expected_vel
+        expected_pos = dc.Decimal(0.408) * dc.Decimal(1.0)
+        self.kin_keep._curr_pos = expected_pos
+        self.kin_keep._curr_time = dc.Decimal(1.0)
         self.assertEqual(float(expected_pos), actual_pos)
         self.assertEqual(float(expected_accel), actual_accel)
         self.assertEqual(float(expected_vel), actual_vel)

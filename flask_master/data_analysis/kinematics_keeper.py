@@ -60,27 +60,26 @@ class KinematicsKeeper(object):
             
         new_vel = self._determine_next_velocity(time_diff, new_accel)
         
-        print("VEL")
         #Velocity (positive and negative)
         if(self._max_collection.get_max_vel() < dc.Decimal(abs(new_vel))):
             # self._roll_back = True
             new_vel = (new_vel / dc.Decimal(abs(new_vel))) * self._max_collection.get_max_vel()
-            new_accel = self._determine_next_acceleration(time_diff, new_vel)
-            
+            new_accel = self._determine_next_acceleration_by_vel(time_diff, new_vel)
+              
         new_pos = self._determine_next_position(time_diff, new_accel)
         
-        print("NEG EXC")
         #Excursion (negative)
         if(self._max_collection.get_max_neg_exc() > dc.Decimal(new_pos)):
             # self._roll_back = True
+            print("NEG EXC")
             new_pos = self._max_collection.get_max_neg_exc()
             new_accel = self._determine_next_acceleration_by_pos(time_diff, new_pos)
             new_vel = self._determine_next_velocity(time_diff, new_accel)
         
-        print("POS EXC")
         #Excursion (positive)
         if(self._max_collection.get_max_pos_exc() < dc.Decimal(new_pos)):
             # self._roll_back = True
+            print("POS EXC")
             new_pos = self._max_collection.get_max_pos_exc()
             new_accel = self._determine_next_acceleration_by_pos(time_diff, new_pos)
             new_vel = self._determine_next_velocity(time_diff, new_accel)
