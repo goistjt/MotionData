@@ -54,7 +54,6 @@ class TestKinematics(unittest.TestCase):
         points = [[0.1, 0.0, 0.0, 0.0], [0.8, 2.0, 1.0, 8.0], [1.2, 1.2, 1.2, 1.2], [1.5, 2.0, 8.0, 9.0], [2.3, 43.0, 42.1, 42.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.1, 1.1, 1.1, 1.1], [2.2, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.0, 2.2, 1.1, points)
-        print(points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
         
     def test_points_normalizer_both(self):
@@ -241,6 +240,14 @@ class TestKinematics(unittest.TestCase):
         self.assertEqual(float(expected_pos), actual_pos)
         self.assertEqual(float(expected_accel), actual_accel)
         self.assertEqual(float(expected_vel), actual_vel)
+    
+    def test_typical_session_cleaning(self):
+        accel_list = [[0, 0, 0, 0], [40, 2.00, 3.00, 4.00], [80, 3.00, 4.00, 5.00], [120, 2.00, 4.00, 6.00]]
+        gyro_list = [[0, 0, 0, 0], [40, 20, 30, 10], [80, 10, 40, 40], [120, 20, 20, 20]]
+        start_time = 0
+        end_time = 120
+        result = da.clean_session(start_time, end_time, accel_list, gyro_list)
+        print(result)
         
 if __name__ == "__main__":
     unittest.main()

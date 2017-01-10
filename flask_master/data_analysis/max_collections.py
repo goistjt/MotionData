@@ -17,11 +17,16 @@ class MaxCollection(object):
         self._max_accel = dc.Decimal(0.0)
         self._max_accel_diff = dc.Decimal(0.0)
     
-    def get_max_vel(self): return self._max_vel
-    def get_max_neg_exc(self): return self._max_neg_exc
-    def get_max_pos_exc(self): return self._max_pos_exc
-    def get_max_accel(self): return self._max_accel
-    def get_max_accel_diff(self): return self._max_accel_diff
+    def get_max_vel(self): 
+        return self._max_vel
+    def get_max_neg_exc(self): 
+        return self._max_neg_exc
+    def get_max_pos_exc(self): 
+        return self._max_pos_exc
+    def get_max_accel(self): 
+        return self._max_accel
+    def get_max_accel_diff(self): 
+        return self._max_accel_diff
 
 class SurgeCollection(MaxCollection):
     

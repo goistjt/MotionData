@@ -125,7 +125,7 @@ def determine_start(points, start, end_index):
 
 def clean_session(start_time, end_time, accel_points, gyro_points):
     
-    interval = 1 # 1 unit of whatever units are submitted
+    interval = 40 # 1 unit of whatever units are submitted
     
     if(start_time >= end_time):
         return []
@@ -134,9 +134,6 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
     
     gyro_list = process_accelerations(start_time, end_time, interval, gyro_points)
     
-    print(accel_list)
-    print(gyro_list)
-    
     if(accel_list == None or len(accel_list) == 0):
         return []
     
@@ -144,6 +141,9 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
         return []
     
     # mini_sessions = []
+    
+    print(accel_list)
+    print(gyro_list)
     
     maxCF = mcf.MaxCollectionFactory()
     
@@ -168,6 +168,7 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
             accel_val = accel_list[i][x + 1]
             curr_keep = keeps_accel[x]
             curr_keep.generate_next_state(time_val, accel_val)
+            next_set.append(curr_keep.get_position())
             """
             if(curr_keep.rollback):
                 if(session != None and len(session) > 0):
@@ -176,7 +177,6 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
                 can_has = False
                 break
             """
-            next_set.append(curr_keep.get_position())
         
         # if(not can_has):
         for y in range(len(keeps_gyro)):
@@ -184,6 +184,7 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
             accel_val = gyro_list[i][y + 1]
             curr_keep = keeps_gyro[y]
             curr_keep.generate_next_state(time_val, accel_val)
+            next_set.append(curr_keep.get_position())
             """
             if(curr_keep.rollback):
                 if(session != None and len(session) > 0):
@@ -192,7 +193,6 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
                 can_has = False
                 break
             """
-            next_set.append(curr_keep.get_position())
         
         session.append(next_set)
         
@@ -200,6 +200,63 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
         if(can_has):
             session.append(next_set)
         """
+    
+    acc_time = end_time
+    
+    while(True):
+        
+        acc_time = acc_time + interval
+        
+        check = 0
+        
+        next_set = []
+        
+        for p in range(len(keeps_accel)):
+            curr_keep = keeps_accel[p]
+            pos = curr_keep.get_position()
+            if(pos == 0.0):
+                check = check + 1
+                next_set.append(0.0)
+            else:
+                if((pos / abs(pos)) == 1):
+                    accel_val = -curr_keep.get_max_acceleration()
+                else:
+                    accel_val = curr_keep.get_max_acceleration()
+                curr_keep.generate_next_state(acc_time, accel_val)
+                pos_next = curr_keep.get_position()
+                if(pos_next == 0.0 or (pos_next / abs(pos_next)) != (pos / (abs(pos)))):
+                    check = check + 1
+                    curr_keep.set_position(0.0)
+                    next_set.append(0.0)
+                else:
+                    next_set.append(curr_keep.get_position())
+        
+        for o in range(len(keeps_gyro)):
+            curr_keep = keeps_gyro[o]
+            pos = curr_keep.get_position()
+            if(pos == 0.0):
+                check = check + 1
+                next_set.append(0.0)
+            else:
+                if((pos / abs(pos)) == 1):
+                    accel_val = -curr_keep.get_max_acceleration()
+                else:
+                    accel_val = curr_keep.get_max_acceleration()
+                curr_keep.generate_next_state(acc_time, accel_val)
+                pos_next = curr_keep.get_position()
+                if(pos_next == 0.0 or (pos_next / abs(pos_next)) != (pos / (abs(pos)))):
+                    check = check + 1
+                    curr_keep.set_position(0.0)
+                    next_set.append(0.0)
+                else:
+                    next_set.append(curr_keep.get_position())
+        
+        session.append(next_set)
+        
+        print(next_set)
+        
+        if(check == len(keeps_gyro) + len(keeps_accel)):
+            break
         
     return session
         
