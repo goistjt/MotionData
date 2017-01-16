@@ -241,13 +241,64 @@ class TestKinematics(unittest.TestCase):
         self.assertEqual(float(expected_accel), actual_accel)
         self.assertEqual(float(expected_vel), actual_vel)
     
-    def test_typical_session_cleaning(self):
-        accel_list = [[0, 0, 0, 0], [40, 2.00, 3.00, 4.00], [80, 3.00, 4.00, 5.00], [120, 2.00, 4.00, 6.00]]
-        gyro_list = [[0, 0, 0, 0], [40, 20, 30, 10], [80, 10, 40, 40], [120, 20, 20, 20]]
-        start_time = 0
-        end_time = 120
-        result = da.clean_session(start_time, end_time, accel_list, gyro_list)
-        print(result)
+    def test_process_return_to_zero_trivial(self):
+        
+        max_fact = mcf.MaxCollectionFactory()
+        modified_heave_collection = max_fact.createMaxCollection(max_fact.HEAVE)
+        modified_heave_collection._max_accel = 5
+        
+        surge_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        sway_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        heave_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        
+        roll_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        pitch_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        yaw_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        
+        keeps_accel = [surge_k, sway_k, heave_k]
+        keeps_gyro = [roll_k, pitch_k, yaw_k]
+        
+        end_time = 240
+        
+        interval = 40
+        
+        session = []
+        
+        result = da.process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
+        
+        self.assertTrue(np.allclose(result, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], atol=self.MAX_EPSILON))
+        
+    def test_process_return_to_nontrivial(self):
+        
+        max_fact = mcf.MaxCollectionFactory()
+        modified_heave_collection = max_fact.createMaxCollection(max_fact.HEAVE)
+        
+        surge_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        surge_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        sway_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        sway_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        heave_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        heave_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        
+        roll_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        roll_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        pitch_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        pitch_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        yaw_k = kk.KinematicsKeeper(120, modified_heave_collection)
+        yaw_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        
+        keeps_accel = [surge_k, sway_k, heave_k]
+        keeps_gyro = [roll_k, pitch_k, yaw_k]
+        
+        end_time = 240
+        
+        interval = 40
+        
+        session = []
+        
+        result = da.process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
+        
+        print(session)
         
 if __name__ == "__main__":
     unittest.main()

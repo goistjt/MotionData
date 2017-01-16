@@ -18,21 +18,6 @@ class KinematicsKeeper(object):
         self._curr_vel = dc.Decimal(0.0)
         self._curr_accel = dc.Decimal(0.0)
         self._max_collection = max_collection
-        """
-        self._roll_back = False
-        self._since_roll_back = 0
-        self._accumulation_exc = 0
-        """
-    
-    """
-    def needs_roll_back(self):
-        return self._roll_back
-    """
-    
-    """
-    def roll_back_average(self):
-        return self._accumulation_exc / self._since_roll_back
-    """
     
     def generate_next_state(self, new_time, new_accel):
         
