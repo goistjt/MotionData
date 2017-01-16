@@ -134,10 +134,7 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
     
     gyro_list = process_accelerations(start_time, end_time, interval, gyro_points)
     
-    if(accel_list == None or len(accel_list) == 0):
-        return []
-    
-    if(gyro_list == None or len(gyro_list) == 0):
+    if((accel_list == None or len(accel_list) == 0) or (gyro_list == None or len(gyro_list) == 0) or (len(gyro_list) != len(accel_list))):
         return []
     
     maxCF = mcf.MaxCollectionFactory()
@@ -158,23 +155,26 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
         
         next_set = []
         
-        for x in range(len(keeps_accel)):
-            time_val = accel_list[i][0]
-            accel_val = accel_list[i][x + 1]
-            curr_keep = keeps_accel[x]
-            curr_keep.generate_next_state(time_val, accel_val)
-            next_set.append(curr_keep.get_position())
+        next_set = process_normal_state_generations(keeps_accel, accel_list, i, next_set)
         
-        for y in range(len(keeps_gyro)):
-            time_val = gyro_list[i][0]
-            accel_val = gyro_list[i][y + 1]
-            curr_keep = keeps_gyro[y]
-            curr_keep.generate_next_state(time_val, accel_val)
-            next_set.append(curr_keep.get_position())
+        next_set = process_normal_state_generations(keeps_gyro, gyro_list, i, next_set)
         
         session.append(next_set)
         
-    return process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session);
+    return process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
+
+
+def process_normal_state_generations(keeps_list, values_list, position, next_set):
+    
+    for x in range(len(keeps_list)):
+        time_val = values_list[position][0]
+        accel_val = values_list[position][x + 1]
+        curr_keep = keeps_list[x]
+        curr_keep.generate_next_state(time_val, accel_val)
+        next_set.append(curr_keep.get_position())
+    
+    return next_set
+
 
 def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session):
     
@@ -182,7 +182,7 @@ def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
     
     while(True):
         
-        acc_time = acc_time + interval
+        acc_time += interval
         
         next_set = []
         
@@ -190,12 +190,12 @@ def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
         
         next_set = process_for_next_set(keeps_gyro, acc_time, next_set)
         
-        session.append(next_set)
-        
-        print(next_set)
-        
-        if(np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.000001)):
+        if(np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0000001)):
+            next_set = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            session.append(next_set)
             break;
+        
+        session.append(next_set)
         
     return session
 
@@ -207,17 +207,19 @@ def process_for_next_set(keeps_list, acc_time, next_set):
         pos = curr_keep.get_position()
         
         if(pos == 0.0):
+            
             next_set.append(0.0)
             
         else:
             
-            if((pos / abs(pos)) == 1):
-                accel_val = -(curr_keep.get_max_acceleration() / 2)
+            if(pos > 0):
+                accel_val = -curr_keep.get_max_acceleration() / 2
             
             else:
-                accel_val = (curr_keep.get_max_acceleration() / 2)
+                accel_val = curr_keep.get_max_acceleration() / 2
             
             curr_keep.generate_next_state(acc_time, accel_val)
+            
             pos_next = curr_keep.get_position()
             
             if(pos_next == 0.0 or (pos_next / abs(pos_next)) != (pos / (abs(pos)))):

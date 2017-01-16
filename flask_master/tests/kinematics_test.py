@@ -245,7 +245,7 @@ class TestKinematics(unittest.TestCase):
         
         max_fact = mcf.MaxCollectionFactory()
         modified_heave_collection = max_fact.createMaxCollection(max_fact.HEAVE)
-        modified_heave_collection._max_accel = 5
+        modified_heave_collection._max_accel = 0.408
         
         surge_k = kk.KinematicsKeeper(120, modified_heave_collection)
         sway_k = kk.KinematicsKeeper(120, modified_heave_collection)
@@ -274,18 +274,18 @@ class TestKinematics(unittest.TestCase):
         modified_heave_collection = max_fact.createMaxCollection(max_fact.HEAVE)
         
         surge_k = kk.KinematicsKeeper(120, modified_heave_collection)
-        surge_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        surge_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
         sway_k = kk.KinematicsKeeper(120, modified_heave_collection)
-        sway_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        sway_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
         heave_k = kk.KinematicsKeeper(120, modified_heave_collection)
-        heave_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        heave_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
         
         roll_k = kk.KinematicsKeeper(120, modified_heave_collection)
-        roll_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        roll_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
         pitch_k = kk.KinematicsKeeper(120, modified_heave_collection)
-        pitch_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        pitch_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
         yaw_k = kk.KinematicsKeeper(120, modified_heave_collection)
-        yaw_k._curr_pos = dc.Decimal(5.0) * dc.Decimal(1.0)
+        yaw_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
         
         keeps_accel = [surge_k, sway_k, heave_k]
         keeps_gyro = [roll_k, pitch_k, yaw_k]
@@ -298,7 +298,7 @@ class TestKinematics(unittest.TestCase):
         
         result = da.process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
         
-        print(session)
+        print(result)
         
 if __name__ == "__main__":
     unittest.main()
