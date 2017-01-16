@@ -72,9 +72,9 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
                 calculateZOffsets(calculateAverageAccel());
                 SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putFloat(getString(R.string.x_threshold), max_x_noise);
-                editor.putFloat(getString(R.string.y_threshold), max_y_noise);
-                editor.putFloat(getString(R.string.z_threshold), max_z_noise);
+//                editor.putFloat(getString(R.string.x_threshold), max_x_noise);
+//                editor.putFloat(getString(R.string.y_threshold), max_y_noise);
+//                editor.putFloat(getString(R.string.z_threshold), max_z_noise);
                 editor.putFloat(getString(R.string.roll_threshold), max_roll_noise);
                 editor.putFloat(getString(R.string.pitch_threshold), max_pitch_noise);
                 editor.putFloat(getString(R.string.yaw_threshold), max_yaw_noise);
@@ -86,9 +86,10 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
 
     private void calculateZOffsets(float[] floats) {
         float gravity = 9.81F;
-        float xz = gravity / floats[0];
-        float xzOff = (float) Math.asin(Math.abs(gravity / floats[0]));
-        float yzOff = (float) Math.asin(gravity / floats[1]);
+        float x = floats[0] < 0 ? Math.max(floats[0], gravity) : Math.min(floats[0], gravity);
+        float y = floats[1] < 0 ? Math.max(floats[1], gravity) : Math.min(floats[1], gravity);
+        float xzOff = (float) (Math.asin(x / gravity));
+        float yzOff = (float) (Math.asin(y / gravity));
         SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0).edit();
         editor.putFloat("pitch_offset", yzOff);
         editor.putFloat("roll_offset", xzOff);

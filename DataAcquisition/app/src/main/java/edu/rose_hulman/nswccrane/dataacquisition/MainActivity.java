@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mCollectionDBHelper = new MotionCollectionDBHelper(this);
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     }
 
@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         long time = System.currentTimeMillis();
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_ACCELEROMETER:
+            case Sensor.TYPE_LINEAR_ACCELERATION:
                 float[] valsPrime = calculateAccelRotation(event.values);
                 AccelDataModel accelModel = new AccelDataModel(time, valsPrime[0], valsPrime[1], valsPrime[2]);
                 accelerometerChanged(accelModel);
