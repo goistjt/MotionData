@@ -97,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int pollRate;
     public static final int MS_TO_US = 1000;
     private float yawOffset;
+    private float pitchOffset;
+    private float rollOffset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -155,6 +157,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mCollectionButton.setEnabled(false);
         collectionOn();
         yawOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
+        pitchOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("pitch_offset", 0f);
+        rollOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("roll_offset", 0f);
         if (!mRecordTimeEdit.getText().toString().isEmpty() && Integer.parseInt(mRecordTimeEdit.getText().toString()) != 0) {
 
             Runnable runnable = new Runnable() {
@@ -312,12 +316,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         long time = System.currentTimeMillis();
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                float x = event.values[0];
-                float y = event.values[1];
-                float z = event.values[2];
-                float xP = (float) (Math.cos(yawOffset) * x - Math.sin(yawOffset) * y);
-                float yP = (float) (Math.sin(yawOffset) * x + Math.cos(yawOffset) * y);
-                AccelDataModel accelModel = new AccelDataModel(time, xP, yP, event.values[2]);
+                float[] valsPrime = calculateAccelRotation(event.values);
+                AccelDataModel accelModel = new AccelDataModel(time, valsPrime[0], valsPrime[1], valsPrime[2]);
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
@@ -330,6 +330,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    private float[] calculateAccelRotation(float[] values) {
+        float x = values[0];
+        float y = values[1];
+        float z = values[2];
+        float xP = (float) (Math.cos(yawOffset) * x - Math.sin(yawOffset) * y);
+        float yP = (float) (Math.sin(yawOffset) * x + Math.cos(yawOffset) * y);
+        float xP2 = (float) (Math.cos(rollOffset) * xP - Math.sin(rollOffset) * z);
+        float zP = (float) (Math.sin(rollOffset) * xP + Math.cos(rollOffset) * z);
+        float yP2 = (float) (Math.cos(pitchOffset) * yP - Math.sin(pitchOffset) * zP);
+        float zP2 = (float) (Math.sin(pitchOffset) * yP + Math.cos(pitchOffset) * zP);
+        return new float[]{xP2, yP2, zP2};
     }
 
     @Override

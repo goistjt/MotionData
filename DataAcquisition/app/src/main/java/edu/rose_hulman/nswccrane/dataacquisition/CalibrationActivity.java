@@ -13,6 +13,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -33,6 +36,10 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public float max_roll_noise = 0;
     public float max_pitch_noise = 0;
     public float max_yaw_noise = 0;
+
+    private List<Float> xVals = new ArrayList<>();
+    private List<Float> yVals = new ArrayList<>();
+    private List<Float> zVals = new ArrayList<>();
 
     private float[] prev_accel = new float[]{0, 0, 0};
     private float[] prev_gyro = new float[]{0, 0, 0};
@@ -62,6 +69,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
             @Override
             public void onFinish() {
                 CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
+                calculateZOffsets(calculateAverageAccel());
                 SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putFloat(getString(R.string.x_threshold), max_x_noise);
@@ -76,9 +84,37 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         }.start();
     }
 
+    private void calculateZOffsets(float[] floats) {
+        float gravity = 9.81F;
+        float xz = gravity / floats[0];
+        float xzOff = (float) Math.asin(Math.abs(gravity / floats[0]));
+        float yzOff = (float) Math.asin(gravity / floats[1]);
+        SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0).edit();
+        editor.putFloat("pitch_offset", yzOff);
+        editor.putFloat("roll_offset", xzOff);
+        editor.apply();
+    }
+
+    private float[] calculateAverageAccel() {
+        float xAvg = 0, yAvg = 0, zAvg = 0;
+        for (Float xVal : xVals) {
+            xAvg += xVal;
+        }
+        for (Float yVal : yVals) {
+            yAvg += yVal;
+        }
+        for (Float zVal : zVals) {
+            zAvg += zVal;
+        }
+        xAvg = xAvg / xVals.size();
+        yAvg = yAvg / yVals.size();
+        zAvg = zAvg / zVals.size();
+        return new float[]{xAvg, yAvg, zAvg};
+    }
+
     private void initAccelerometer(SensorManager sensorManager) {
-        if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
-            Sensor mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
+            Sensor mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             sensorManager.registerListener(this, mAccelerometer, pollRate * MS_TO_US);
         } else {
             Log.d("Calibration", "Linear Accelerometer does not exist");
@@ -101,8 +137,12 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_LINEAR_ACCELERATION:
-                accelerometerChanged(event.values);
+            case Sensor.TYPE_ACCELEROMETER:
+                float x = event.values[0];
+                float y = event.values[1];
+                float xP = (float) (Math.cos(yaw_offset) * x - Math.sin(yaw_offset) * y);
+                float yP = (float) (Math.sin(yaw_offset) * x + Math.cos(yaw_offset) * y);
+                accelerometerChanged(new float[]{xP, yP, event.values[2]});
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 gyroscopeChanged(event.values);
@@ -116,13 +156,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     }
 
     public void accelerometerChanged(float[] floats) {
-        float[] floatsPrime = floats;
-        floatsPrime[0] = (float) (Math.cos(yaw_offset) * floats[0] - Math.sin(yaw_offset) * floats[1]);
-        floatsPrime[1] = (float) (Math.sin(yaw_offset) * floats[0] + Math.cos(yaw_offset) * floats[1]);
-        max_x_noise = Math.abs(Math.max(max_x_noise, floatsPrime[0] - prev_accel[0]));
-        max_y_noise = Math.abs(Math.max(max_y_noise, floatsPrime[1] - prev_accel[1]));
-        max_z_noise = Math.abs(Math.max(max_z_noise, floatsPrime[2] - prev_accel[2]));
-        prev_accel = floatsPrime;
+        xVals.add(floats[0]);
+        yVals.add(floats[1]);
+        zVals.add(floats[2]);
+        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
+        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
+        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
+        prev_accel = floats;
     }
 
     public void gyroscopeChanged(float[] floats) {
