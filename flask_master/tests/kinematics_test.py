@@ -1,8 +1,8 @@
-'''
+"""
 Created on Oct 29, 2016
 
 @author: steve
-'''
+"""
 import unittest
 import data_analysis.data_analysis as da
 import numpy as np
@@ -11,7 +11,15 @@ import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
 
 class TestKinematics(unittest.TestCase):
+    
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.kin_keep = kk.KinematicsKeeper(0.0, self.max_coll_fact.create_max_collection(self.max_coll_fact.SURGE))
 
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        self.kin_keep = None
+        
     @classmethod
     def setUpClass(cls):
         super(TestKinematics, cls).setUpClass()
@@ -19,64 +27,56 @@ class TestKinematics(unittest.TestCase):
         cls.MAX_EPSILON = 0.000001
         cls.max_coll_fact = mcf.MaxCollectionFactory()
         
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.kin_keep = kk.KinematicsKeeper(0.0, self.max_coll_fact.createMaxCollection(self.max_coll_fact.SURGE))
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.kin_keep = None
-        
     @classmethod
     def tearDownClass(cls):
         super(TestKinematics, cls).tearDownClass()
         cls.max_coll_fact = None
         
     def test_points_normalizer_same(self):
-        points = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
-        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
+        points = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
+                  [4.0, 0.0, 0.0, 0.0]]
+        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
+                      [4.0, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
-        
+
     def test_points_normalizer_beginning_off(self):
-        points = [[0.2, 0.4, 100.2, 32.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
-        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
+        points = [[0.2, 0.4, 100.2, 32.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
+                  [4.0, 0.0, 0.0, 0.0]]
+        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
+                      [4.0, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
-        
+
     def test_points_normalizer_end_off(self):
-        points = [[0.2, 0.4, 100.2, 32.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [3.9, 22.0, 0.42, 42.0]]
-        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
+        points = [[0.2, 0.4, 100.2, 32.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
+                  [3.9, 22.0, 0.42, 42.0]]
+        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
+                      [4.0, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
-        
+
     def test_points_simple_shift(self):
-        points = [[0.1, 0.0, 0.0, 0.0], [0.8, 2.0, 1.0, 8.0], [1.2, 1.2, 1.2, 1.2], [1.5, 2.0, 8.0, 9.0], [2.3, 43.0, 42.1, 42.0]]
+        points = [[0.1, 0.0, 0.0, 0.0], [0.8, 2.0, 1.0, 8.0], [1.2, 1.2, 1.2, 1.2], [1.5, 2.0, 8.0, 9.0],
+                  [2.3, 43.0, 42.1, 42.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.1, 1.1, 1.1, 1.1], [2.2, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.0, 2.2, 1.1, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
-        
+
     def test_points_normalizer_both(self):
         points = [[2.0, 1.0, 1.0, 1.0]]
-        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5], [4.0, 0.0, 0.0, 0.0]]
+        points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
+                      [4.0, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
-        
+
     def test_complex_shift(self):
-        points = [[0.4, 0.0, 0.0, 0.0], [0.6, 1.0, 2.0, 3.0], [0.9, 4.0, 5.0, 6.0], [0.7, 1.0, 1.0, 1.0], [0.9, 8.0, 2.0, 3.0], [1.3, 0.0, 1.0, 2.0], [2.9, 2.32, 2.32, 2.32], [3.0, 8.0, 2.0, 3.0], [3.5, 1.0, 4.0, 9.2]]
+        points = [[0.4, 0.0, 0.0, 0.0], [0.6, 1.0, 2.0, 3.0], [0.9, 4.0, 5.0, 6.0], [0.7, 1.0, 1.0, 1.0],
+                  [0.9, 8.0, 2.0, 3.0], [1.3, 0.0, 1.0, 2.0], [2.9, 2.32, 2.32, 2.32], [3.0, 8.0, 2.0, 3.0],
+                  [3.5, 1.0, 4.0, 9.2]]
         points_exp = [[0.5, 0.0, 0.0, 0.0], [1.5, 1.0, 1.0, 1.0], [2.5, 2.0, 2.0, 2.0], [3.5, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.5, 3.5, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
-    
-    """
-    def test_points_large_set(self):
-        points = [[0, 0, 0, 0]]
-        for x in range(2000):
-            points.append([x * 0.000001, x, x, x])
-        start = time.time()
-        z = da.process_accelerations(0.2, 50000, 0.5, points)
-        end = time.time()
-    """
     
     def test_kk_determine_next_acceleration_by_pos(self):
         time_diff = dc.Decimal(0.0001)
@@ -244,7 +244,7 @@ class TestKinematics(unittest.TestCase):
     def test_process_return_to_zero_trivial(self):
         
         max_fact = mcf.MaxCollectionFactory()
-        modified_heave_collection = max_fact.createMaxCollection(max_fact.HEAVE)
+        modified_heave_collection = max_fact.create_max_collection(max_fact.HEAVE)
         modified_heave_collection._max_accel = 0.408
         
         surge_k = kk.KinematicsKeeper(120, modified_heave_collection)
@@ -271,7 +271,7 @@ class TestKinematics(unittest.TestCase):
     def test_process_return_to_nontrivial(self):
         
         max_fact = mcf.MaxCollectionFactory()
-        modified_heave_collection = max_fact.createMaxCollection(max_fact.HEAVE)
+        modified_heave_collection = max_fact.create_max_collection(max_fact.HEAVE)
         
         surge_k = kk.KinematicsKeeper(120, modified_heave_collection)
         surge_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)

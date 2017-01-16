@@ -1,8 +1,5 @@
-For running any local tests:
-    * change filename='..\database\local_config.ini' in python_mysql_dbconfig.py
-
 For running the flask server locally:
-    * change filename='database\local_config.ini' in python_mysql_dbconfig.py
+    * change CONFIG_PATH to use local_config.ini in python_mysql_dbconfig.py
 
 For running the flask server on the six-dof server:
-    * change filename='..\database\server_config.ini' in python_mysql_dbconfig.py
+    * change CONFIG_PATH to use server_config.ini in python_mysql_dbconfig.py
