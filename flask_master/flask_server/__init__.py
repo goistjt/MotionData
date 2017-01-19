@@ -3,20 +3,23 @@ import threading
 import atexit
 import os
 from pathlib import Path
+from flask_compress import Compress
 
 from database import crud_class
 
-POOL_TIME = 30  # Seconds
+POOL_TIME = 15  # Seconds
 
 upload_files = []
 data_lock = threading.Lock()
 t = threading.Thread()
 local = False
 crud = None
+compress = Compress()
 
 
 def create_app():
     app = Flask(__name__)
+    compress.init_app(app)
     global crud
     crud = crud_class.Crud()
 
@@ -40,6 +43,7 @@ def create_app():
         if data:
             # get file type & name
             data_type = data[0]
+            print(data_type)
             file = data[1]
             file = file.replace("\\", "\\\\")
 

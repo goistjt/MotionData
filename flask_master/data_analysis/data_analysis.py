@@ -27,9 +27,42 @@ def select_record(records_id):
     return crud.read_all(query, args)
 
 
+def select_gyro(record_id):
+    query = "SELECT GyroPoints.roll, GyroPoints.pitch, GyroPoints.yaw" \
+            " FROM GyroPoints WHERE GyroPoints.record_id = %s ORDER BY GyroPoints.timestamp ASC"
+    args = [record_id]
+    return crud.read_all(query, args)
+
+
+def select_accel(record_id):
+    query = "SELECT AccelPoints.surge, AccelPoints.sway, AccelPoints.heave" \
+            " FROM AccelPoints WHERE AccelPoints.record_id = %s ORDER BY AccelPoints.timestamp ASC"
+    args = [record_id]
+    return crud.read_all(query, args)
+
+
 def download_record_raw(record_id=[]):
-    df = pd.DataFrame(np.array(select_record(record_id)))
-    return df.to_csv(index=False)
+    accel = select_accel(record_id)
+    gyro = select_gyro(record_id)
+    points = []
+    i = 0
+    j = len(gyro) if len(gyro) < len(accel) else len(accel)
+    print("points %s", j)
+
+    zeropoint = [0, 0, 0, 0, 0, 0]
+    points.append(zeropoint)
+    while i < j:
+        point = []
+        for p in accel[i]:
+            point.append(p)
+        for p in gyro[i]:
+            point.append(p)
+        points.append(point)
+        i += 1
+    points.append(zeropoint)
+
+    df = pd.DataFrame(np.array(points))
+    return df.to_csv(index=False, header=False)
 
 
 def download_record_analyzed(record_id=[]):

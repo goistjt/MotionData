@@ -1,7 +1,8 @@
-from flask import jsonify, request, render_template, Response, make_response
+from flask import jsonify, request, render_template
 import re
 from pathlib import Path
 import datetime
+import time
 import pandas as pd
 
 from data_analysis import data_analysis as da
@@ -80,7 +81,10 @@ def tables():
 
 @app.route("/getRecordRaw/<record_id>")
 def get_record_data_raw(record_id=[]):
+    start = time.time()
     txt = da.download_record_raw(record_id)
+    end = time.time()
+    print(end-start)
     response = {'Content-Disposition': 'attachment;',
                 'filename': 'record.txt',
                 'mimetype': 'text/csv',
@@ -187,12 +191,13 @@ def create_session():
 
         # dump points to csv
         accel_points.append((rec_id, time, x, y, z))
-        accel = pd.DataFrame(accel_points)
-        accel.to_csv(accel_file, index=False)
-        # get lock
-        with data_lock:
-            # add {type, file} to upload_files
-            upload_files.append(["accel", accel_file])
+
+    accel = pd.DataFrame(accel_points)
+    accel.to_csv(accel_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["accel", accel_file])
 
     for point in gyro_data:
         roll = point['roll_val']
@@ -201,16 +206,18 @@ def create_session():
         time = point['time_val']
         # dump points to csv
         gyro_points.append((rec_id, time, roll, pitch, yaw))
-        gyro = pd.DataFrame(gyro_points)
-        gyro.to_csv(gyro_file, index=False)
-        # get lock
-        with data_lock:
-            # add {type, file} to upload_files
-            upload_files.append(["gyro", gyro_file])
+
+    gyro = pd.DataFrame(gyro_points)
+    gyro.to_csv(gyro_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["gyro", gyro_file])
 
     return jsonify(session_id=sess_id, record_id=rec_id)
 
 
+# TODO : update this
 @app.route("/addToSession", methods=["POST"])
 def add_to_session():
     """ {accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],

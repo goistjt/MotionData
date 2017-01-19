@@ -256,7 +256,8 @@
         }
 
         function clicked_analyzed(rec_id) {
-            $.ajax({url:'/getRecordAnalyzed/' + rec_id,
+            $.ajax({headers : {'Accept-Encoding' : 'gzip'},
+                url:'/getRecordAnalyzed/' + rec_id,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
                     var link = document.createElement('a');
