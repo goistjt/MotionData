@@ -341,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float xP2 = (float) (Math.cos(rollOffset) * xP - Math.sin(rollOffset) * z);
         float zP = (float) (Math.sin(rollOffset) * xP + Math.cos(rollOffset) * z);
         float yP2 = (float) (Math.cos(pitchOffset) * yP - Math.sin(pitchOffset) * zP);
-        float zP2 = (float) (Math.sin(pitchOffset) * yP + Math.cos(pitchOffset) * zP);
+        float zP2 = (float) (Math.sin(pitchOffset) * -yP + Math.cos(pitchOffset) * -zP);
         return new float[]{xP2, yP2, zP2};
     }
 

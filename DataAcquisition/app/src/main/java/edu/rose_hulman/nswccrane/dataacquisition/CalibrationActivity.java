@@ -91,8 +91,8 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         float xzOff = (float) (Math.asin(x / gravity));
         float yzOff = (float) (Math.asin(y / gravity));
         SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0).edit();
-        editor.putFloat("pitch_offset", yzOff);
-        editor.putFloat("roll_offset", xzOff);
+        editor.putFloat("pitch_offset", -yzOff);
+        editor.putFloat("roll_offset", -xzOff);
         editor.apply();
     }
 
