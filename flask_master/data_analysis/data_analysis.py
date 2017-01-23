@@ -7,8 +7,7 @@ import pandas as pd
 import numpy as np
 import decimal as dc
 import math
-
-from database import crud
+from flask_server import crud
 
 """
 import data_analysis.kinematics_keeper as kk
@@ -27,28 +26,27 @@ def select_record(records_id):
     return crud.read_all(query, args)
 
 
-def select_gyro(record_id):
-    query = "SELECT GyroPoints.roll, GyroPoints.pitch, GyroPoints.yaw" \
-            " FROM GyroPoints WHERE GyroPoints.record_id = %s ORDER BY GyroPoints.timestamp ASC"
-    args = [record_id]
-    return crud.read_all(query, args)
-
-
-def select_accel(record_id):
-    query = "SELECT AccelPoints.surge, AccelPoints.sway, AccelPoints.heave" \
-            " FROM AccelPoints WHERE AccelPoints.record_id = %s ORDER BY AccelPoints.timestamp ASC"
-    args = [record_id]
-    return crud.read_all(query, args)
-
-
 def download_record_raw(record_id=[]):
-    accel = select_accel(record_id)
-    gyro = select_gyro(record_id)
+    accel_base = list(crud.select_accel(record_id))
+    gyro_base = crud.select_gyro(record_id)
+
+    start = gyro_base[0][0] if gyro_base[0][0] > accel_base[0][0] else accel_base[0][0]
+    # sync start times for the accel & gyro data
+    while accel_base[1][0] < start:
+        accel_base.pop(0)
+
+    accel = []
+    for p in accel_base:
+        point = [p[1], p[2], p[3]]
+        accel.append(point)
+    gyro = []
+    for p in gyro_base:
+        point = [p[1], p[2], p[3]]
+        gyro.append(point)
+
     points = []
     i = 0
     j = len(gyro) if len(gyro) < len(accel) else len(accel)
-    print("points %s", j)
-
     zeropoint = [0, 0, 0, 0, 0, 0]
     points.append(zeropoint)
     while i < j:

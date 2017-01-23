@@ -245,7 +245,8 @@
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>
         function clicked_raw(rec_id) {
-            $.ajax({url:'/getRecordRaw/' + rec_id,
+            $.ajax({headers : {'Accept-Encoding' : 'gzip'},
+                url:'/getRecordRaw/' + rec_id,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
                     var link = document.createElement('a');
