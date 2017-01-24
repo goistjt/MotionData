@@ -13,7 +13,10 @@ import android.support.test.espresso.action.ViewActions;
 import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.runner.AndroidJUnit4;
+
+import org.androidannotations.annotations.IgnoreWhen;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import java.lang.reflect.Field;
@@ -253,6 +256,7 @@ public class CollectionActivityTests extends AMainActivityTest {
         onView(withId(R.id.collection_button)).check(matches(ViewMatchers.withText(mainActivity.getString(R.string.stop_collection))));
     }
 
+    @Ignore
     @Test
     public void testPopulateSensorDependencies() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
