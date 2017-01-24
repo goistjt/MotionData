@@ -43,11 +43,11 @@ public class SessionModel {
         return this;
     }
 
-    public void setSessId(long sessId) {
-        this.sess_id = sessId;
-    }
-
     public long getSessId() {
         return sess_id;
+    }
+
+    public void setSessId(long sessId) {
+        this.sess_id = sessId;
     }
 }

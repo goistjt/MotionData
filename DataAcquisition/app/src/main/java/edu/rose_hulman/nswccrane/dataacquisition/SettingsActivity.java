@@ -1,7 +1,6 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -18,14 +17,12 @@ import butterknife.ButterKnife;
  * Created by Jeremiah Goist on 11/25/2016.
  */
 public class SettingsActivity extends AppCompatActivity {
-    @BindView(R.id.ip_address_edit)
-    EditText mIpAddressView;
-
-    @BindView(R.id.sample_rate_edit)
-    EditText mSampleRateView;
-
     public static final String SETTINGS_IP = "IP_ADDRESS";
     public static final String SETTINGS_RATE = "POLL_RATE";
+    @BindView(R.id.ip_address_edit)
+    EditText mIpAddressView;
+    @BindView(R.id.sample_rate_edit)
+    EditText mSampleRateView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

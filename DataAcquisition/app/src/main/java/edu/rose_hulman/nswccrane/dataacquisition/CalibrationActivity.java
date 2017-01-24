@@ -26,9 +26,6 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
  * Created by Jeremiah Goist on 9/24/2016.
  */
 public class CalibrationActivity extends AppCompatActivity implements SensorEventListener {
-    @BindView(R.id.time_remaining)
-    TextView mTimeRemaining;
-
     public SensorManager mSensorManager;
     public float max_x_noise = 0;
     public float max_y_noise = 0;
@@ -36,7 +33,8 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public float max_roll_noise = 0;
     public float max_pitch_noise = 0;
     public float max_yaw_noise = 0;
-
+    @BindView(R.id.time_remaining)
+    TextView mTimeRemaining;
     private List<Float> xVals = new ArrayList<>();
     private List<Float> yVals = new ArrayList<>();
     private List<Float> zVals = new ArrayList<>();

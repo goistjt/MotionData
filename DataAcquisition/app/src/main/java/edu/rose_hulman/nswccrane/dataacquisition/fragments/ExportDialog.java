@@ -10,8 +10,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -30,10 +28,10 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
 
 public class ExportDialog extends DialogFragment implements View.OnClickListener {
 
-    private Activity mRootActivity;
     public static final String TAG = "EXPORT_DIALOG";
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
+    private Activity mRootActivity;
 
     public void setActivity(Activity mApplicationContext) {
         this.mRootActivity = mApplicationContext;

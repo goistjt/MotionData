@@ -17,31 +17,31 @@ public class GyroDataModel {
         time_val = time;
     }
 
-    public double getPitch(){
+    public double getPitch() {
         return pitch_val;
-    }
-
-    public double getRoll(){
-        return roll_val;
-    }
-
-    public double getYaw(){
-        return yaw_val;
     }
 
     public void setPitch(double pitch) {
         this.pitch_val = pitch;
     }
 
+    public double getRoll() {
+        return roll_val;
+    }
+
     public void setRoll(double roll) {
         this.roll_val = roll;
+    }
+
+    public double getYaw() {
+        return yaw_val;
     }
 
     public void setYaw(double yaw) {
         this.yaw_val = yaw;
     }
 
-    public long getTime(){
+    public long getTime() {
         return time_val;
     }
 }

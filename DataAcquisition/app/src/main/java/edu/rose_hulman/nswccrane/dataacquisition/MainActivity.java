@@ -9,9 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
-import android.support.annotation.IntegerRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,60 +40,43 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener, ICollectionCallback {
 
+    public static final int MS_TO_US = 1000;
     @BindView(R.id.collection_button)
     public Button mCollectionButton;
-
     @BindView(R.id.x_accel_text_view)
     public TextView mXTextView;
-
     @BindView(R.id.y_accel_text_view)
     public TextView mYTextView;
-
     @BindView(R.id.z_accel_text_view)
     public TextView mZTextView;
-
     @BindView(R.id.pitch_gyro_text_view)
     public TextView mPitchTextView;
-
     @BindView(R.id.roll_gyro_text_view)
     public TextView mRollTextView;
-
     @BindView(R.id.yaw_gyro_text_view)
     public TextView mYawTextView;
-
     @BindView(R.id.calibration_button)
     Button mCalibrationButton;
-
     @BindView(R.id.export_button)
     Button mExportButton;
-
     @BindView(R.id.record_time_edit)
     EditText mRecordTimeEdit;
-
     private double max_x_noise;
     private double max_y_noise;
     private double max_z_noise;
-
     private double max_roll_noise;
     private double max_pitch_noise;
     private double max_yaw_noise;
-
     private AccelDataModel mPrevAccelModel;
     private GyroDataModel mPrevGyroModel;
-
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mGyroscope;
-
     private MotionCollectionDBHelper mCollectionDBHelper;
-
     private ExecutorService mToggleButtonService;
     private ExecutorService mCollectionService;
-
     private boolean mStarted;
-
     private int pollRate;
-    public static final int MS_TO_US = 1000;
     private float yawOffset;
     private float pitchOffset;
     private float rollOffset;
