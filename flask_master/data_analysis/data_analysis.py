@@ -32,8 +32,9 @@ def download_record_raw(record_id=[]):
 
     start = gyro_base[0][0] if gyro_base[0][0] > accel_base[0][0] else accel_base[0][0]
     # sync start times for the accel & gyro data
-    while accel_base[1][0] < start:
-        accel_base.pop(0)
+    if len(accel_base) > 1:
+        while accel_base[1][0] < start:
+            accel_base.pop(0)
 
     accel = []
     for p in accel_base:

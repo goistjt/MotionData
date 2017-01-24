@@ -8,6 +8,7 @@ import unittest
 
 from data_analysis import data_analysis as da
 from database import crud_class
+import flask_server as server
 
 
 def get_now():
@@ -21,6 +22,7 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         self.crud.close()
+        server.t.cancel()
 
     def test_Data_Output(self):
         description = "test_data_output"
@@ -31,7 +33,7 @@ class Test(unittest.TestCase):
         record_id = self.crud.create_record(session_id, device_id)
         self.crud.insert_gyro_points(record_id, starting_time, test_data, test_data, test_data)
         self.crud.insert_accel_points(record_id, starting_time, test_data, test_data, test_data)
-        csv = da.download_record(record_id)
+        csv = da.download_record_raw(record_id)
         print(csv)
         self.crud.delete_entire_session(session_id)
 
