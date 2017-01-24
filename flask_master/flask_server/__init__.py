@@ -43,7 +43,6 @@ def create_app():
         if data:
             # get file type & name
             data_type = data[0]
-            print(data_type)
             file = data[1]
             file = file.replace("\\", "\\\\")
 

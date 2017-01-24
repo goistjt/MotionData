@@ -2,7 +2,6 @@ from flask import jsonify, request, render_template
 import re
 from pathlib import Path
 import datetime
-import time
 import pandas as pd
 
 from data_analysis import data_analysis as da
