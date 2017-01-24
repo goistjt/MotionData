@@ -27,6 +27,7 @@ class CrudTest(unittest.TestCase):
     def tearDown(self):
         time.sleep(30)
         self.crud.delete_entire_session(self.session_id)
+        server.t.join()
         server.t.cancel()
 
     def test_load_infile(self):

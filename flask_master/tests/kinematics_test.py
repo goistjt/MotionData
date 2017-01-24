@@ -17,6 +17,7 @@ class TestKinematics(unittest.TestCase):
 
     def tearDown(self):
         self.kin_keep = None
+        server.t.join()
         server.t.cancel()
 
     def test_points_normalizer_same(self):
