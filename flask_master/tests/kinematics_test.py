@@ -7,7 +7,6 @@ import unittest
 import data_analysis.data_analysis as da
 import numpy as np
 import decimal as dc
-import flask_server as server
 
 
 class TestKinematics(unittest.TestCase):
@@ -17,8 +16,6 @@ class TestKinematics(unittest.TestCase):
 
     def tearDown(self):
         self.kin_keep = None
-        server.t.join()
-        server.t.cancel()
 
     def test_points_normalizer_same(self):
         points = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
