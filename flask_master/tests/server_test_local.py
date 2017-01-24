@@ -19,7 +19,6 @@ class FlaskTestCase(unittest.TestCase):
         response = self.app.delete('/deleteSession', data=json.dumps(delete_data), content_type='application/json')
         resp_json = json.loads(response.data.decode("utf-8"))
         self.assertIsNotNone(resp_json)
-        fs.t.join()
         fs.t.cancel()
 
     def test_hello_world(self):

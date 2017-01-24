@@ -16,7 +16,6 @@ class CrudTest(unittest.TestCase):
         self.app = app.test_client()
 
     def tearDown(self):
-        server.t.join()
         server.t.cancel()
 
     def test_create_and_read_session(self):

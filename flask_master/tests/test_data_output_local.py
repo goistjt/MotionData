@@ -22,7 +22,6 @@ class Test(unittest.TestCase):
 
     def tearDown(self):
         self.crud.close()
-        server.t.join()
         server.t.cancel()
 
     def test_Data_Output(self):
