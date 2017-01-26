@@ -17,12 +17,14 @@ class MaxCollectionFactory:
         self.ROLL = 'roll'
         self.PITCH = 'pitch'
         self.YAW = 'yaw'
-        self.factories = {self.SURGE: mc.SurgeCollection,
-                          self.SWAY: mc.SwayCollection,
-                          self.HEAVE: mc.HeaveCollection,
-                          self.ROLL: mc.RollCollection,
-                          self.PITCH: mc.PitchCollection,
-                          self.YAW: mc.YawCollection}
+        self.factories = {
+            self.SURGE: mc.SurgeCollection,
+            self.SWAY: mc.SwayCollection,
+            self.HEAVE: mc.HeaveCollection,
+            self.ROLL: mc.RollCollection,
+            self.PITCH: mc.PitchCollection,
+            self.YAW: mc.YawCollection
+            }
 
     def add_collection(self, fid, max_collection):
         self.factories.put[fid] = max_collection
