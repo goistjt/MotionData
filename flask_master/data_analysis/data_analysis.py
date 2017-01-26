@@ -7,8 +7,7 @@ import pandas as pd
 import numpy as np
 import decimal as dc
 import math
-
-from database import crud
+from flask_server import crud
 
 import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
@@ -26,8 +25,41 @@ def select_record(records_id):
 
 
 def download_record_raw(record_id=[]):
-    df = pd.DataFrame(np.array(select_record(record_id)))
-    return df.to_csv(index=False)
+    accel_base = list(crud.select_accel(record_id))
+    gyro_base = crud.select_gyro(record_id)
+
+    start = gyro_base[0][0] if gyro_base[0][0] > accel_base[0][0] else accel_base[0][0]
+    # sync start times for the accel & gyro data
+    if len(accel_base) > 1:
+        while accel_base[1][0] < start:
+            accel_base.pop(0)
+
+    accel = []
+    for p in accel_base:
+        point = [p[1], p[2], p[3]]
+        accel.append(point)
+    gyro = []
+    for p in gyro_base:
+        point = [p[1], p[2], p[3]]
+        gyro.append(point)
+
+    points = []
+    i = 0
+    j = len(gyro) if len(gyro) < len(accel) else len(accel)
+    zeropoint = [0, 0, 0, 0, 0, 0]
+    points.append(zeropoint)
+    while i < j:
+        point = []
+        for p in accel[i]:
+            point.append(p)
+        for p in gyro[i]:
+            point.append(p)
+        points.append(point)
+        i += 1
+    points.append(zeropoint)
+
+    df = pd.DataFrame(np.array(points))
+    return df.to_csv(index=False, header=False)
 
 
 def download_record_analyzed(record_id=[]):

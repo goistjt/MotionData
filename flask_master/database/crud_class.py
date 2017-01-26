@@ -123,6 +123,12 @@ class Crud(object):
         args = ["GyroPoints", '(record_id, timestamp, roll, pitch, yaw)']
         self.load_csv_data(lo, data_path, args)
 
+    def select_gyro(self, record_id):
+        query = "SELECT GyroPoints.timestamp, GyroPoints.roll, GyroPoints.pitch, GyroPoints.yaw" \
+                " FROM GyroPoints WHERE GyroPoints.record_id = %s ORDER BY GyroPoints.timestamp ASC"
+        args = [record_id]
+        return self.read_all(query, args)
+
     # ********* accel_points ********#
     def insert_accel_points(self, record_id, timestamp, x, y, z):
         query = "INSERT INTO AccelPoints " \
@@ -130,6 +136,12 @@ class Crud(object):
                 "VALUES(%s,%s, %s, %s, %s)"
         args = (record_id, timestamp, x, y, z)
         return self.insert(query, args)
+
+    def select_accel(self, record_id):
+        query = "SELECT AccelPoints.timestamp, AccelPoints.surge, AccelPoints.sway, AccelPoints.heave" \
+                " FROM AccelPoints WHERE AccelPoints.record_id = %s ORDER BY AccelPoints.timestamp ASC"
+        args = [record_id]
+        return self.read_all(query, args)
 
     # Local means insert outside of server,
     def bulk_insert_accel_points(self, data_path, local=False):

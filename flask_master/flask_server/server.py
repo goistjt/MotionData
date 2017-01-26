@@ -1,4 +1,4 @@
-from flask import jsonify, request, render_template, Response, make_response
+from flask import jsonify, request, render_template
 import re
 from pathlib import Path
 import datetime
@@ -98,51 +98,6 @@ def get_record_data_analyzed(record_id=[]):
     return jsonify(response)
 
 
-@app.route("/createSession_old", methods=["POST"])
-def create_session_old():
-    """ {sess_desc: "",
-         accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
-         gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
-         device_id: "",
-         begin: long} """
-    data = request.get_json(force=True)
-    desc = data['sess_desc']
-    accel_data = data['accelModels']
-    gyro_data = data['gyroModels']
-    device_id = data['device_id']
-    start = data['begin']
-
-    if desc is None or accel_data is None or gyro_data is None or device_id is None or start is None:
-        raise InvalidUsage(
-            "Unable to send request without {}.".format(
-                "description" if desc is None else "accel data" if accel_data is None
-                else "gyro data" if gyro_data is None else "device ID" if device_id is None
-                else "start time" if start is None else "Error: Nothing was left empty"),
-            status_code=701)
-
-    is_possible_injection(desc)
-
-    print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
-
-    sess_id = crud.create_session(desc, start)
-    rec_id = crud.create_record(sess_id, device_id)
-    for point in accel_data:
-        x = point['x_val']
-        y = point['y_val']
-        z = point['z_val']
-        time = point['time_val']
-        crud.insert_accel_points(rec_id, time, x, y, z)
-
-    for point in gyro_data:
-        roll = point['roll_val']
-        pitch = point['pitch_val']
-        yaw = point['yaw_val']
-        time = point['time_val']
-        crud.insert_gyro_points(rec_id, time, roll, pitch, yaw)
-
-    return jsonify(session_id=sess_id, record_id=rec_id)
-
-
 @app.route("/createSession", methods=["POST"])
 def create_session():
     """ {sess_desc: "",
@@ -187,12 +142,13 @@ def create_session():
 
         # dump points to csv
         accel_points.append((rec_id, time, x, y, z))
-        accel = pd.DataFrame(accel_points)
-        accel.to_csv(accel_file, index=False)
-        # get lock
-        with data_lock:
-            # add {type, file} to upload_files
-            upload_files.append(["accel", accel_file])
+
+    accel = pd.DataFrame(accel_points)
+    accel.to_csv(accel_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["accel", accel_file])
 
     for point in gyro_data:
         roll = point['roll_val']
@@ -201,12 +157,13 @@ def create_session():
         time = point['time_val']
         # dump points to csv
         gyro_points.append((rec_id, time, roll, pitch, yaw))
-        gyro = pd.DataFrame(gyro_points)
-        gyro.to_csv(gyro_file, index=False)
-        # get lock
-        with data_lock:
-            # add {type, file} to upload_files
-            upload_files.append(["gyro", gyro_file])
+
+    gyro = pd.DataFrame(gyro_points)
+    gyro.to_csv(gyro_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["gyro", gyro_file])
 
     return jsonify(session_id=sess_id, record_id=rec_id)
 
@@ -234,19 +191,44 @@ def add_to_session():
     print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
 
     rec_id = crud.create_record(sess_id, device_id)
+
+    gyro_points = []
+    accel_points = []
+
+    here = Path(__file__).parent.parent.resolve()
+    accel_file = "{}\\db_upload_files\\accel_{}_{}.csv".format(here, sess_id, rec_id)
+    gyro_file = "{}\\db_upload_files\\gyro_{}_{}.csv".format(here, sess_id, rec_id)
+
     for point in accel_data:
         x = point['x_val']
         y = point['y_val']
         z = point['z_val']
         time = point['time_val']
-        crud.insert_accel_points(rec_id, time, x, y, z)
+
+        # dump points to csv
+        accel_points.append((rec_id, time, x, y, z))
+
+    accel = pd.DataFrame(accel_points)
+    accel.to_csv(accel_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["accel", accel_file])
 
     for point in gyro_data:
         roll = point['roll_val']
         pitch = point['pitch_val']
         yaw = point['yaw_val']
         time = point['time_val']
-        crud.insert_gyro_points(rec_id, time, roll, pitch, yaw)
+        # dump points to csv
+        gyro_points.append((rec_id, time, roll, pitch, yaw))
+
+    gyro = pd.DataFrame(gyro_points)
+    gyro.to_csv(gyro_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["gyro", gyro_file])
 
     return jsonify(session_id=sess_id, record_id=rec_id)
 
