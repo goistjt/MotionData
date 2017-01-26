@@ -46,15 +46,12 @@ import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.J
 
 @EFragment
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
+    public static final String TAG = "NEW_SESSION_DIALOG";
     private ListAdapter mListAdapter;
     private Activity mRootActivity;
     private MotionCollectionDBHelper motionDB;
     private SessionModel motionDataPostBody;
-
     private EditText mSessionDescriptionText;
-
-
-    public static final String TAG = "NEW_SESSION_DIALOG";
 
     @Override
     public void onAttach(Context context) {

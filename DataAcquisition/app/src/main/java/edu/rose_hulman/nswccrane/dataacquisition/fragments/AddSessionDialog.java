@@ -43,11 +43,11 @@ import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.J
  * Created by Jeremiah Goist on 10/4/2016.
  */
 public class AddSessionDialog extends DialogFragment implements View.OnClickListener {
-    private Activity mRootActivity;
+    public static final String TAG = "ADD_SESSION_DIALOG";
     ListAdapter mListAdapter;
+    private Activity mRootActivity;
     private SessionModel motionDataPostBody;
     private MotionCollectionDBHelper motionDB;
-    public static final String TAG = "ADD_SESSION_DIALOG";
     private ResponseSessionListModel responseSessionListModel;
     private SessionAdapter mSessionAdapter;
     private Button sessionSelector;

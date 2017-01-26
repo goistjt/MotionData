@@ -7,7 +7,7 @@ import sqlite.MotionCollectionDBHelper;
  * Created by steve on 10/3/16.
  */
 
-public  class AccelRunnable implements Runnable {
+public class AccelRunnable implements Runnable {
 
     private AccelDataModel mData;
     private MotionCollectionDBHelper mDBHelper;

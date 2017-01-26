@@ -9,9 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
-import android.support.annotation.IntegerRes;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,60 +40,46 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, View.OnClickListener, ICollectionCallback {
 
+    public static final int MS_TO_US = 1000;
     @BindView(R.id.collection_button)
     public Button mCollectionButton;
-
     @BindView(R.id.x_accel_text_view)
     public TextView mXTextView;
-
     @BindView(R.id.y_accel_text_view)
     public TextView mYTextView;
-
     @BindView(R.id.z_accel_text_view)
     public TextView mZTextView;
-
     @BindView(R.id.pitch_gyro_text_view)
     public TextView mPitchTextView;
-
     @BindView(R.id.roll_gyro_text_view)
     public TextView mRollTextView;
-
     @BindView(R.id.yaw_gyro_text_view)
     public TextView mYawTextView;
-
     @BindView(R.id.calibration_button)
     Button mCalibrationButton;
-
     @BindView(R.id.export_button)
     Button mExportButton;
-
     @BindView(R.id.record_time_edit)
     EditText mRecordTimeEdit;
-
     private double max_x_noise;
     private double max_y_noise;
     private double max_z_noise;
-
     private double max_roll_noise;
     private double max_pitch_noise;
     private double max_yaw_noise;
-
     private AccelDataModel mPrevAccelModel;
     private GyroDataModel mPrevGyroModel;
-
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
     private Sensor mGyroscope;
-
     private MotionCollectionDBHelper mCollectionDBHelper;
-
     private ExecutorService mToggleButtonService;
     private ExecutorService mCollectionService;
-
     private boolean mStarted;
-
     private int pollRate;
-    public static final int MS_TO_US = 1000;
+    private float yawOffset;
+    private float pitchOffset;
+    private float rollOffset;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void handleRecordingTimer() {
         mCollectionButton.setEnabled(false);
         collectionOn();
+        yawOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
+        pitchOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("pitch_offset", 0f);
+        rollOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("roll_offset", 0f);
         if (!mRecordTimeEdit.getText().toString().isEmpty() && Integer.parseInt(mRecordTimeEdit.getText().toString()) != 0) {
 
             Runnable runnable = new Runnable() {
@@ -230,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mCollectionDBHelper = new MotionCollectionDBHelper(this);
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     }
 
@@ -309,8 +296,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         long time = System.currentTimeMillis();
         switch (event.sensor.getType()) {
-            case Sensor.TYPE_ACCELEROMETER:
-                AccelDataModel accelModel = new AccelDataModel(time, event.values[0], event.values[1], event.values[2]);
+            case Sensor.TYPE_LINEAR_ACCELERATION:
+                float[] valsPrime = calculateAccelRotation(event.values);
+                AccelDataModel accelModel = new AccelDataModel(time, valsPrime[0], valsPrime[1], valsPrime[2]);
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
@@ -323,6 +311,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    private float[] calculateAccelRotation(float[] values) {
+        float x = values[0];
+        float y = values[1];
+        float z = values[2];
+        float xP = (float) (Math.cos(yawOffset) * x - Math.sin(yawOffset) * y);
+        float yP = (float) (Math.sin(yawOffset) * x + Math.cos(yawOffset) * y);
+        float xP2 = (float) (Math.cos(rollOffset) * xP - Math.sin(rollOffset) * z);
+        float zP = (float) (Math.sin(rollOffset) * xP + Math.cos(rollOffset) * z);
+        float yP2 = (float) (Math.cos(pitchOffset) * yP - Math.sin(pitchOffset) * zP);
+        float zP2 = (float) (Math.sin(pitchOffset) * -yP + Math.cos(pitchOffset) * -zP);
+        return new float[]{xP2, yP2, zP2};
     }
 
     @Override
