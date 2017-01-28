@@ -63,14 +63,19 @@ def download_record_raw(record_id=[]):
 
 
 def download_record_analyzed(record_id=[]):
-    # TODO : update this to actually analyze the selected data
-    df = pd.DataFrame(np.array(select_record(record_id)))
+    accel_base = list(crud.select_accel(record_id))
+    gyro_base = list(crud.select_gyro(record_id))
+    start = max(accel_base[0][0], gyro_base[0][0])
+    end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+    print(start)
+    print(end)
+    df = pd.DataFrame(np.array(clean_session(start, end, accel_base, gyro_base)))
     return df.to_csv(index=False)
 
 
 def process_accelerations(start, end, interval, points):
     # Sets the precision level for operations referencing the Decimal datatype
-    dc.getcontext().prec = 6
+    dc.getcontext().prec = 20
 
     # Default one and zero values
     zero = dc.Decimal(0.0)
@@ -79,9 +84,10 @@ def process_accelerations(start, end, interval, points):
     interval_d = dc.Decimal(interval) * one
 
     start_d = dc.Decimal(start) * one
+
     end_d = dc.Decimal(end) * one
 
-    real_end_d = start_d + (end_d // interval_d) * interval_d
+    real_end_d = (end_d // interval_d) * interval_d
 
     end_index = determine_end(points, real_end_d)
     start_index = determine_start(points, start_d, end_index)
@@ -160,111 +166,108 @@ def determine_start(points, start, end_index):
 
 
 def clean_session(start_time, end_time, accel_points, gyro_points):
-    
     interval = 40
-    
-    if(start_time >= end_time):
+
+    if start_time >= end_time:
         return []
-    
+
     accel_list = process_accelerations(start_time, end_time, interval, accel_points)
-    
+    print("ACCEL done")
+
     gyro_list = process_accelerations(start_time, end_time, interval, gyro_points)
-    
-    if((accel_list == None or len(accel_list) == 0) or (gyro_list == None or len(gyro_list) == 0) or (len(gyro_list) != len(accel_list))):
+    print("GYRO done")
+
+    if ((accel_list is None or len(accel_list) == 0) or (gyro_list is None or len(gyro_list) == 0) or (
+                len(gyro_list) != len(accel_list))):
         return []
-    
-    maxCF = mcf.MaxCollectionFactory()
-    
-    surge_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SURGE))
-    sway_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SWAY))
-    heave_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.HEAVE))
-    
+
+    max_cf = mcf.MaxCollectionFactory()
+
+    surge_keeper = kk.KinematicsKeeper(start_time, max_cf.create_max_collection(max_cf.SURGE))
+    sway_keeper = kk.KinematicsKeeper(start_time, max_cf.create_max_collection(max_cf.SWAY))
+    heave_keeper = kk.KinematicsKeeper(start_time, max_cf.create_max_collection(max_cf.HEAVE))
+
     keeps_accel = [surge_keeper, sway_keeper, heave_keeper]
-    
-    roll_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.ROLL))
-    pitch_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.PITCH))
-    yaw_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.YAW))
-    
+
+    roll_keeper = kk.KinematicsKeeper(start_time, max_cf.create_max_collection(max_cf.ROLL))
+    pitch_keeper = kk.KinematicsKeeper(start_time, max_cf.create_max_collection(max_cf.PITCH))
+    yaw_keeper = kk.KinematicsKeeper(start_time, max_cf.create_max_collection(max_cf.YAW))
+
     keeps_gyro = [roll_keeper, pitch_keeper, yaw_keeper]
-    
+
     session = []
-    
+
     for i in range(len(gyro_list)):
-        
         next_set = []
-        
+
         next_set = process_normal_state_generations(keeps_accel, accel_list, i, next_set)
-        
+
         next_set = process_normal_state_generations(keeps_gyro, gyro_list, i, next_set)
-        
+
         session.append(next_set)
-        
+
     return process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
 
 
 def process_normal_state_generations(keeps_list, values_list, position, next_set):
-    
     for x in range(len(keeps_list)):
         time_val = values_list[position][0]
         accel_val = values_list[position][x + 1]
         curr_keep = keeps_list[x]
         curr_keep.generate_next_state(time_val, accel_val)
         next_set.append(curr_keep.get_position())
-    
+
     return next_set
 
 
 def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session):
-    
     acc_time = end_time
-    
-    while(True):
-        
+
+    while True:
+
         acc_time += interval
-        
+
         next_set = []
-        
+
         next_set = process_for_next_set(keeps_accel, acc_time, next_set)
-        
+
         next_set = process_for_next_set(keeps_gyro, acc_time, next_set)
-        
-        if(np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0000001)):
+
+        if np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], atol=0.0000001):
             next_set = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             session.append(next_set)
-            break;
-        
+            break
+
         session.append(next_set)
-        
+
     return session
 
+
 def process_for_next_set(keeps_list, acc_time, next_set):
-    
     for o in range(len(keeps_list)):
-        
+
         curr_keep = keeps_list[o]
         pos = curr_keep.get_position()
-        
-        if(pos == 0.0):
-            
+
+        if pos == 0.0:
             next_set.append(0.0)
-            
+
         else:
-            
-            if(pos > 0):
+            if pos > 0:
                 accel_val = -curr_keep.get_max_acceleration() / 2
-            
             else:
                 accel_val = curr_keep.get_max_acceleration() / 2
-            
+
             curr_keep.generate_next_state(acc_time, accel_val)
-            
+
             pos_next = curr_keep.get_position()
-            
-            if(pos_next == 0.0 or (pos_next / abs(pos_next)) != (pos / (abs(pos)))):
+            if o == 0:
+                print(pos_next, curr_keep.get_velocity(), curr_keep.get_acceleration())
+            if (abs(pos_next - 0.0) < 0.0000001) or ((pos_next / abs(pos_next)) != (pos / (abs(pos)))):
                 curr_keep.set_position(0.0)
                 next_set.append(0.0)
-            
+
             else:
                 next_set.append(curr_keep.get_position())
-            
+
     return next_set
