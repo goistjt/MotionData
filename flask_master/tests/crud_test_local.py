@@ -2,6 +2,7 @@ import datetime
 import unittest
 
 import flask_server as server
+import pandas as pd
 
 
 class CrudTest(unittest.TestCase):
