@@ -59,43 +59,45 @@ def download_record_raw(record_id=[]):
     points.append(zeropoint)
 
     df = pd.DataFrame(np.array(points))
-    return df.to_csv(index=False, header=False)
+    return df.to_csv(index=False, header=False, sep=" ")
 
 
-def download_record_analyzed(record_id=[]):
+def download_record_analyzed(record_id=None):
+
+    # TODO: Replace some of the below code with calls to Runzhi's new procedures / functions
+    if record_id is None:
+        record_id = []
+
     accel_base = list(crud.select_accel(record_id))
     gyro_base = list(crud.select_gyro(record_id))
+
     start = 0
     end = 0
-    # TODO: This will break if nulls and empty lists are not checked before hand - Theoretically this will later be solved by Runzhi's work in MySQL
-    if gyro_base is not None and len(gyro_base) > 1 and accel_base is not None and len(accel_base):
+
+    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
         start = max(accel_base[0][0], gyro_base[0][0])
         end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
-    df = pd.DataFrame(np.array(clean_session(start, end, accel_base, gyro_base)))
-    return df.to_csv(index=False, header=False)
+
+    df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
+
+    return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
 
 def process_accelerations(start, end, interval, points):
+
     # Sets the precision level for operations referencing the Decimal datatype
     dc.getcontext().prec = 20
-
     # Default one and zero values
     zero = dc.Decimal(0.0)
     one = dc.Decimal(1.0)
 
     interval_d = dc.Decimal(interval) * one
-
     start_d = dc.Decimal(start) * one
-
     end_d = dc.Decimal(end) * one
-
     real_end_d = (end_d // interval_d) * interval_d
-
     end_index = determine_end(points, real_end_d)
     start_index = determine_start(points, start_d, end_index)
-
     points = points[start_index:end_index]
-
     final_points = [[start, 0.0, 0.0, 0.0]]
 
     points.append([float(real_end_d), 0.0, 0.0, 0.0])
@@ -111,7 +113,7 @@ def process_accelerations(start, end, interval, points):
         next_point = points[n]
 
         # Current time difference
-        time_diff = dc.Decimal(next_point[0]) * one - dc.Decimal(curr_point[0]) * one
+        time_diff = (dc.Decimal(next_point[0]) * one) - (dc.Decimal(curr_point[0]) * one)
 
         if time_diff == zero:
             final_points[z] = next_point
@@ -144,6 +146,7 @@ def process_accelerations(start, end, interval, points):
 
 
 def determine_end(points, real_end):
+
     one = dc.Decimal(1.0)
     end_index = len(points) - 1
     while end_index >= 0:
@@ -156,6 +159,7 @@ def determine_end(points, real_end):
 
 
 def determine_start(points, start, end_index):
+
     one = dc.Decimal(1.0)
     start_index = 0
     while start_index <= end_index:
@@ -169,9 +173,7 @@ def determine_start(points, start, end_index):
     return start_index
 
 
-def clean_session(start_time, end_time, accel_points, gyro_points):
-
-    interval = 40
+def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
 
     default_list = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
@@ -186,23 +188,24 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
                 len(gyro_list) != len(accel_list))):
         return default_list
 
-    max_cf = mcf.MaxCollectionFactory()
+    max_coll_fact = mcf.MaxCollectionFactory()
 
-    surge_keeper = kk.KinematicsKeeper(max_cf.create_max_collection(max_cf.SURGE))
-    sway_keeper = kk.KinematicsKeeper(max_cf.create_max_collection(max_cf.SWAY))
-    heave_keeper = kk.KinematicsKeeper(max_cf.create_max_collection(max_cf.HEAVE))
+    surge_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SURGE))
+    sway_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SWAY))
+    heave_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.HEAVE))
 
     keeps_accel = [surge_keeper, sway_keeper, heave_keeper]
 
-    roll_keeper = kk.KinematicsKeeper(max_cf.create_max_collection(max_cf.ROLL))
-    pitch_keeper = kk.KinematicsKeeper(max_cf.create_max_collection(max_cf.PITCH))
-    yaw_keeper = kk.KinematicsKeeper(max_cf.create_max_collection(max_cf.YAW))
+    roll_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.ROLL))
+    pitch_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.PITCH))
+    yaw_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.YAW))
 
     keeps_gyro = [roll_keeper, pitch_keeper, yaw_keeper]
 
     session = []
 
     for i in range(len(gyro_list)):
+
         next_set = []
 
         next_set = process_normal_state_generations(keeps_accel, accel_list, i, next_set)
@@ -215,16 +218,21 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
 
 
 def process_normal_state_generations(keeps_list, values_list, position, next_set):
+
     for x in range(len(keeps_list)):
+
         accel_val = values_list[position][x + 1]
         curr_keep = keeps_list[x]
+
         curr_keep.generate_next_state(accel_val)
+
         next_set.append(curr_keep.get_position())
 
     return next_set
 
 
 def process_return_to_zero(keeps_accel, keeps_gyro, session):
+
     while True:
 
         next_set = []
@@ -244,6 +252,10 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
 
 def process_for_next_set(keeps_list, next_set):
+
+    # TODO: Could very much move things like this into a configuration file or make the data analysis class instantiated
+    maximum_buffer_factor = 0.5
+
     for x in range(len(keeps_list)):
 
         curr_keep = keeps_list[x]
@@ -251,22 +263,23 @@ def process_for_next_set(keeps_list, next_set):
 
         if pos == 0.0:
             next_set.append(0.0)
+            continue
+
+        elif pos > 0:
+            accel_val = -curr_keep.get_max_acceleration() * maximum_buffer_factor
 
         else:
-            if pos > 0:
-                accel_val = -curr_keep.get_max_acceleration() / 2
-            else:
-                accel_val = curr_keep.get_max_acceleration() / 2
+            accel_val = curr_keep.get_max_acceleration() * maximum_buffer_factor
 
-            curr_keep.generate_next_state(accel_val)
+        curr_keep.generate_next_state(accel_val)
 
-            pos_next = curr_keep.get_position()
+        pos_next = curr_keep.get_position()
 
-            if (abs(pos_next - 0.0) < 0.0000001) or ((pos_next / abs(pos_next)) != (pos / (abs(pos)))):
-                curr_keep.set_position(0.0)
-                next_set.append(0.0)
+        if (abs(pos_next - 0.0) < 0.0000001) or ((pos_next / abs(pos_next)) != (pos / (abs(pos)))):
+            curr_keep.set_position(0.0)
+            next_set.append(0.0)
+            continue
 
-            else:
-                next_set.append(curr_keep.get_position())
+        next_set.append(curr_keep.get_position())
 
     return next_set
