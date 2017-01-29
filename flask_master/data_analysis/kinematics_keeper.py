@@ -110,9 +110,13 @@ class KinematicsKeeper(object):
 
         self._curr_pos = dc.Decimal(new_pos) * self.one
 
+    def set_interval(self, interval):
+
+        self.interval = (dc.Decimal(interval) * self.one) / (dc.Decimal(1000) * self.one)
+
     def get_max_acceleration(self):
 
-        return self._max_collection.get_max_accel()
+        return float(self._max_collection.get_max_accel())
 
     def _determine_next_acceleration_by_pos(self, new_pos):
 

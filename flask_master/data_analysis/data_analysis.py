@@ -94,7 +94,7 @@ def process_accelerations(start, end, interval, points):
     interval_d = dc.Decimal(interval) * one
     start_d = dc.Decimal(start) * one
     end_d = dc.Decimal(end) * one
-    real_end_d = (end_d // interval_d) * interval_d
+    real_end_d = start_d + ((end_d - start_d) // interval_d) * interval_d
     end_index = determine_end(points, real_end_d)
     start_index = determine_start(points, start_d, end_index)
     points = points[start_index:end_index]
