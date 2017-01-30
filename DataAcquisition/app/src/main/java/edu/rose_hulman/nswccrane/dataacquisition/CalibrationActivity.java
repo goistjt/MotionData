@@ -42,6 +42,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     private float[] prev_accel = new float[]{0, 0, 0};
     private float[] prev_gyro = new float[]{0, 0, 0};
 
+    private int calibrationPhase = 1;
     private int pollRate;
     private float yaw_offset;
 
@@ -52,13 +53,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         ButterKnife.bind(this);
         pollRate = getSharedPreferences("Settings", 0).getInt(SETTINGS_RATE, 40);
         yaw_offset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
-        int CALIBRATION_TIME = 30;
+        final int CALIBRATION_TIME = 30;
         mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
         initSensorManager();
         initAccelerometer(mSensorManager);
         initGyroscope(mSensorManager);
-        new CountDownTimer(CALIBRATION_TIME * 1000, 1000) {
+        new CountDownTimer(CALIBRATION_TIME / 2 * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 mTimeRemaining.setText(getString(R.string.time_remaining, millisUntilFinished / 1000));
@@ -66,20 +67,39 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
 
             @Override
             public void onFinish() {
-                CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
                 calculateZOffsets(calculateAverageAccel());
                 SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
                 SharedPreferences.Editor editor = settings.edit();
-//                editor.putFloat(getString(R.string.x_threshold), max_x_noise);
-//                editor.putFloat(getString(R.string.y_threshold), max_y_noise);
-//                editor.putFloat(getString(R.string.z_threshold), max_z_noise);
                 editor.putFloat(getString(R.string.roll_threshold), max_roll_noise);
                 editor.putFloat(getString(R.string.pitch_threshold), max_pitch_noise);
                 editor.putFloat(getString(R.string.yaw_threshold), max_yaw_noise);
                 editor.apply();
-                CalibrationActivity.this.finish();
+
+                calibrationPhase = 2;
+
+                new CountDownTimer(CALIBRATION_TIME / 2 * 1000, 1000) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        mTimeRemaining.setText(getString(R.string.time_remaining, millisUntilFinished / 1000));
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
+                        calculateZOffsets(calculateAverageAccel());
+                        SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putFloat(getString(R.string.x_threshold), max_x_noise);
+                        editor.putFloat(getString(R.string.y_threshold), max_y_noise);
+                        editor.putFloat(getString(R.string.z_threshold), max_z_noise);
+                        editor.apply();
+                        CalibrationActivity.this.finish();
+                    }
+                }.start();
             }
         }.start();
+
+
     }
 
     private void calculateZOffsets(float[] floats) {
@@ -158,10 +178,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         xVals.add(floats[0]);
         yVals.add(floats[1]);
         zVals.add(floats[2]);
-        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
-        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
-        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
-        prev_accel = floats;
+
+        if (calibrationPhase == 2) {
+            max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
+            max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
+            max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
+            prev_accel = floats;
+        }
     }
 
     public void gyroscopeChanged(float[] floats) {
@@ -169,5 +192,6 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         max_pitch_noise = Math.abs(Math.max(max_pitch_noise, floats[1] - prev_gyro[1]));
         max_yaw_noise = Math.abs(Math.max(max_yaw_noise, floats[2] - prev_gyro[2]));
         prev_gyro = floats;
+
     }
 }
