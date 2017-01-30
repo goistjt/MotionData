@@ -180,10 +180,22 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         zVals.add(floats[2]);
 
         if (calibrationPhase == 2) {
-            max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
-            max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
-            max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
-            prev_accel = floats;
+            float x = floats[0];
+            float y = floats[1];
+            float z = floats[2];
+            float yaw = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0);
+            float pitch = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("pitch_offset", 0);
+            float roll = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("roll_offset", 0);
+            float xP = (float) (Math.cos(yaw) * x - Math.sin(yaw) * y);
+            float yP = (float) (Math.sin(yaw) * x + Math.cos(yaw) * y);
+            float xP2 = (float) (Math.cos(roll) * xP - Math.sin(roll) * z);
+            float zP = (float) (Math.sin(roll) * xP + Math.cos(roll) * z);
+            float yP2 = (float) (Math.cos(pitch) * yP - Math.sin(pitch) * zP);
+            float zP2 = (float) (Math.sin(pitch) * -yP + Math.cos(pitch) * -zP);
+            max_x_noise = Math.abs(Math.max(max_x_noise, xP2 - prev_accel[0]));
+            max_y_noise = Math.abs(Math.max(max_y_noise, yP2 - prev_accel[1]));
+            max_z_noise = Math.abs(Math.max(max_z_noise, zP2 - prev_accel[2]));
+            prev_accel = new float[]{xP2, yP2, zP2};
         }
     }
 
