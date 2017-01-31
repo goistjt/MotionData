@@ -58,18 +58,52 @@ def index():
 def get_html(sessions):
     html = ""
     for s in sessions:
-        records = crud.get_all_records_from_session(s[0])
         date = datetime.datetime.fromtimestamp(s[2] / 1e3)
         desc = s[1]
+        sess_id = s[0]
+        records = crud.get_all_records_from_session(sess_id)
+        recs = ""
         for r in records:
             rid = r[0]
-            curr = '<tr><td>{}-{}</td><td>{}</td><td>{}</td><td>' \
-                   '<input id="raw_button" type="submit" name="r_{}" ' \
-                   'onclick=clicked_raw("{}") value="Download Raw" />' \
-                   '<input id="analyzed_button" type="submit" name="a_{}" ' \
-                   'onclick=clicked_analyzed("{}") value="Download Analyzed" />' \
-                   '</td></tr>'.format(r[1], r[2], desc, date, rid, rid, rid, rid)
-            html += curr
+            curr = '<tr style="display: table-row;">\n' \
+                   '    <td>{}</td>\n' \
+                   '    <td>\n' \
+                   '        <input id="raw_button" type="submit" name="r_{}" ' \
+                   '            onclick=clicked_raw("{}") value="Download Raw" />\n' \
+                   '        <input id="analyzed_button" type="submit" name="a_{}" ' \
+                   '            onclick=clicked_analyzed("{}") value="Download Analyzed" />\n' \
+                   '    </td>\n' \
+                   '</tr>\n'.format(rid, rid, rid, rid, rid)
+            recs += curr
+
+        sess = '<tr class="master">\n' \
+               '    <td>{}</td>\n' \
+               '    <td>{}</td>\n' \
+               '    <td>{}</td>\n' \
+               '    <td>\n' \
+               '        <input id="raw_button" type="submit" name="r_{}" ' \
+               '        onclick=clicked_raw("{}") value="Download Raw" />\n' \
+               '        <input id="analyzed_button" type="submit" name="a_{}" ' \
+               '        onclick=clicked_analyzed("{}") value="Download Analyzed" />\n' \
+               '    </td>\n' \
+               '    <td><div class="arrow"></div></td>\n' \
+               '</tr>\n' \
+               '<tr style="display: none;">\n' \
+               '    <td colspan="5">\n' \
+               '        <table id="records">\n' \
+               '            <thead>\n' \
+               '                <tr>\n' \
+               '                    <th>Record ID</th>\n' \
+               '                    <th>Download</th>\n' \
+               '                </tr>\n' \
+               '            </thead>\n' \
+               '            <tbody>\n' \
+               '                {}' \
+               '            </tbody>\n' \
+               '        </table>\n' \
+               '    </td>\n' \
+               '</tr>\n'.format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
+        html += sess
     return html
 
 
