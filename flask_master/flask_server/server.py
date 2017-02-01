@@ -54,10 +54,10 @@ def get_html(sessions):
             curr = """<tr style="display: table-row;">\n
                        <td>{}</td>\n
                        <td>\n
-                           <input id="raw_button" type="submit" name="r_{}"
-                               onclick=clicked_raw("{}") value="Download Raw" />\n
-                           <input id="analyzed_button" type="submit" name="a_{}"
-                               onclick=clicked_analyzed("{}") value="Download Analyzed" />\n
+                           <input id="raw_button" type="submit" name="rr_{}"
+                               onclick="clicked_raw('{}', 'r')" value="Download Raw Data" />\n
+                           <input id="analyzed_button" type="submit" name="ar_{}"
+                               onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
                        </td>\n
                    </tr>\n""".format(rid, rid, rid, rid, rid)
             recs += curr
@@ -67,10 +67,10 @@ def get_html(sessions):
                    <td>{}</td>\n
                    <td>{}</td>\n
                    <td>\n
-                       <input id="raw_button" type="submit" name="r_{}"
-                       onclick=clicked_raw("{}") value="Download Raw" />\n
-                       <input id="analyzed_button" type="submit" name="a_{}"
-                       onclick=clicked_analyzed("{}") value="Download Analyzed" />\n
+                       <input id="raw_button" type="submit" name="ras_{}"
+                       onclick="clicked_raw('{}', 's')" value="Download Raw Averaged Session" />\n
+                       <input id="analyzed_button" type="submit" name="as_{}"
+                       onclick="clicked_analyzed('{}', 's')" value="Download Analyzed Session" />\n
                    </td>\n
                    <td><div class="arrow"></div></td>\n
                </tr>\n
@@ -113,6 +113,26 @@ def get_record_data_analyzed(record_id=[]):
     txt = da.download_record_analyzed(record_id)
     response = {'Content-Disposition': 'attachment;',
                 'filename': 'record.txt',
+                'mimetype': 'text/csv',
+                'data': txt}
+    return jsonify(response)
+
+
+@app.route("/getSessionRaw/<session_id>")
+def get_session_data_raw(session_id=[]):
+    txt = da.download_session_raw(session_id)
+    response = {'Content-Disposition': 'attachment;',
+                'filename': 'session.txt',
+                'mimetype': 'text/csv',
+                'data': txt}
+    return jsonify(response)
+
+
+@app.route("/getSessionAnalyzed/<session_id>")
+def get_session_data_analyzed(session_id=[]):
+    txt = da.download_session_analyzed(session_id)
+    response = {'Content-Disposition': 'attachment;',
+                'filename': 'session.txt',
                 'mimetype': 'text/csv',
                 'data': txt}
     return jsonify(response)
@@ -262,9 +282,7 @@ def add_to_session():
 
 @app.route("/deleteSession", methods=['DELETE'])
 def delete_session():
-    b64 = base64.b64decode(request.data)
-    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
-    data = json.loads(request_data)
+    data = request.get_json(force=True)
     sess_id = data["sess_id"]
     crud.delete_entire_session(sess_id)
     return jsonify(session_id=sess_id)

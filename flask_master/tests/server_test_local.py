@@ -57,7 +57,8 @@ class FlaskTestCase(unittest.TestCase):
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
                        "sess_desc": "This is a description that I'm typing for no reason whatsoever",
                        "begin": 123876098234}
-        response = self.app.post('/createSession', data=base64.b64encode(gzip.compress(bytes(json.dumps(create_data)))),
+        response = self.app.post('/createSession',
+                                 data=base64.b64encode(gzip.compress(bytes(json.dumps(create_data), 'utf-8'))),
                                  content_type='application/json')
         resp_json = json.loads(response.data.decode("utf-8"))
         session_id = resp_json['session_id']
@@ -68,7 +69,8 @@ class FlaskTestCase(unittest.TestCase):
                     "gyroModels": [{"time_val": 123876098235, "roll_val": 2, "pitch_val": 2, "yaw_val": 2}],
                     "accelModels": [{"time_val": 123876098235, "x_val": 2, "y_val": 2, "z_val": 2}],
                     "sess_desc": "This is a description that I'm typing for no reason whatsoever too"}
-        response = self.app.post('/addToSession', data=base64.b64encode(gzip.compress(bytes(json.dumps(add_data)))),
+        response = self.app.post('/addToSession',
+                                 data=base64.b64encode(gzip.compress(bytes(json.dumps(add_data), 'utf-8'))),
                                  content_type='application/json')
         resp_json = json.loads(response.data.decode("utf-8"))
         session_id = resp_json['session_id']

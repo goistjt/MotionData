@@ -123,8 +123,8 @@
     <script type="text/javascript">
         function toggle_row() {
             $("#sessions tr:first-child").show();
-            $("#sessions tr.master").click(function(){
-                $(this).next("tr").toggle();
+            $("#sessions tr.master td:last-child").click(function(){
+                $(this).parent("tr.master").next("tr").toggle();
                 $(this).find(".arrow").toggleClass("up");
             });
         }
@@ -133,16 +133,16 @@
     <script type="text/javascript">
         $(document).ready(
             toggle_row()
-            //$("#report").jExpand();
         );
     </script>
     
     
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>
-        function clicked_raw(rec_id) {
+        function clicked_raw(id, rec_type) {
+            var server_endpoint = rec_type == "r" ? '/getRecordRaw/' + id : '/getSessionRaw/' + id;
             $.ajax({headers : {'Accept-Encoding' : 'gzip'},
-                url:'/getRecordRaw/' + rec_id,
+                url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
                     var link = document.createElement('a');
@@ -152,9 +152,10 @@
                 }});
         }
 
-        function clicked_analyzed(rec_id) {
+        function clicked_analyzed(id, rec_type) {
+            var server_endpoint = rec_type == "r" ? '/getRecordAnalyzed/' + id : '/getSessionAnalyzed/' + id;
             $.ajax({headers : {'Accept-Encoding' : 'gzip'},
-                url:'/getRecordAnalyzed/' + rec_id,
+                url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
                     var link = document.createElement('a');
