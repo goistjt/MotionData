@@ -8,7 +8,7 @@
     <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredPackages">
         <value>
-          <list size="11">
+          <list size="12">
             <item index="0" class="java.lang.String" itemvalue="_mysql" />
             <item index="1" class="java.lang.String" itemvalue="json" />
             <item index="2" class="java.lang.String" itemvalue="unittest" />
@@ -20,6 +20,7 @@
             <item index="8" class="java.lang.String" itemvalue="server" />
             <item index="9" class="java.lang.String" itemvalue="database" />
             <item index="10" class="java.lang.String" itemvalue="pandas" />
+            <item index="11" class="java.lang.String" itemvalue="blist" />
           </list>
         </value>
       </option>
