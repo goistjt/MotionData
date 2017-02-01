@@ -1,0 +1,8 @@
+CREATE PROCEDURE `add_session`(
+input_d varchar(255),
+input_st double
+)
+BEGIN
+INSERT INTO Session
+(description, starting_time) VALUES( input_d, input_st );
+END

@@ -1,0 +1,6 @@
+CREATE PROCEDURE `get_all_records_from_session`(
+s_id int(32)
+)
+BEGIN
+SELECT Records.id, Records.session_id, Records.device_id FROM Records where session_id = s_id;
+END
