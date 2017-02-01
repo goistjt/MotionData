@@ -21,16 +21,6 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
         fs.t.cancel()
 
-    def test_hello_world(self):
-        response = self.app.get('/hello-world')
-        self.assertEqual(b'Hello World!', response.data)
-
-    def test_echo(self):
-        test_input = {'usernames': ['test_username']}
-        response = self.app.get('/echo?usernames=test_username')
-        resp_json = json.loads(response.data.decode("utf-8"))
-        self.assertEqual(test_input, resp_json)
-
     def test_session(self):
         pass
 

@@ -1,3 +1,7 @@
+import base64
+import zlib
+import json
+
 from flask import jsonify, request, render_template
 import re
 from pathlib import Path
@@ -29,18 +33,6 @@ def handle_missing_argument(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
-
-
-# /echo?usernames=<insert here>
-@app.route('/echo')
-def echo():
-    users = request.args.get('usernames').split(',')
-    return jsonify(usernames=users)
-
-
-@app.route('/hello-world')
-def hello_world():
-    return 'Hello World!'
 
 
 @app.route('/session')
@@ -90,7 +82,7 @@ def get_html(sessions):
                '</tr>\n' \
                '<tr style="display: none;">\n' \
                '    <td colspan="5">\n' \
-               '        <table id="records">\n' \
+               '        <table id="records" class="table table-bordered table-hover table-striped">\n' \
                '            <thead>\n' \
                '                <tr>\n' \
                '                    <th>Record ID</th>\n' \
@@ -139,7 +131,11 @@ def create_session():
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
          begin: long} """
-    data = request.get_json(force=True)
+
+    b64 = base64.b64decode(request.data)
+    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
+    data = json.loads(request_data)
+
     desc = data['sess_desc']
     accel_data = data['accelModels']
     gyro_data = data['gyroModels']
@@ -208,7 +204,10 @@ def add_to_session():
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
          sess_id: ""} """
-    data = request.get_json(force=True)
+    b64 = base64.b64decode(request.data)
+    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
+    data = json.loads(request_data)
+
     sess_id = data['sess_id']
     accel_data = data['accelModels']
     gyro_data = data['gyroModels']
@@ -269,7 +268,9 @@ def add_to_session():
 
 @app.route("/deleteSession", methods=['DELETE'])
 def delete_session():
-    data = request.get_json(force=True)
+    b64 = base64.b64decode(request.data)
+    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
+    data = json.loads(request_data)
     sess_id = data["sess_id"]
     crud.delete_entire_session(sess_id)
     return jsonify(session_id=sess_id)
