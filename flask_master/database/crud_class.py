@@ -59,6 +59,9 @@ class Crud(object):
         query = "SELECT Records.id, Records.session_id, Records.device_id FROM Records where session_id = %s"
         args = [session_id]
         return self.read_all(query, args)
+    
+    def get_all_data_from_session(self, session_id):
+        return (self.get_all_accel_points_from_session(session_id), self.get_all_gyro_points_from_session(session_id))
 
     def get_session_id(self, description, starting_time):
         query = "SELECT * FROM Session WHERE description = %s AND starting_time = %s"
@@ -115,7 +118,6 @@ class Crud(object):
         return self.insert(query, args, multiRow=True)
 
     def bulk_insert_gyro_points(self, data_path, local=False):
-        print(data_path, local)
         if local:
             lo = 'LOCAL'
         else:
@@ -128,6 +130,11 @@ class Crud(object):
                 " FROM GyroPoints WHERE GyroPoints.record_id = %s ORDER BY GyroPoints.timestamp ASC"
         args = [record_id]
         return self.read_all(query, args)
+    
+    def get_all_gyro_points_from_session(self, session_id):
+        cursor = self.conn.cursor()
+        cursor.callproc('select_all_gyro_from_session',(session_id))
+        return cursor.fetchall()
 
     # ********* accel_points ********#
     def insert_accel_points(self, record_id, timestamp, x, y, z):
@@ -145,13 +152,17 @@ class Crud(object):
 
     # Local means insert outside of server,
     def bulk_insert_accel_points(self, data_path, local=False):
-        print(data_path, local)
         if local:
             lo = 'LOCAL'
         else:
             lo = ''
         args = ["AccelPoints", '(record_id, timestamp, surge, sway, heave)']
         self.load_csv_data(lo, data_path, args)
+    
+    def get_all_accel_points_from_session(self, session_id):
+        cursor = self.conn.cursor()
+        cursor.callproc('select_all_accel_from_session',(session_id))
+        return cursor.fetchall()
 
     # ********* integration ********#
     def delete_entire_session(self, session_id):
