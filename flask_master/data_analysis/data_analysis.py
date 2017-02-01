@@ -172,15 +172,15 @@ def determine_start(points, start, end_index):
 def clean_session(start_time, end_time, accel_points, gyro_points):
     interval = 40
 
-    if (start_time >= end_time):
+    if start_time >= end_time:
         return []
 
     accel_list = process_accelerations(start_time, end_time, interval, accel_points)
 
     gyro_list = process_accelerations(start_time, end_time, interval, gyro_points)
 
-    if ((accel_list == None or len(accel_list) == 0) or (gyro_list == None or len(gyro_list) == 0) or (
-        len(gyro_list) != len(accel_list))):
+    if ((accel_list is None or len(accel_list) == 0) or (gyro_list is None or len(gyro_list) == 0) or (
+                len(gyro_list) != len(accel_list))):
         return []
 
     maxCF = mcf.MaxCollectionFactory()
@@ -225,7 +225,7 @@ def process_normal_state_generations(keeps_list, values_list, position, next_set
 def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session):
     acc_time = end_time
 
-    while (True):
+    while True:
 
         acc_time += interval
 
@@ -235,10 +235,10 @@ def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
 
         next_set = process_for_next_set(keeps_gyro, acc_time, next_set)
 
-        if (np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0000001)):
+        if np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0000001):
             next_set = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             session.append(next_set)
-            break;
+            break
 
         session.append(next_set)
 
@@ -251,13 +251,13 @@ def process_for_next_set(keeps_list, acc_time, next_set):
         curr_keep = keeps_list[o]
         pos = curr_keep.get_position()
 
-        if (pos == 0.0):
+        if pos == 0.0:
 
             next_set.append(0.0)
 
         else:
 
-            if (pos > 0):
+            if pos > 0:
                 accel_val = -curr_keep.get_max_acceleration() / 2
 
             else:
@@ -267,7 +267,7 @@ def process_for_next_set(keeps_list, acc_time, next_set):
 
             pos_next = curr_keep.get_position()
 
-            if (pos_next == 0.0 or (pos_next / abs(pos_next)) != (pos / (abs(pos)))):
+            if pos_next == 0.0 or (pos_next / abs(pos_next)) != (pos / (abs(pos))):
                 curr_keep.set_position(0.0)
                 next_set.append(0.0)
 
