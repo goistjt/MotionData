@@ -59,7 +59,14 @@ class Crud(object):
         query = "SELECT Records.id, Records.session_id, Records.device_id FROM Records where session_id = %s"
         args = [session_id]
         return self.read_all(query, args)
-
+    
+    def get_record(self, record_id):
+        cursor = self.conn.cursor()
+        cursor.callproc('select_record',(record_id))
+        data = cursor.fetchall()
+        cursor.close()
+        return data
+        
     def get_session_id(self, description, starting_time):
         query = "SELECT * FROM Session WHERE description = %s AND starting_time = %s"
         args = [description, starting_time]

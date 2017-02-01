@@ -13,15 +13,8 @@ import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
 
 
-def select_record(records_id):
-    query = "SELECT GyroPoints.roll, GyroPoints.pitch, GyroPoints.yaw, AccelPoints.surge, AccelPoints.sway, " \
-            "AccelPoints.heave " \
-            "FROM GyroPoints INNER JOIN AccelPoints " \
-            "ON GyroPoints.record_id = %s " \
-            "AND GyroPoints.timestamp = AccelPoints.timestamp " \
-            "ORDER BY GyroPoints.timestamp ASC"
-    args = [records_id]
-    return crud.read_all(query, args)
+def select_record(record_id):
+    return crud.get_record(record_id)
 
 
 def download_record_raw(record_id=[]):
