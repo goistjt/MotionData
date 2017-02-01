@@ -70,18 +70,7 @@ def download_record_analyzed(record_id=[]):
 
 def download_session_raw(session_id=[]):
     # todo: fill this in - this will do an averaging of all devices across timestamps (or output if only 1 device)
-    points = []
-    zeropoint = [0, 0, 0, 0, 0, 0]
-    points.append(zeropoint)
-
-    records = crud.get_all_records_from_session(session_id)
-    if len(records) == 1:
-        # todo : do raw matching like record above
-        session_id = session_id  # ignore this line
-
-    points.append(zeropoint)
-    df = pd.DataFrame(np.array(points))
-    return df.to_csv(index=False, header=False)
+    return
 
 
 def download_session_analyzed(session_id=[]):
