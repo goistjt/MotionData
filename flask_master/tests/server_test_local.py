@@ -21,10 +21,10 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
         fs.t.cancel()
 
-    def test_session(self):
+    def test_get_record_data_raw(self):
         pass
 
-    def test_get_record(self):
+    def test_get_record_data_analyzed(self):
         pass
 
     def test_create_delete_session(self):

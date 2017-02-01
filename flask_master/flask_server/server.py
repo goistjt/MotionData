@@ -35,12 +35,6 @@ def handle_missing_argument(error):
     return response
 
 
-@app.route('/session')
-def session():
-    result = crud.get_all_sessions()
-    return jsonify(row=str(result))
-
-
 @app.route("/")
 def index():
     sessions = crud.get_all_sessions()
@@ -57,44 +51,44 @@ def get_html(sessions):
         recs = ""
         for r in records:
             rid = r[0]
-            curr = '<tr style="display: table-row;">\n' \
-                   '    <td>{}</td>\n' \
-                   '    <td>\n' \
-                   '        <input id="raw_button" type="submit" name="r_{}" ' \
-                   '            onclick=clicked_raw("{}") value="Download Raw" />\n' \
-                   '        <input id="analyzed_button" type="submit" name="a_{}" ' \
-                   '            onclick=clicked_analyzed("{}") value="Download Analyzed" />\n' \
-                   '    </td>\n' \
-                   '</tr>\n'.format(rid, rid, rid, rid, rid)
+            curr = """<tr style="display: table-row;">\n
+                       <td>{}</td>\n
+                       <td>\n
+                           <input id="raw_button" type="submit" name="r_{}"
+                               onclick=clicked_raw("{}") value="Download Raw" />\n
+                           <input id="analyzed_button" type="submit" name="a_{}"
+                               onclick=clicked_analyzed("{}") value="Download Analyzed" />\n
+                       </td>\n
+                   </tr>\n""".format(rid, rid, rid, rid, rid)
             recs += curr
 
-        sess = '<tr class="master">\n' \
-               '    <td>{}</td>\n' \
-               '    <td>{}</td>\n' \
-               '    <td>{}</td>\n' \
-               '    <td>\n' \
-               '        <input id="raw_button" type="submit" name="r_{}" ' \
-               '        onclick=clicked_raw("{}") value="Download Raw" />\n' \
-               '        <input id="analyzed_button" type="submit" name="a_{}" ' \
-               '        onclick=clicked_analyzed("{}") value="Download Analyzed" />\n' \
-               '    </td>\n' \
-               '    <td><div class="arrow"></div></td>\n' \
-               '</tr>\n' \
-               '<tr style="display: none;">\n' \
-               '    <td colspan="5">\n' \
-               '        <table id="records" class="table table-bordered table-hover table-striped">\n' \
-               '            <thead>\n' \
-               '                <tr>\n' \
-               '                    <th>Record ID</th>\n' \
-               '                    <th>Download</th>\n' \
-               '                </tr>\n' \
-               '            </thead>\n' \
-               '            <tbody>\n' \
-               '                {}' \
-               '            </tbody>\n' \
-               '        </table>\n' \
-               '    </td>\n' \
-               '</tr>\n'.format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
+        sess = """<tr class="master">\n
+                   <td>{}</td>\n
+                   <td>{}</td>\n
+                   <td>{}</td>\n
+                   <td>\n
+                       <input id="raw_button" type="submit" name="r_{}"
+                       onclick=clicked_raw("{}") value="Download Raw" />\n
+                       <input id="analyzed_button" type="submit" name="a_{}"
+                       onclick=clicked_analyzed("{}") value="Download Analyzed" />\n
+                   </td>\n
+                   <td><div class="arrow"></div></td>\n
+               </tr>\n
+               <tr style="display: none;">\n
+                   <td colspan="5">\n
+                       <table id="records" class="table table-bordered table-hover table-striped">\n
+                           <thead>\n
+                               <tr>\n
+                                   <th>Record ID</th>\n
+                                   <th>Download</th>\n
+                               </tr>\n
+                           </thead>\n
+                           <tbody>\n
+                               {}
+                           </tbody>\n
+                       </table>\n
+                   </td>\n
+               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
         html += sess
     return html
 
