@@ -1,3 +1,7 @@
+import base64
+import zlib
+import json
+
 from flask import jsonify, request, render_template
 import re
 from pathlib import Path
@@ -31,24 +35,6 @@ def handle_missing_argument(error):
     return response
 
 
-# /echo?usernames=<insert here>
-@app.route('/echo')
-def echo():
-    users = request.args.get('usernames').split(',')
-    return jsonify(usernames=users)
-
-
-@app.route('/hello-world')
-def hello_world():
-    return 'Hello World!'
-
-
-@app.route('/session')
-def session():
-    result = crud.get_all_sessions()
-    return jsonify(row=str(result))
-
-
 @app.route("/")
 def index():
     sessions = crud.get_all_sessions()
@@ -58,18 +44,52 @@ def index():
 def get_html(sessions):
     html = ""
     for s in sessions:
-        records = crud.get_all_records_from_session(s[0])
         date = datetime.datetime.fromtimestamp(s[2] / 1e3)
         desc = s[1]
+        sess_id = s[0]
+        records = crud.get_all_records_from_session(sess_id)
+        recs = ""
         for r in records:
             rid = r[0]
-            curr = '<tr><td>{}-{}</td><td>{}</td><td>{}</td><td>' \
-                   '<input id="raw_button" type="submit" name="r_{}" ' \
-                   'onclick=clicked_raw("{}") value="Download Raw" />' \
-                   '<input id="analyzed_button" type="submit" name="a_{}" ' \
-                   'onclick=clicked_analyzed("{}") value="Download Analyzed" />' \
-                   '</td></tr>'.format(r[1], r[2], desc, date, rid, rid, rid, rid)
-            html += curr
+            curr = """<tr style="display: table-row;">\n
+                       <td>{}</td>\n
+                       <td>\n
+                           <input id="raw_button" type="submit" name="rr_{}"
+                               onclick="clicked_raw('{}', 'r')" value="Download Raw Data" />\n
+                           <input id="analyzed_button" type="submit" name="ar_{}"
+                               onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
+                       </td>\n
+                   </tr>\n""".format(rid, rid, rid, rid, rid)
+            recs += curr
+
+        sess = """<tr class="master">\n
+                   <td>{}</td>\n
+                   <td>{}</td>\n
+                   <td>{}</td>\n
+                   <td>\n
+                       <input id="raw_button" type="submit" name="ras_{}"
+                       onclick="clicked_raw('{}', 's')" value="Download Raw Averaged Session" />\n
+                       <input id="analyzed_button" type="submit" name="as_{}"
+                       onclick="clicked_analyzed('{}', 's')" value="Download Analyzed Session" />\n
+                   </td>\n
+                   <td><div class="arrow"></div></td>\n
+               </tr>\n
+               <tr style="display: none;">\n
+                   <td colspan="5">\n
+                       <table id="records" class="table table-bordered table-hover table-striped">\n
+                           <thead>\n
+                               <tr>\n
+                                   <th>Record ID</th>\n
+                                   <th>Download</th>\n
+                               </tr>\n
+                           </thead>\n
+                           <tbody>\n
+                               {}
+                           </tbody>\n
+                       </table>\n
+                   </td>\n
+               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
+        html += sess
     return html
 
 
@@ -98,6 +118,26 @@ def get_record_data_analyzed(record_id=[]):
     return jsonify(response)
 
 
+@app.route("/getSessionRaw/<session_id>")
+def get_session_data_raw(session_id=[]):
+    txt = da.download_session_raw(session_id)
+    response = {'Content-Disposition': 'attachment;',
+                'filename': 'session.txt',
+                'mimetype': 'text/csv',
+                'data': txt}
+    return jsonify(response)
+
+
+@app.route("/getSessionAnalyzed/<session_id>")
+def get_session_data_analyzed(session_id=[]):
+    txt = da.download_session_analyzed(session_id)
+    response = {'Content-Disposition': 'attachment;',
+                'filename': 'session.txt',
+                'mimetype': 'text/csv',
+                'data': txt}
+    return jsonify(response)
+
+
 @app.route("/createSession", methods=["POST"])
 def create_session():
     """ {sess_desc: "",
@@ -105,7 +145,11 @@ def create_session():
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
          begin: long} """
-    data = request.get_json(force=True)
+
+    b64 = base64.b64decode(request.data)
+    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
+    data = json.loads(request_data)
+
     desc = data['sess_desc']
     accel_data = data['accelModels']
     gyro_data = data['gyroModels']
@@ -174,7 +218,10 @@ def add_to_session():
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
          sess_id: ""} """
-    data = request.get_json(force=True)
+    b64 = base64.b64decode(request.data)
+    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
+    data = json.loads(request_data)
+
     sess_id = data['sess_id']
     accel_data = data['accelModels']
     gyro_data = data['gyroModels']
