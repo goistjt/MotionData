@@ -31,6 +31,7 @@ import datamodels.TimeframeDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
 import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
+import edu.rose_hulman.nswccrane.dataacquisition.utils.StringComressor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -136,7 +137,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                     .writeTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
                     .readTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
                     .build();
-            RequestBody body = RequestBody.create(JSON, params[1]);
+            RequestBody body = RequestBody.create(JSON, StringComressor.compressString(params[1]));
             Request request = new Request.Builder()
                     .url(params[0])
                     .post(body)
