@@ -63,7 +63,6 @@ def download_record_raw(record_id=[]):
 
 
 def download_record_analyzed(record_id=None):
-
     # TODO: Replace some of the below code with calls to Runzhi's new procedures / functions
     if record_id is None:
         record_id = []
@@ -81,6 +80,16 @@ def download_record_analyzed(record_id=None):
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
+
+
+def download_session_raw(session_id=[]):
+    # todo: fill this in - this will do an averaging of all devices across timestamps (or output if only 1 device)
+    return
+
+
+def download_session_analyzed(session_id=[]):
+    # todo: fill this in - analysis for an entire session, rather than just one record (may be the same)
+    return
 
 
 def process_accelerations(start, end, interval, points):
@@ -172,7 +181,6 @@ def determine_start(points, start, end_index):
 
     return start_index
 
-
 def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
 
     default_list = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
@@ -205,7 +213,6 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
     session = []
 
     for i in range(len(gyro_list)):
-
         next_set = []
 
         next_set = process_normal_state_generations(keeps_accel, accel_list, i, next_set)
