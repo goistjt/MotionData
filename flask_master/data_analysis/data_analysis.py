@@ -3,14 +3,15 @@ Created on Oct 15, 2016
 
 @author: yangr
 """
-import pandas as pd
-import numpy as np
 import decimal as dc
 import math
-from flask_server import crud
+
+import numpy as np
+import pandas as pd
 
 import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
+from flask_server import crud
 
 
 def select_record(records_id):
@@ -24,7 +25,7 @@ def select_record(records_id):
     return crud.read_all(query, args)
 
 
-def download_record_raw(record_id=[]):
+def download_record_raw(record_id):
     accel_base = list(crud.select_accel(record_id))
     gyro_base = crud.select_gyro(record_id)
 
@@ -59,14 +60,11 @@ def download_record_raw(record_id=[]):
     points.append(zeropoint)
 
     df = pd.DataFrame(np.array(points))
-    return df.to_csv(index=False, header=False,  sep=" ", float_format="%.6f")
+    return df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")
 
 
-def download_record_analyzed(record_id=None):
+def download_record_analyzed(record_id):
     # TODO: Replace some of the below code with calls to Runzhi's new procedures / functions
-    if record_id is None:
-        record_id = []
-
     accel_base = list(crud.select_accel(record_id))
     gyro_base = list(crud.select_gyro(record_id))
 
@@ -82,18 +80,54 @@ def download_record_analyzed(record_id=None):
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
 
-def download_session_raw(session_id=[]):
+def download_session_raw(session_id):
     # todo: fill this in - this will do an averaging of all devices across timestamps (or output if only 1 device)
+
     return
 
 
-def download_session_analyzed(session_id=[]):
+def download_session_analyzed(session_id):
     # todo: fill this in - analysis for an entire session, rather than just one record (may be the same)
+    records = crud.get_all_records_from_session(session_id)
+    record_accel_data = []
+    record_gyro_data = []
+    for record in records:
+        record_data = crud.get_record_data(record[0])
+        record_accel_data.append(record_data[0])
+        record_gyro_data.append(record_data[1])
+    avg_accel = average_timeseries_data(record_accel_data)
+    avg_gyro = average_timeseries_data(record_gyro_data)
+    # todo abstracct record_raw
+
     return
+
+
+def average_timeseries_data(records, iteration=1):
+    if len(records) == 1:
+        return  # todo
+
+    record1 = list(records.pop())
+    record2 = list(records.pop())
+    record_avg = []
+
+    while len(record1) > 0 and len(record2) > 0:
+        while record1[0] < record2[0]:
+            record_avg.append(record1.pop())
+
+        record_avg.append(((record1.pop() * iteration) + record2.pop()) / (iteration + 1))
+
+    while len(record1) > 0:
+        record_avg.append(record1.pop())
+
+    while len(record2) > 0:
+        record_avg.append(record2.pop())
+
+    rec_copy = records
+    rec_copy.insert(0, record_avg)
+    return average_timeseries_data(rec_copy, iteration + 1)
 
 
 def process_accelerations(start, end, interval, points):
-
     # Sets the precision level for operations referencing the Decimal datatype
     dc.getcontext().prec = 20
     # Default one and zero values
@@ -155,7 +189,6 @@ def process_accelerations(start, end, interval, points):
 
 
 def determine_end(points, real_end):
-
     one = dc.Decimal(1.0)
     end_index = len(points) - 1
     while end_index >= 0:
@@ -168,7 +201,6 @@ def determine_end(points, real_end):
 
 
 def determine_start(points, start, end_index):
-
     one = dc.Decimal(1.0)
     start_index = 0
     while start_index <= end_index:
@@ -181,8 +213,8 @@ def determine_start(points, start, end_index):
 
     return start_index
 
-def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
 
+def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
     default_list = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
     if start_time >= end_time:
@@ -225,9 +257,7 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
 
 
 def process_normal_state_generations(keeps_list, values_list, position, next_set):
-
     for x in range(len(keeps_list)):
-
         accel_val = values_list[position][x + 1]
         curr_keep = keeps_list[x]
 
@@ -239,7 +269,6 @@ def process_normal_state_generations(keeps_list, values_list, position, next_set
 
 
 def process_return_to_zero(keeps_accel, keeps_gyro, session):
-
     while True:
 
         next_set = []
@@ -259,7 +288,6 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
 
 def process_for_next_set(keeps_list, next_set):
-
     # TODO: Could very much move things like this into a configuration file or make the data analysis class instantiated
     maximum_buffer_factor = 0.5
 
