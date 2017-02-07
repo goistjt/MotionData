@@ -97,7 +97,7 @@ def download_session_analyzed(session_id):
         record_gyro_data.append(record_data[1])
     avg_accel = average_timeseries_data(record_accel_data)
     avg_gyro = average_timeseries_data(record_gyro_data)
-    # todo abstracct record_raw
+    # todo abstract record_raw
 
     return
 
