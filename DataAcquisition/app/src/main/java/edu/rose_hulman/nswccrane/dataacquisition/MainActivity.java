@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ExecutorService mToggleButtonService;
     private ExecutorService mCollectionService;
     private boolean mStarted;
-    private int pollRate;
+    private int pollRate, prevSensor = -1;
     private float yawOffset;
     private float pitchOffset;
     private float rollOffset;
@@ -297,11 +297,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         long time = System.currentTimeMillis();
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LINEAR_ACCELERATION:
+//                if(prevSensor == Sensor.TYPE_LINEAR_ACCELERATION){
+//                    break;
+//                }
+//                prevSensor = Sensor.TYPE_LINEAR_ACCELERATION;
                 float[] valsPrime = calculateAccelRotation(event.values);
                 AccelDataModel accelModel = new AccelDataModel(time, valsPrime[0], valsPrime[1], valsPrime[2]);
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
+//                if(prevSensor == Sensor.TYPE_GYROSCOPE){
+//                    break;
+//                }
+//                prevSensor = Sensor.TYPE_GYROSCOPE;
                 GyroDataModel gyroModel = new GyroDataModel(time, event.values[0], event.values[1], event.values[2]);
                 gyroscopeChanged(gyroModel);
             default:
