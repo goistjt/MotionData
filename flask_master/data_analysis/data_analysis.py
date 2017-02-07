@@ -59,13 +59,27 @@ def download_record_raw(record_id=[]):
     points.append(zeropoint)
 
     df = pd.DataFrame(np.array(points))
-    return df.to_csv(index=False, header=False)
+    return df.to_csv(index=False, header=False, sep=" ")
 
 
-def download_record_analyzed(record_id=[]):
-    # TODO : update this to actually analyze the selected data
-    df = pd.DataFrame(np.array(select_record(record_id)))
-    return df.to_csv(index=False)
+def download_record_analyzed(record_id=None):
+    # TODO: Replace some of the below code with calls to Runzhi's new procedures / functions
+    if record_id is None:
+        record_id = []
+
+    accel_base = list(crud.select_accel(record_id))
+    gyro_base = list(crud.select_gyro(record_id))
+
+    start = 0
+    end = 0
+
+    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
+        start = max(accel_base[0][0], gyro_base[0][0])
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+
+    df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
+
+    return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
 
 def download_session_raw(session_id=[]):
@@ -79,25 +93,20 @@ def download_session_analyzed(session_id=[]):
 
 
 def process_accelerations(start, end, interval, points):
-    # Sets the precision level for operations referencing the Decimal datatype
-    dc.getcontext().prec = 6
 
+    # Sets the precision level for operations referencing the Decimal datatype
+    dc.getcontext().prec = 20
     # Default one and zero values
     zero = dc.Decimal(0.0)
     one = dc.Decimal(1.0)
 
     interval_d = dc.Decimal(interval) * one
-
     start_d = dc.Decimal(start) * one
     end_d = dc.Decimal(end) * one
-
-    real_end_d = start_d + (end_d // interval_d) * interval_d
-
+    real_end_d = start_d + ((end_d - start_d) // interval_d) * interval_d
     end_index = determine_end(points, real_end_d)
     start_index = determine_start(points, start_d, end_index)
-
     points = points[start_index:end_index]
-
     final_points = [[start, 0.0, 0.0, 0.0]]
 
     points.append([float(real_end_d), 0.0, 0.0, 0.0])
@@ -113,7 +122,7 @@ def process_accelerations(start, end, interval, points):
         next_point = points[n]
 
         # Current time difference
-        time_diff = dc.Decimal(next_point[0]) * one - dc.Decimal(curr_point[0]) * one
+        time_diff = (dc.Decimal(next_point[0]) * one) - (dc.Decimal(curr_point[0]) * one)
 
         if time_diff == zero:
             final_points[z] = next_point
@@ -146,6 +155,7 @@ def process_accelerations(start, end, interval, points):
 
 
 def determine_end(points, real_end):
+
     one = dc.Decimal(1.0)
     end_index = len(points) - 1
     while end_index >= 0:
@@ -153,10 +163,12 @@ def determine_end(points, real_end):
         if curr_comparison <= real_end:
             break
         end_index -= 1
+
     return end_index + 1
 
 
 def determine_start(points, start, end_index):
+
     one = dc.Decimal(1.0)
     start_index = 0
     while start_index <= end_index:
@@ -166,14 +178,15 @@ def determine_start(points, start, end_index):
         if curr_comparison > start:
             break
         start_index += 1
+
     return start_index
 
+def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
 
-def clean_session(start_time, end_time, accel_points, gyro_points):
-    interval = 40
+    default_list = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
     if start_time >= end_time:
-        return []
+        return default_list
 
     accel_list = process_accelerations(start_time, end_time, interval, accel_points)
 
@@ -181,19 +194,19 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
 
     if ((accel_list is None or len(accel_list) == 0) or (gyro_list is None or len(gyro_list) == 0) or (
                 len(gyro_list) != len(accel_list))):
-        return []
+        return default_list
 
-    maxCF = mcf.MaxCollectionFactory()
+    max_coll_fact = mcf.MaxCollectionFactory()
 
-    surge_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SURGE))
-    sway_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.SWAY))
-    heave_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.HEAVE))
+    surge_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SURGE))
+    sway_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SWAY))
+    heave_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.HEAVE))
 
     keeps_accel = [surge_keeper, sway_keeper, heave_keeper]
 
-    roll_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.ROLL))
-    pitch_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.PITCH))
-    yaw_keeper = kk.KinematicsKeeper(start_time, maxCF.createMaxCollection(maxCF.YAW))
+    roll_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.ROLL))
+    pitch_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.PITCH))
+    yaw_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.YAW))
 
     keeps_gyro = [roll_keeper, pitch_keeper, yaw_keeper]
 
@@ -208,34 +221,34 @@ def clean_session(start_time, end_time, accel_points, gyro_points):
 
         session.append(next_set)
 
-    return process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
+    return process_return_to_zero(keeps_accel, keeps_gyro, session)
 
 
 def process_normal_state_generations(keeps_list, values_list, position, next_set):
+
     for x in range(len(keeps_list)):
-        time_val = values_list[position][0]
+
         accel_val = values_list[position][x + 1]
         curr_keep = keeps_list[x]
-        curr_keep.generate_next_state(time_val, accel_val)
+
+        curr_keep.generate_next_state(accel_val)
+
         next_set.append(curr_keep.get_position())
 
     return next_set
 
 
-def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session):
-    acc_time = end_time
+def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
     while True:
 
-        acc_time += interval
-
         next_set = []
 
-        next_set = process_for_next_set(keeps_accel, acc_time, next_set)
+        next_set = process_for_next_set(keeps_accel, next_set)
 
-        next_set = process_for_next_set(keeps_gyro, acc_time, next_set)
+        next_set = process_for_next_set(keeps_gyro, next_set)
 
-        if np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0000001):
+        if np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], atol=0.0000001):
             next_set = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             session.append(next_set)
             break
@@ -245,33 +258,35 @@ def process_return_to_zero(end_time, interval, keeps_accel, keeps_gyro, session)
     return session
 
 
-def process_for_next_set(keeps_list, acc_time, next_set):
-    for o in range(len(keeps_list)):
+def process_for_next_set(keeps_list, next_set):
 
-        curr_keep = keeps_list[o]
+    # TODO: Could very much move things like this into a configuration file or make the data analysis class instantiated
+    maximum_buffer_factor = 0.5
+
+    for x in range(len(keeps_list)):
+
+        curr_keep = keeps_list[x]
         pos = curr_keep.get_position()
 
         if pos == 0.0:
-
             next_set.append(0.0)
+            continue
+
+        elif pos > 0:
+            accel_val = -curr_keep.get_max_acceleration() * maximum_buffer_factor
 
         else:
+            accel_val = curr_keep.get_max_acceleration() * maximum_buffer_factor
 
-            if pos > 0:
-                accel_val = -curr_keep.get_max_acceleration() / 2
+        curr_keep.generate_next_state(accel_val)
 
-            else:
-                accel_val = curr_keep.get_max_acceleration() / 2
+        pos_next = curr_keep.get_position()
 
-            curr_keep.generate_next_state(acc_time, accel_val)
+        if (abs(pos_next - 0.0) < 0.0000001) or ((pos_next / abs(pos_next)) != (pos / (abs(pos)))):
+            curr_keep.set_position(0.0)
+            next_set.append(0.0)
+            continue
 
-            pos_next = curr_keep.get_position()
-
-            if pos_next == 0.0 or (pos_next / abs(pos_next)) != (pos / (abs(pos))):
-                curr_keep.set_position(0.0)
-                next_set.append(0.0)
-
-            else:
-                next_set.append(curr_keep.get_position())
+        next_set.append(curr_keep.get_position())
 
     return next_set
