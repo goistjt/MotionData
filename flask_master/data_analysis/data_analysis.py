@@ -59,7 +59,7 @@ def download_record_raw(record_id=[]):
     points.append(zeropoint)
 
     df = pd.DataFrame(np.array(points))
-    return df.to_csv(index=False, header=False, sep=" ")
+    return df.to_csv(index=False, header=False,  sep=" ", float_format="%.6f")
 
 
 def download_record_analyzed(record_id=None):
