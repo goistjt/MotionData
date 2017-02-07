@@ -24,7 +24,10 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-    <!-- Style sheed for navbar -->
+    <!-- Our custom CSS files -->
+    <link href="../static/css/custom/tables.css" rel="stylesheet" type="text/css">
+
+    <!-- Style sheet for navbar -->
     <link href="../static/css/navbar.css" rel="stylesheet" type="text/css">
 
 </head>
@@ -65,44 +68,70 @@
 
                 <!-- Page Heading -->
                 <div class="row">
-                    <div class="col-lg-6">
-                        <h2>Bordered with Striped Rows</h2>
+                    <div class="col-lg-10">
+                        <h2>Server Endpoints</h2>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Page</th>
+                                        <th>Endpoint</th>
                                         <th>Description</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>/</td>
-                                        <td>dashboard</td>
+                                        <td>Dashboard/Sessions table</td>
                                     </tr>
                                     <tr>
-                                        <td>/echo</td>
-                                        <td>echo?usernames=&lt;insert here&gt;</td>
+                                        <td>/tables</td>
+                                        <td>Shows the API for the server</td>
                                     </tr>
                                     <tr>
-                                        <td>/hello-world</td>
-                                        <td>return hello world</td>
+                                        <td>/getSessions/&#60device_id&#62</td>
+                                        <td>Returns a list of all sessions that the current device has not contributed a record to</td>
                                     </tr>
                                     <tr>
-                                        <td>/gyro</td>
-                                        <td>read one row from the GyroPoints table</td>
+                                        <td>/getRecordRaw/&#60record_id&#62</td>
+                                        <td>Download the raw data for the indicated record using a simple timestamp matching</td>
                                     </tr>
                                     <tr>
-                                        <td>/session</td>
-                                        <td>return all the sessions in the database</td>
+                                        <td>/getRecordAnalyzed/&#60record_id&#62</td>
+                                        <td>Download the fully analyzed/smoothed data for the indicated record</td>
                                     </tr>
                                     <tr>
-                                        <td>/tables.html</td>
-                                        <td>Shows the API for the website</td>
+                                        <td>/getSessionRaw/&#60session_id&#62</td>
+                                        <td>Download the raw data for the indicated session using an averaging for multiple records</td>
                                     </tr>
                                     <tr>
-                                        <td>/getRecord/&#60record_id&#62</td>
-                                        <td>record_id is a variable, the link replies all the data under record_id to a text file</td>
+                                        <td>/getSessionAnalyzed/&#60session_id&#62</td>
+                                        <td>Download the fully analyzed/smoothed data for the indicated session</td>
+                                    </tr>
+                                    </tr>
+                                    <tr>
+                                        <td>/createSession</td>
+                                        <td>Post method that takes in record data of the given form and creates a new session
+                                            {sess_desc: "",
+                                             accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
+                                             gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
+                                             device_id: "",
+                                             begin: long}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>/addToSession</td>
+                                        <td>Post method that takes in record data of the given form and adds the record to an existing session
+                                            {accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
+                                             gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
+                                             device_id: "",
+                                             sess_id: ""}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>/deleteSession</td>
+                                        <td>Delete method that takes in a session id and deletes the session and all associated record data
+                                            {sess_id: ""}
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
