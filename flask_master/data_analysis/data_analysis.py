@@ -26,14 +26,18 @@ def select_record(records_id):
 
 
 def download_record_raw(record_id):
-    accel_base = list(crud.select_accel(record_id))
+    accel_base = crud.select_accel(record_id)
     gyro_base = crud.select_gyro(record_id)
+    return point_alignment(accel_base, gyro_base)
 
+
+def point_alignment(accel_base, gyro_base):
+    accel_base = list(accel_base)
+    gyro_base = list(gyro_base)
     start = gyro_base[0][0] if gyro_base[0][0] > accel_base[0][0] else accel_base[0][0]
     # sync start times for the accel & gyro data
-    if len(accel_base) > 1:
-        while accel_base[1][0] < start:
-            accel_base.pop(0)
+    while len(accel_base) > 1 and accel_base[1][0] < start:
+        accel_base.pop(0)
 
     accel = []
     for p in accel_base:
@@ -81,30 +85,20 @@ def download_record_analyzed(record_id):
 
 
 def download_session_raw(session_id):
-    # todo: fill this in - this will do an averaging of all devices across timestamps (or output if only 1 device)
-
-    return
-
-
-def download_session_analyzed(session_id):
-    # todo: fill this in - analysis for an entire session, rather than just one record (may be the same)
     records = crud.get_all_records_from_session(session_id)
     record_accel_data = []
     record_gyro_data = []
     for record in records:
-        record_data = crud.get_record_data(record[0])
-        record_accel_data.append(record_data[0])
-        record_gyro_data.append(record_data[1])
+        record_accel_data.append(crud.select_accel(record[0]))
+        record_gyro_data.append(crud.select_gyro(record[0]))
     avg_accel = average_timeseries_data(record_accel_data)
     avg_gyro = average_timeseries_data(record_gyro_data)
-    # todo abstract record_raw
-
-    return
+    return point_alignment(avg_accel, avg_gyro)
 
 
 def average_timeseries_data(records, iteration=1):
     if len(records) == 1:
-        return  # todo
+        return records[0]
 
     record1 = list(records.pop())
     record2 = list(records.pop())
@@ -114,7 +108,14 @@ def average_timeseries_data(records, iteration=1):
         while record1[0] < record2[0]:
             record_avg.append(record1.pop())
 
-        record_avg.append(((record1.pop() * iteration) + record2.pop()) / (iteration + 1))
+        rec1 = record1.pop()
+        rec2 = record2.pop()[1:]
+        r_avg = [rec1[0]]
+        rec1 = rec1[1:]
+        for r1, r2 in zip(rec1, rec2):
+            r_avg.append(((r1 * iteration) + r2) / (iteration + 1))
+
+        record_avg.append(r_avg)
 
     while len(record1) > 0:
         record_avg.append(record1.pop())
@@ -125,6 +126,11 @@ def average_timeseries_data(records, iteration=1):
     rec_copy = records
     rec_copy.insert(0, record_avg)
     return average_timeseries_data(rec_copy, iteration + 1)
+
+
+def download_session_analyzed(session_id):
+    # todo: fill this in - analysis for an entire session, rather than just one record (may be the same)
+    return
 
 
 def process_accelerations(start, end, interval, points):
