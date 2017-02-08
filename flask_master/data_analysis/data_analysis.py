@@ -128,9 +128,26 @@ def average_timeseries_data(records, iteration=1):
     return average_timeseries_data(rec_copy, iteration + 1)
 
 
-def download_session_analyzed(session_id):
-    # todo: fill this in - analysis for an entire session, rather than just one record (may be the same)
-    return
+def download_session_analyzed(session_id=[]):
+    if session_id is None:
+        session_id = []
+
+    accel_base = list(crud.get_all_accel_points_from_session(session_id))
+    gyro_base = list(crud.get_all_gyro_points_from_session(session_id))
+
+    print(accel_base)
+    print(gyro_base)
+
+    start = 0
+    end = 0
+
+    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
+        start = max(accel_base[0][0], gyro_base[0][0])
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+
+    df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
+
+    return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
 
 def process_accelerations(start, end, interval, points):
