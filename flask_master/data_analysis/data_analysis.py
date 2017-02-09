@@ -36,6 +36,7 @@ def point_alignment(accel_base, gyro_base):
     gyro_base = list(gyro_base)
     start = gyro_base[0][0] if gyro_base[0][0] > accel_base[0][0] else accel_base[0][0]
     # sync start times for the accel & gyro data
+
     while len(accel_base) > 1 and accel_base[1][0] < start:
         accel_base.pop(0)
 
@@ -100,16 +101,16 @@ def average_timeseries_data(records, iteration=1):
     if len(records) == 1:
         return records[0]
 
-    record1 = list(records.pop())
-    record2 = list(records.pop())
+    record1 = list(records.pop(0))
+    record2 = list(records.pop(0))
     record_avg = []
 
     while len(record1) > 0 and len(record2) > 0:
         while record1[0] < record2[0]:
-            record_avg.append(record1.pop())
+            record_avg.append(record1.pop(0))
 
-        rec1 = record1.pop()
-        rec2 = record2.pop()[1:]
+        rec1 = record1.pop(0)
+        rec2 = record2.pop(0)[1:]
         r_avg = [rec1[0]]
         rec1 = rec1[1:]
         for r1, r2 in zip(rec1, rec2):
@@ -118,10 +119,10 @@ def average_timeseries_data(records, iteration=1):
         record_avg.append(r_avg)
 
     while len(record1) > 0:
-        record_avg.append(record1.pop())
+        record_avg.append(record1.pop(0))
 
     while len(record2) > 0:
-        record_avg.append(record2.pop())
+        record_avg.append(record2.pop(0))
 
     rec_copy = records
     rec_copy.insert(0, record_avg)
