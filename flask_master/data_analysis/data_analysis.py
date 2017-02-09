@@ -3,7 +3,6 @@ Created on Oct 15, 2016
 
 @author: yangr
 """
-import pandas as pd
 import numpy as np
 import decimal as dc
 import math
@@ -11,10 +10,21 @@ from flask_server import crud
 
 import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
-
+import data_analysis.data_clean as data_clean
+import data_analysis.discrete_analysis as discrete_analysis
 
 def select_record(record_id):
     return crud.get_record(record_id)
+
+
+def discrete_analysis(record_id):
+    clean = data_clean.Data_clean()
+    analysis = discrete_analysis.Discrete_analysis()
+    data = select_record(record_id)
+    averaged_data = clean.clean_data_by_averaging(data)
+    synced_data = clean.sync_thresholds(averaged_data)
+    analyzed_data = analysis.analyze(synced_data)
+    return analyzed_data
 
 
 def download_record_raw(record_id=[]):
