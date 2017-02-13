@@ -16,16 +16,20 @@ class MaxCollection(object):
         self._max_pos_exc = dc.Decimal(0.0)
         self._max_accel = dc.Decimal(0.0)
         self._max_accel_diff = dc.Decimal(0.0)
-    
-    def get_max_vel(self): 
+
+    def get_max_vel(self):
         return self._max_vel
-    def get_max_neg_exc(self): 
+
+    def get_max_neg_exc(self):
         return self._max_neg_exc
-    def get_max_pos_exc(self): 
+
+    def get_max_pos_exc(self):
         return self._max_pos_exc
-    def get_max_accel(self): 
+
+    def get_max_accel(self):
         return self._max_accel
-    def get_max_accel_diff(self): 
+
+    def get_max_accel_diff(self):
         return self._max_accel_diff
 
 
@@ -77,7 +81,7 @@ class PitchCollection(MaxCollection):
         self._max_pos_exc = dc.Decimal(16.5)
         self._max_accel = dc.Decimal(300.0)
         self._max_accel_diff = dc.Decimal(3000.0)
-        
+
 
 class YawCollection(MaxCollection):
     def __init__(self):
