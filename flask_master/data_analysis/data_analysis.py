@@ -12,7 +12,7 @@ from flask_server import crud
 import data_analysis.kinematics_keeper as kk
 import data_analysis.max_collection_factories as mcf
 import data_analysis.data_clean as data_clean
-import data_analysis.discrete_analysis as discrete_analysis
+import data_analysis.discrete_analysis as dis
 
 def select_record(record_id):
     return crud.get_record(record_id)
@@ -20,9 +20,8 @@ def select_record(record_id):
 
 def discrete_analysis(record_id, decimals=8):
     try:
-   
         clean = data_clean.Data_clean()
-        analysis = discrete_analysis.Discrete_analysis()
+        analysis = dis.Discrete_analysis()
         data = np.array(select_record(record_id))
         averaged_data = clean.clean_data_by_averaging(data)
         synced_data = clean.sync_thresholds(averaged_data)
@@ -36,9 +35,11 @@ def download_record_analyzed_discrete(record_id=[]):
     if len(record_id) == 0:
         return 'Invalid record id'
     result = discrete_analysis(record_id)
+    if result is None:
+        return pd.DataFrame(np.zeros(1,8)-1)
     df = pd.DataFrame(np.array(result))
-    return df.to_csv(index=False, header=False)
-    pass
+    return df
+    
 
 def download_record_raw(record_id=[]):
     accel_base = list(crud.select_accel(record_id))

@@ -5,12 +5,12 @@ Created on Feb 9, 2017
 '''
 import numpy as np
 
-class Discrete_analysis(object):
+class Discrete_analysis():
     '''
     Expect data does not have timestamp, and it is filled with correct number
     '''
 
-    def __init__(self, params):
+    def __init__(self):
         '''
         Constructor
         '''
