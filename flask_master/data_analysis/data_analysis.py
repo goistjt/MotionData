@@ -18,15 +18,27 @@ def select_record(record_id):
     return crud.get_record(record_id)
 
 
-def discrete_analysis(record_id):
-    clean = data_clean.Data_clean()
-    analysis = discrete_analysis.Discrete_analysis()
-    data = select_record(record_id)
-    averaged_data = clean.clean_data_by_averaging(data)
-    synced_data = clean.sync_thresholds(averaged_data)
-    analyzed_data = analysis.analyze(synced_data)
-    return analyzed_data
+def discrete_analysis(record_id, decimals=8):
+    try:
+   
+        clean = data_clean.Data_clean()
+        analysis = discrete_analysis.Discrete_analysis()
+        data = np.array(select_record(record_id))
+        averaged_data = clean.clean_data_by_averaging(data)
+        synced_data = clean.sync_thresholds(averaged_data)
+        analyzed_data = analysis.analyze(synced_data)
+        return analyzed_data.round(decimals)
+    except:
+        print('An error occurred in discrete analysis.')
 
+
+def download_record_analyzed_discrete(record_id=[]):
+    if len(record_id) == 0:
+        return 'Invalid record id'
+    result = discrete_analysis(record_id)
+    df = pd.DataFrame(np.array(result))
+    return df.to_csv(index=False, header=False)
+    pass
 
 def download_record_raw(record_id=[]):
     accel_base = list(crud.select_accel(record_id))
@@ -270,5 +282,4 @@ def process_for_next_set(keeps_list, acc_time, next_set):
             
             else:
                 next_set.append(curr_keep.get_position())
-            
     return next_set
