@@ -148,7 +148,7 @@ def create_session():
          accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
-         device_id: "",
+         device_name: "",
          begin: long} """
 
     b64 = base64.b64decode(request.data)
