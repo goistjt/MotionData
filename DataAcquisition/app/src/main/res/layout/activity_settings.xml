@@ -45,8 +45,30 @@
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:hint="# Milliseconds"
-            android:textSize="16sp"
-            android:inputType="number"/>
+            android:inputType="number"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Device Name: "
+            android:textSize="16sp" />
+
+        <EditText
+            android:id="@+id/device_name_edit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:hint="Name this device"
+            android:textSize="16sp" />
     </LinearLayout>
 
 </LinearLayout>

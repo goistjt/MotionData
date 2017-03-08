@@ -19,10 +19,13 @@ import butterknife.ButterKnife;
 public class SettingsActivity extends AppCompatActivity {
     public static final String SETTINGS_IP = "IP_ADDRESS";
     public static final String SETTINGS_RATE = "POLL_RATE";
+    public static final String SETTINGS_NAME = "DEVICE_NAME";
     @BindView(R.id.ip_address_edit)
     EditText mIpAddressView;
     @BindView(R.id.sample_rate_edit)
     EditText mSampleRateView;
+    @BindView(R.id.device_name_edit)
+    EditText mDeviceName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,6 +40,10 @@ public class SettingsActivity extends AppCompatActivity {
         int rate = settings.getInt(SETTINGS_RATE, -1);
         if (rate != -1) {
             mSampleRateView.setText(String.valueOf(rate));
+        }
+        String name = settings.getString(SETTINGS_NAME, null);
+        if (name != null) {
+            mDeviceName.setText(name);
         }
     }
 
@@ -61,6 +68,9 @@ public class SettingsActivity extends AppCompatActivity {
                     if (rate > 0) {
                         editor.putInt(SETTINGS_RATE, Integer.parseInt(mSampleRateView.getText().toString()));
                     }
+                }
+                if (!mDeviceName.getText().toString().isEmpty()) {
+                    editor.putString(SETTINGS_NAME, mDeviceName.getText().toString());
                 }
                 editor.apply();
                 startActivity(new Intent(this, MainActivity.class));
