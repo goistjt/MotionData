@@ -153,7 +153,7 @@ class Crud(object):
     
     def get_all_gyro_points_from_session(self, session_id):
         cursor = self.conn.cursor()
-        cursor.callproc('select_all_gyro_from_session',(session_id))
+        cursor.callproc('select_all_gyro_from_session', [session_id])
         return cursor.fetchall()
 
     # ********* accel_points ********#
@@ -181,7 +181,7 @@ class Crud(object):
     
     def get_all_accel_points_from_session(self, session_id):
         cursor = self.conn.cursor()
-        cursor.callproc('select_all_accel_from_session',(session_id))
+        cursor.callproc('select_all_accel_from_session', [session_id])
         return cursor.fetchall()
 
     # ********* integration ********#

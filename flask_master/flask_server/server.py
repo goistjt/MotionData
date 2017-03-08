@@ -101,8 +101,9 @@ def tables():
 @app.route("/getRecordRaw/<record_id>")
 def get_record_data_raw(record_id=[]):
     txt = da.download_record_raw(record_id)
+    filename = "record_raw_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
-                'filename': 'record.txt',
+                'filename': filename,
                 'mimetype': 'text/csv',
                 'data': txt}
     return jsonify(response)
@@ -111,8 +112,9 @@ def get_record_data_raw(record_id=[]):
 @app.route("/getRecordAnalyzed/<record_id>")
 def get_record_data_analyzed(record_id=[]):
     txt = da.download_record_analyzed(record_id)
+    filename = "record_analyzed_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
-                'filename': 'record.txt',
+                'filename': filename,
                 'mimetype': 'text/csv',
                 'data': txt}
     return jsonify(response)
@@ -121,8 +123,9 @@ def get_record_data_analyzed(record_id=[]):
 @app.route("/getSessionRaw/<session_id>")
 def get_session_data_raw(session_id=[]):
     txt = da.download_session_raw(session_id)
+    filename = "session_raw_{}_{}.txt".format(session_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
-                'filename': 'session.txt',
+                'filename': filename,
                 'mimetype': 'text/csv',
                 'data': txt}
     return jsonify(response)
@@ -131,8 +134,9 @@ def get_session_data_raw(session_id=[]):
 @app.route("/getSessionAnalyzed/<session_id>")
 def get_session_data_analyzed(session_id=[]):
     txt = da.download_session_analyzed(session_id)
+    filename = "session_analyzed_{}_{}.txt".format(session_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
-                'filename': 'session.txt',
+                'filename': filename,
                 'mimetype': 'text/csv',
                 'data': txt}
     return jsonify(response)
