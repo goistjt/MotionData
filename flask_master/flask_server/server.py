@@ -148,6 +148,7 @@ def create_session():
          accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
+         device_name: "",
          begin: long} """
 
     b64 = base64.b64decode(request.data)
@@ -158,14 +159,17 @@ def create_session():
     accel_data = data['accelModels']
     gyro_data = data['gyroModels']
     device_id = data['device_id']
+    device_name = data['device_name']
     start = data['begin']
 
-    if desc is None or accel_data is None or gyro_data is None or device_id is None or start is None:
+    if desc is None or accel_data is None or gyro_data is None or device_id is None \
+            or device_name is None or start is None:
         raise InvalidUsage(
             "Unable to send request without {}.".format(
                 "description" if desc is None else "accel data" if accel_data is None
                 else "gyro data" if gyro_data is None else "device ID" if device_id is None
-                else "start time" if start is None else "Error: Nothing was left empty"),
+                else "device name" if device_name is None else "start time" if start is None
+                else "Error: Nothing was left empty"),
             status_code=701)
 
     is_possible_injection(desc)
@@ -174,6 +178,11 @@ def create_session():
 
     sess_id = crud.create_session(desc, start)
     rec_id = crud.create_record(sess_id, device_id)
+    device_name_db = crud.get_device_name(device_id)
+    if device_name_db is None:
+        crud.create_device_entry(device_id, device_name)
+    if device_name != device_name_db:
+        crud.update_device_entry(device_id, device_name)
 
     gyro_points = []
     accel_points = []
@@ -221,6 +230,7 @@ def add_to_session():
     """ {accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
+         device_name: "",
          sess_id: ""} """
     b64 = base64.b64decode(request.data)
     request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
@@ -230,18 +240,25 @@ def add_to_session():
     accel_data = data['accelModels']
     gyro_data = data['gyroModels']
     device_id = data['device_id']
+    device_name = data['device_name']
 
-    if sess_id is None or accel_data is None or gyro_data is None or device_id is None:
+    if sess_id is None or accel_data is None or gyro_data is None \
+            or device_name is None or device_id is None:
         raise InvalidUsage(
             "Unable to send request without {}.".format(
                 "session id" if sess_id is None else "accel data" if accel_data is None
                 else "gyro data" if gyro_data is None else "device ID" if device_id is None
-                else "Error: Nothing was left empty"),
+                else "device name" if device_name is None else "Error: Nothing was left empty"),
             status_code=701)
 
     print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
 
     rec_id = crud.create_record(sess_id, device_id)
+    device_name_db = crud.get_device_name(device_id)
+    if device_name_db is None:
+        crud.create_device_entry(device_id, device_name)
+    if device_name != device_name_db:
+        crud.update_device_entry(device_id, device_name)
 
     gyro_points = []
     accel_points = []
