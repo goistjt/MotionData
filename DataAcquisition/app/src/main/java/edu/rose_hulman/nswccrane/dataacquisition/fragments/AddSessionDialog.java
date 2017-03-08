@@ -3,18 +3,25 @@ package edu.rose_hulman.nswccrane.dataacquisition.fragments;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -45,6 +52,7 @@ import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.J
  */
 public class AddSessionDialog extends DialogFragment implements View.OnClickListener {
     public static final String TAG = "ADD_SESSION_DIALOG";
+    private static final String LOCAL_FILE_PREFIX = "Sess_";
     ListAdapter mListAdapter;
     private Activity mRootActivity;
     private SessionModel motionDataPostBody;
@@ -54,6 +62,8 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
     private Button sessionSelector;
     private Button timeSelector;
     private Button submitButton;
+    private ToggleButton toggleButton;
+    private boolean localSave;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,6 +101,10 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
         submitButton.setOnClickListener(this);
         submitButton.setEnabled(false);
         sessionSelector.setEnabled(false);
+        toggleButton = ((ToggleButton) v.findViewById(R.id.localExport));
+        if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
+            toggleButton.setEnabled(false);
+        }
     }
 
     @Override
@@ -150,7 +164,27 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
                             }
                         }).show();
                 break;
+            case R.id.localExport:
+                ToggleButton localToggle = (ToggleButton) v;
+                localSave = localToggle.isChecked();
+                break;
         }
+    }
+
+    private static boolean isExternalStorageReadOnly() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isExternalStorageAvailable() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(extStorageState)) {
+            return true;
+        }
+        return false;
     }
 
     public void setActivity(Activity applicationContext) {
@@ -161,21 +195,38 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
 
         @Override
         protected Response doInBackground(String... params) {
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .connectTimeout(10, TimeUnit.SECONDS)
-                    .writeTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
-                    .readTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
-                    .build();
-            RequestBody body = RequestBody.create(JSON, StringComressor.compressString(params[1]));
-            Request request = new Request.Builder()
-                    .url(params[0])
-                    .post(body)
-                    .build();
-            try {
-                return client.newCall(request).execute();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+            if(localSave){
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .connectTimeout(10, TimeUnit.SECONDS)
+                        .writeTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                        .readTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
+                        .build();
+                RequestBody body = RequestBody.create(JSON, StringComressor.compressString(params[1]));
+                Request request = new Request.Builder()
+                        .url(params[0])
+                        .post(body)
+                        .build();
+                try {
+                    return client.newCall(request).execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+            else {
+                try {
+                    File myExternalFile = new File(mRootActivity.getExternalFilesDir("sessions"),
+                            LOCAL_FILE_PREFIX.concat(String.valueOf(motionDataPostBody.getSessId()))
+                    );
+                    FileOutputStream fos = new FileOutputStream(myExternalFile);
+                    fos.write(StringComressor.compressString(params[1]).getBytes());
+                    fos.close();
+                    return null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // TODO: Return an error code or display an error toast or something
+                    return null;
+                }
             }
         }
     }
