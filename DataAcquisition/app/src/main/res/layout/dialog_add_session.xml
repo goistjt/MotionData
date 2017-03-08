@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -19,6 +20,16 @@
         android:background="@android:drawable/btn_dropdown"
         android:gravity="start"
         android:text="Select a recording period." />
+
+    <ToggleButton
+        android:text="Wireless"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/localExport"
+        android:textOn="Local Export For USB"
+        android:textOff="Wireless Upload"
+        tools:text="Wireless"
+        android:checked="false" />
 
     <Button
         android:id="@+id/add_sess_submit_button"
