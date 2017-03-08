@@ -102,6 +102,26 @@ class Crud(object):
         m.update(sha_input.encode('utf-8'))
         return m.hexdigest()
 
+    # ********* device ********* #
+    def create_device_entry(self, device_id, device_name):
+        query = "INSERT INTO DeviceNames" \
+                "(device_name, device_id)" \
+                "VALUES (%s, %s)"
+        args = [device_name, device_id]
+        return self.insert(query, args)
+
+    def update_device_entry(self, device_id, device_name):
+        query = "UPDATE DeviceNames" \
+                "SET device_name = %s" \
+                "WHERE device_id = %s"
+        args = [device_name, device_id]
+        return self.insert(query, args)
+
+    def get_device_name(self, device_id):
+        query = "SELECT device_name FROM DeviceNames WHERE device_id = %s"
+        args = [device_id]
+        return self.insert(query, args)
+
     # ********* gyro_points ********#
     def insert_gyro_points(self, record_id, timestamp, roll, pitch, yaw):
         query = "INSERT INTO GyroPoints" \
@@ -165,6 +185,7 @@ class Crud(object):
         return cursor.fetchall()
 
     # ********* integration ********#
+    # TODO: you can just call delete on the session entry, the foreign keys will cascade the delete to the other tables
     def delete_entire_session(self, session_id):
         try:
             cursor = self.conn.cursor()
