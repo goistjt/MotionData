@@ -150,3 +150,41 @@ WHERE GyroPoints.record_id = record AND (AccelPoints.record_id = record or Accel
 ORDER BY timestamp ASC;
 END$$
 DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `create_device_entry`(
+	device_id_in varchar(255),
+    device_name_in varchar(255)
+)
+BEGIN
+START TRANSACTION;
+INSERT INTO DeviceNames (device_name, device_id) VALUES(device_name_in, device_id_in);
+COMMIT;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_device_entry`(
+	device_id_in varchar(255),
+    device_name_in varchar(255)
+)
+BEGIN
+START TRANSACTION;
+UPDATE DeviceNames SET device_name = device_name_in WHERE device_id = device_id_in;
+COMMIT;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_device_name`(
+	device_id_in varchar(255)
+)
+BEGIN
+START TRANSACTION;
+SELECT device_name FROM DeviceNames WHERE device_id = device_id_in LIMIT 1;
+COMMIT;
+END$$
+DELIMITER ;
+
+
+
