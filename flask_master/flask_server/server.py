@@ -53,7 +53,7 @@ def get_html(sessions):
             rid = r[0]
             dev_id = r[2]
             dev_name = crud.get_device_name(dev_id)
-            if dev_name is None or dev_name[0] is None:
+            if dev_name == () or dev_name[0] == '':
                 dev_name = dev_id
             else:
                 dev_name = dev_name[0]
@@ -182,13 +182,13 @@ def create_session():
 
     print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
 
-    sess_id = crud.create_session(desc, start)
-    rec_id = crud.create_record(sess_id, device_id)
     device_name_db = crud.get_device_name(device_id)
-    if device_name_db is None:
+    if device_name_db == ():
         crud.create_device_entry(device_id, device_name)
     if device_name != device_name_db:
         crud.update_device_entry(device_id, device_name)
+    sess_id = crud.create_session(desc, start)
+    rec_id = crud.create_record(sess_id, device_id)
 
     gyro_points = []
     accel_points = []
@@ -259,12 +259,12 @@ def add_to_session():
 
     print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
 
-    rec_id = crud.create_record(sess_id, device_id)
     device_name_db = crud.get_device_name(device_id)
-    if device_name_db is None:
+    if device_name_db == ():
         crud.create_device_entry(device_id, device_name)
     if device_name != device_name_db:
         crud.update_device_entry(device_id, device_name)
+    rec_id = crud.create_record(sess_id, device_id)
 
     gyro_points = []
     accel_points = []
@@ -317,7 +317,7 @@ def delete_session():
 
 @app.route("/getSessions/<device_id>")
 def get_sessions(device_id):
-    result = list(crud.get_sessions(device_id))
+    result = list(crud.get_sessions_related_to_device(device_id))
     ret_list = []
     for row in result:
         row = list(row)

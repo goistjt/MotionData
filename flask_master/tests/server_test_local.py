@@ -32,6 +32,7 @@ class FlaskTestCase(unittest.TestCase):
 
     def test_create_delete_session(self):
         create_data = {"device_id": "oqewiruo_t1",
+                       "device_name": "test_device",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
                        "sess_desc": "This is a description that I'm typing for no reason whatsoever",
@@ -52,7 +53,8 @@ class FlaskTestCase(unittest.TestCase):
         # self.assertIsNotNone(resp_json)
 
     def test_create_add_delete_session(self):
-        create_data = {"device_id": "oqewiruo_t2",
+        create_data = {"device_id": "oqewiruo_t1",
+                       "device_name": "test_device_1",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
                        "sess_desc": "This is a description that I'm typing for no reason whatsoever",
@@ -65,7 +67,8 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
 
         add_data = {"sess_id": session_id,
-                    "device_id": "oqewiruo_t2_2",
+                    "device_id": "oqewiruo_t2",
+                    "device_name": "test_device_2",
                     "gyroModels": [{"time_val": 123876098235, "roll_val": 2, "pitch_val": 2, "yaw_val": 2}],
                     "accelModels": [{"time_val": 123876098235, "x_val": 2, "y_val": 2, "z_val": 2}],
                     "sess_desc": "This is a description that I'm typing for no reason whatsoever too"}

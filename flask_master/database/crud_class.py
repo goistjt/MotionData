@@ -60,7 +60,7 @@ class Crud(object):
         return self.call_procedure('get_all_records_from_session', args)
     
     def get_record(self, record_id):
-        args = (record_id)
+        args = [record_id]
         return self.call_procedure('select_record', args)
         
     def get_session_id(self, description, starting_time):
@@ -87,6 +87,23 @@ class Crud(object):
         m = hashlib.sha1()
         m.update(sha_input.encode('utf-8'))
         return m.hexdigest()
+
+    # ********* device ******** #
+    def create_device_entry(self, device_id, device_name):
+        args = (device_id, device_name)
+        return self.call_procedure('create_device_entry', args)
+
+    def update_device_entry(self, device_id, device_name):
+        args = (device_id, device_name)
+        return self.call_procedure('update_device_entry', args)
+
+    def get_device_name(self, device_id):
+        args = [device_id]
+        name = self.call_procedure('get_device_name', args)
+        if len(name) == 0:
+            return name
+        else:
+            return name[0]
 
     # ********* gyro_points ********#
     '''
