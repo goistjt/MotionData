@@ -51,6 +51,12 @@ def get_html(sessions):
         recs = ""
         for r in records:
             rid = r[0]
+            dev_id = r[2]
+            dev_name = crud.get_device_name(dev_id)
+            if dev_name is None or dev_name[0] is None:
+                dev_name = dev_id
+            else:
+                dev_name = dev_name[0]
             curr = """<tr style="display: table-row;">\n
                        <td>{}</td>\n
                        <td>\n
@@ -59,7 +65,7 @@ def get_html(sessions):
                            <input id="analyzed_button" type="submit" name="ar_{}"
                                onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
                        </td>\n
-                   </tr>\n""".format(rid, rid, rid, rid, rid)
+                   </tr>\n""".format(dev_name, rid, rid, rid, rid)
             recs += curr
 
         sess = """<tr class="master">\n
