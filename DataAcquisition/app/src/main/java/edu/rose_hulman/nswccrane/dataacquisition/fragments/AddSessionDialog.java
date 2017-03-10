@@ -37,6 +37,7 @@ import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
 
 import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_IP;
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_NAME;
 import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
 
 /**
@@ -97,7 +98,8 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
         switch (v.getId()) {
             case R.id.add_sess_submit_button:
                 motionDataPostBody
-                        .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString());
+                        .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
+                        .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_NAME, ""));
                 String jsonBody = new Gson().toJson(motionDataPostBody);
                 String ip = mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_IP, null);
                 if (ip == null || ip.isEmpty()) {
