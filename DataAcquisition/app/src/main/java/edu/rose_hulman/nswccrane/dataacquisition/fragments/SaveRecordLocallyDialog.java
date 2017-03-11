@@ -52,11 +52,12 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
 
     public static final String TAG = "SAVE_RECORD_LOCALLY_DIALOG";
     private static final String LOCAL_FILE_PREFIX = "Sess_";
+    private static final String SEPARATOR = "_";
     private ListAdapter mListAdapter;
     private Activity mRootActivity;
     private MotionCollectionDBHelper motionDB;
     private SessionModel motionDataPostBody;
-    private EditText mSessionDescriptionText;
+    private EditText mRecordNameText;
 
     @Override
     public void onAttach(Context context) {
@@ -81,7 +82,7 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
     private void initUIElements(View v) {
         v.findViewById(R.id.save_record_locally_submit_button).setOnClickListener(this);
         v.findViewById(R.id.collection_time_selector).setOnClickListener(this);
-        mSessionDescriptionText = (EditText) v.findViewById(R.id.description_edit_text);
+        mRecordNameText = (EditText) v.findViewById(R.id.name_edit_text);
     }
 
     @Override
@@ -89,11 +90,12 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
         switch (v.getId()) {
             case R.id.save_record_locally_submit_button:
                 String deviceUuid = new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString();
+                String recordName = mRecordNameText.getText().toString();
                 motionDataPostBody
                         .setDeviceId(deviceUuid)
-                        .setSessDesc(mSessionDescriptionText.getText().toString());
+                        .setSessDesc(recordName);
                 String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostSaveRecordLocally().execute(deviceUuid, jsonBody);
+                new PostSaveRecordLocally().execute(recordName, jsonBody);
                 dismiss();
                 break;
             case R.id.collection_time_selector:
@@ -134,8 +136,8 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
         protected Boolean doInBackground(String... params) {
             try {
                 String timeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
-                File myExternalFile = new File(mRootActivity.getExternalFilesDir("sessions"),
-                        LOCAL_FILE_PREFIX.concat(String.valueOf(params[0]))
+                File myExternalFile = new File(mRootActivity.getExternalFilesDir("records"),
+                        LOCAL_FILE_PREFIX.concat(String.valueOf(params[0])).concat(SEPARATOR)
                         .concat(timeStamp)
                 );
                 FileOutputStream fos = new FileOutputStream(myExternalFile);
