@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
@@ -45,6 +46,7 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
         builder.setView(v);
         v.findViewById(R.id.new_session_button).setOnClickListener(this);
         v.findViewById(R.id.add_to_session_button).setOnClickListener(this);
+        v.findViewById(R.id.save_record_locally_button).setOnClickListener(this);
         return builder.create();
     }
 
@@ -65,8 +67,36 @@ public class ExportDialog extends DialogFragment implements View.OnClickListener
                     (new AddSessionTask()).execute(String.format("http://%s:80/getSessions/", ip) + (new DeviceUuidFactory(mRootActivity)).getDeviceUuid().toString());
                 }
                 break;
+            case R.id.save_record_locally_button:
+                if (!isExternalStorageAvailable() || isExternalStorageReadOnly()) {
+                    Toast.makeText(mRootActivity, "No External Storage Available. Cannot Save To Device.", Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                else{
+                    SaveRecordLocallyDialog saveRecordLocallyDialog = new SaveRecordLocallyDialog();
+                    saveRecordLocallyDialog.setActivity(mRootActivity);
+                    saveRecordLocallyDialog.show(mRootActivity.getFragmentManager(), SaveRecordLocallyDialog.TAG);
+
+                }
+                break;
         }
         dismiss();
+    }
+
+    private static boolean isExternalStorageReadOnly() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isExternalStorageAvailable() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(extStorageState)) {
+            return true;
+        }
+        return false;
     }
 
     private class AddSessionTask extends AsyncTask<String, Void, Response> {

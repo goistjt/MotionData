@@ -10,6 +10,14 @@
         android:orientation="horizontal">
 
         <Button
+            android:text="Save Record Locally"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:id="@+id/save_record_locally_button"
+            android:layout_weight="1" />
+
+        <Button
             android:id="@+id/new_session_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -25,4 +33,5 @@
             android:layout_weight="1"
             android:text="@string/add_to_session" />
     </LinearLayout>
+
 </LinearLayout>
