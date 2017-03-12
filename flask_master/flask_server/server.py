@@ -8,6 +8,11 @@ from pathlib import Path
 import datetime
 import pandas as pd
 
+import sys
+import string
+import os
+import subprocess
+
 from data_analysis import data_analysis as da
 from flask_server import app, crud, data_lock, upload_files
 
@@ -58,11 +63,15 @@ def get_html(sessions):
                                onclick="clicked_raw('{}', 'r')" value="Download Raw Data" />\n
                            <input id="analyzed_button" type="submit" name="ar_{}"
                                onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
+                           <input type="file" id="ufr_{}" />
+                           <input id="upload_button" type="submit" name="ur_{}"
+                               onclick="clicked_upload('{}', 'r')" value="Upload Record" />\n
                        </td>\n
-                   </tr>\n""".format(rid, rid, rid, rid, rid)
+                   </tr>\n""".format(rid, rid, rid, rid, rid, rid, rid, rid)
             recs += curr
 
-        sess = """<tr class="master">\n
+        sess = """
+                   <tr class="master">\n
                    <td>{}</td>\n
                    <td>{}</td>\n
                    <td>{}</td>\n
@@ -71,11 +80,14 @@ def get_html(sessions):
                        onclick="clicked_raw('{}', 's')" value="Download Raw Averaged Session" />\n
                        <input id="analyzed_button" type="submit" name="as_{}"
                        onclick="clicked_analyzed('{}', 's')" value="Download Analyzed Session" />\n
+                       <input type="file" id="ufs_{}" />
+                       <input id="upload_button" type="submit" name="us_{}"
+                       onclick="clicked_upload('{}', 's')" value="Upload Record" />\n
                    </td>\n
                    <td><div class="arrow"></div></td>\n
                </tr>\n
                <tr style="display: none;">\n
-                   <td colspan="5">\n
+                   <td colspan="6">\n
                        <table id="records" class="table table-bordered table-hover table-striped">\n
                            <thead>\n
                                <tr>\n
@@ -88,7 +100,8 @@ def get_html(sessions):
                            </tbody>\n
                        </table>\n
                    </td>\n
-               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
+               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id,
+                                 recs)
         html += sess
     return html
 
@@ -152,7 +165,7 @@ def create_session():
          begin: long} """
 
     b64 = base64.b64decode(request.data)
-    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
+    request_data = str(zlib.decompress(b64, 16 + zlib.MAX_WBITS), "utf-8")
     data = json.loads(request_data)
 
     desc = data['sess_desc']
@@ -233,7 +246,7 @@ def add_to_session():
          device_name: "",
          sess_id: ""} """
     b64 = base64.b64decode(request.data)
-    request_data = str(zlib.decompress(b64, 16+zlib.MAX_WBITS), "utf-8")
+    request_data = str(zlib.decompress(b64, 16 + zlib.MAX_WBITS), "utf-8")
     data = json.loads(request_data)
 
     sess_id = data['sess_id']
@@ -318,6 +331,17 @@ def get_sessions(device_id):
         row[2] = datetime.datetime.fromtimestamp(row[2] / 1e3)
         ret_list.append(dict(id=row[0], desc=row[1], date=row[2]))
     return jsonify(sessions=ret_list)
+
+
+@app.route("/updateAndroidFiles")
+def update_android_files():
+    # TODO: Find out how to generalize / determine the location of adb below if possible
+    adb_location = 'C:/Android/sdk/platform-tools/adb'
+    repository_dir_location = os.path.dirname(os.path.realpath(__file__)) + "/android_files"
+    cmd = adb_location + ' pull sdcard/Android/data/edu.rose_hulman.nswccrane.dataacquisition/files/records ' + \
+        repository_dir_location
+    subprocess.check_output(cmd.split())
+    return jsonify(status_code=200)
 
 
 # used to check for sql injection

@@ -81,6 +81,12 @@
                 </div>
                 <!-- /.row -->
 
+                <div>
+                    <input id="update_button" type="submit" name="update_files"
+                           onclick="clicked_update_android_files()" value="Update Pulled Android Collection Files" />
+                    <br/>
+                </div>
+
                 <div class="col-lg-12">
                     <div class="panel panel-default">
                         <div class="panel-heading">
@@ -166,6 +172,45 @@
                     link.click();
                 }});
         }
+
+        function clicked_upload(id, rec_type) {
+            var receivedText = "";
+            var input = document.getElementById('uf'+rec_type+'_'+id);
+            if (!input){
+                alert("System Error. We apologize for the inconvenience.");
+            }
+            else if (!input.files) {
+                alert("This browser doesn't seem to support the `files` property of file inputs.");
+            }
+            else if (!input.files[0]) {
+                alert("Please select a file before clicking 'Load'");
+            }
+            else {
+                var file = input.files[0];
+                var fr = new FileReader();
+                fr.onload = function(e) {
+                    var contents = e.target.result;
+                    alert( "Got the file.n"
+                        +"name: " + fr.name + "n"
+                        +"type: " + fr.type + "n"
+                        +"size: " + fr.size + " bytesn"
+                        + "content: " + contents);
+                };
+                fr.readAsText(file);
+                //fr.readAsDataURL(file);
+                //contents.substr(1, contents.indexOf("n")
+            }
+        }
+
+        function clicked_update_android_files(){
+            var server_endpoint = '/updateAndroidFiles';
+            $.ajax({headers : {},
+                url: server_endpoint,
+                success: function (data) {
+                    alert("Update Successful!");
+                }});
+        }
+
     </script>
 
 </body>
