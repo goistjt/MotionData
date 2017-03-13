@@ -14,6 +14,7 @@ public class SessionModel {
     private String sess_desc;
     private long begin;
     private long sess_id;
+    private String device_name;
 
     public SessionModel(List<AccelDataModel> accels, List<GyroDataModel> gyros) {
         accelModels = accels;
@@ -49,5 +50,14 @@ public class SessionModel {
 
     public void setSessId(long sessId) {
         this.sess_id = sessId;
+    }
+
+    public SessionModel setDeviceName(String deviceName) {
+        this.device_name = deviceName;
+        return this;
+    }
+
+    public String getDeviceName() {
+        return device_name;
     }
 }
