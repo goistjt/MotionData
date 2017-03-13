@@ -51,9 +51,9 @@ class Crud(object):
         query = "SELECT * FROM Session"
         return self.read_all(query)
     
-    def get_sessions_related_to_device(self, device_id):
+    def get_sessions_not_related_to_device(self, device_id):
         args = [device_id]
-        return self.call_procedure('get_sessions_related_to_device', args)
+        return self.call_procedure('get_sessions_not_related_to_device', args)
 
     def get_all_records_from_session(self, session_id):
         args = [session_id]

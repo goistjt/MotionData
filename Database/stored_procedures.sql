@@ -44,11 +44,11 @@ END$$
 DELIMITER ;
 
 DELIMITER $$
-CREATE DEFINER=`root`@`localhost` PROCEDURE `get_sessions_related_to_device`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `get_sessions_not_related_to_device`(
 device varchar(255)
 )
 BEGIN
-SELECT * FROM Session WHERE id in (SELECT session_id FROM Records WHERE device_id = device);
+SELECT * FROM Session WHERE id in (SELECT session_id FROM Records WHERE device_id != device);
 END$$
 DELIMITER ;
 
