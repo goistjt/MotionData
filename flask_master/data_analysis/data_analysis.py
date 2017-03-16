@@ -76,9 +76,9 @@ def download_record_analyzed(record_id):
     start = 0
     end = 0
 
-    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
-        start = max(accel_base[0][0], gyro_base[0][0])
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+    if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
+        start = max(accel_base[0][0], gyro_base[0][0]) - 40
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
 
@@ -142,7 +142,7 @@ def download_session_analyzed(session_id=[]):
     start = 0
     end = 0
 
-    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
+    if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
         start = max(accel_base[0][0], gyro_base[0][0])
         end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
 

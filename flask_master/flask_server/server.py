@@ -105,7 +105,7 @@ def tables():
 
 
 @app.route("/getRecordRaw/<record_id>")
-def get_record_data_raw(record_id=[]):
+def get_record_data_raw(record_id):
     txt = da.download_record_raw(record_id)
     filename = "record_raw_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -116,7 +116,7 @@ def get_record_data_raw(record_id=[]):
 
 
 @app.route("/getRecordAnalyzed/<record_id>")
-def get_record_data_analyzed(record_id=[]):
+def get_record_data_analyzed(record_id):
     txt = da.download_record_analyzed(record_id)
     filename = "record_analyzed_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -127,7 +127,7 @@ def get_record_data_analyzed(record_id=[]):
 
 
 @app.route("/getSessionRaw/<session_id>")
-def get_session_data_raw(session_id=[]):
+def get_session_data_raw(session_id):
     txt = da.download_session_raw(session_id)
     filename = "session_raw_{}_{}.txt".format(session_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -138,7 +138,7 @@ def get_session_data_raw(session_id=[]):
 
 
 @app.route("/getSessionAnalyzed/<session_id>")
-def get_session_data_analyzed(session_id=[]):
+def get_session_data_analyzed(session_id):
     txt = da.download_session_analyzed(session_id)
     filename = "session_analyzed_{}_{}.txt".format(session_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -317,7 +317,7 @@ def delete_session():
 
 @app.route("/getSessions/<device_id>")
 def get_sessions(device_id):
-    result = list(crud.get_sessions_related_to_device(device_id))
+    result = list(crud.get_sessions_not_related_to_device(device_id))
     ret_list = []
     for row in result:
         row = list(row)
