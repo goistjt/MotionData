@@ -62,6 +62,13 @@
             <!-- /.navbar-collapse -->
         </nav>
 
+        <div>
+            <input id="update_button" type="submit" name="update_files"
+                   onclick="clicked_update_android_files()" value="Update Pulled Android Collection Files" />
+            <br/>
+            <p id="android_route" style="color:white;">Local Android Files Path: {{android_route|safe}}</p>
+        </div>
+
         <div id="page-wrapper">
 
             <div class="container-fluid">
@@ -80,12 +87,6 @@
                     </div>
                 </div>
                 <!-- /.row -->
-
-                <div>
-                    <input id="update_button" type="submit" name="update_files"
-                           onclick="clicked_update_android_files()" value="Update Pulled Android Collection Files" />
-                    <br/>
-                </div>
 
                 <div class="col-lg-12">
                     <div class="panel panel-default">
@@ -207,7 +208,12 @@
             $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
-                    alert("Update Successful!");
+                    if (data.status_code === 503) {
+                        alert("Update Functionality Failed: Perhaps Unavailable");
+                    }
+                    else {
+                        alert("Update Successful!");
+                    }
                 }});
         }
 

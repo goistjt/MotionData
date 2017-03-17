@@ -12,6 +12,7 @@ import sys
 import string
 import os
 import subprocess
+import platform
 
 from data_analysis import data_analysis as da
 from flask_server import app, crud, data_lock, upload_files
@@ -43,7 +44,7 @@ def handle_missing_argument(error):
 @app.route("/")
 def index():
     sessions = crud.get_all_sessions()
-    return render_template("index.html", table=get_html(sessions))
+    return render_template("index.html", table=get_html(sessions), android_route=get_android_route())
 
 
 def get_html(sessions):
@@ -332,15 +333,31 @@ def get_sessions(device_id):
         ret_list.append(dict(id=row[0], desc=row[1], date=row[2]))
     return jsonify(sessions=ret_list)
 
+def get_android_route():
+    return os.path.dirname(os.path.realpath(__file__)) + "/android_files"
+
 
 @app.route("/updateAndroidFiles")
 def update_android_files():
     # TODO: Find out how to generalize / determine the location of adb below if possible
-    adb_location = 'C:/Android/sdk/platform-tools/adb'
-    repository_dir_location = os.path.dirname(os.path.realpath(__file__)) + "/android_files"
+    system_name = platform.system()
+    if system_name == 'Windows':
+        adb_location = 'C:/Android/sdk/platform-tools/adb'
+    elif system_name == 'Linux':
+        adb_location = "/usr/bin/adb"
+    else:
+        return jsonify(status_code=503)
+    repository_dir_location = get_android_route()
     cmd = adb_location + ' pull sdcard/Android/data/edu.rose_hulman.nswccrane.dataacquisition/files/records ' + \
         repository_dir_location
-    subprocess.check_output(cmd.split())
+    try:
+        subprocess.check_output(cmd.split())
+    except:
+        e = sys.exc_info()[0]
+        print(e)
+        # COULD create different status codes for catch only certain exceptions, but for now we will say the \
+        # "service is unavailable"
+        return jsonify(status_code=503)
     return jsonify(status_code=200)
 
 
