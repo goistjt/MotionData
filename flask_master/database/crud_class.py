@@ -24,11 +24,6 @@ class Crud(object):
         self.conn = self.get_connection()
 
     # ********* connections ********#
-    def start(self):
-        """
-        Do we still need this call
-        """
-        self.conn = self.get_connection()
 
     def close(self):
         """
