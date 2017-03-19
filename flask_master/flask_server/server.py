@@ -64,11 +64,8 @@ def get_html(sessions):
                                onclick="clicked_raw('{}', 'r')" value="Download Raw Data" />\n
                            <input id="analyzed_button" type="submit" name="ar_{}"
                                onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
-                           <input type="file" id="ufr_{}" />
-                           <input id="upload_button" type="submit" name="ur_{}"
-                               onclick="clicked_upload('{}', 'r')" value="Upload Record" />\n
                        </td>\n
-                   </tr>\n""".format(rid, rid, rid, rid, rid, rid, rid, rid)
+                   </tr>\n""".format(rid, rid, rid, rid, rid)
             recs += curr
 
         sess = """
@@ -333,31 +330,51 @@ def get_sessions(device_id):
         ret_list.append(dict(id=row[0], desc=row[1], date=row[2]))
     return jsonify(sessions=ret_list)
 
+
+# Used as default Android cache location resource
 def get_android_route():
     return os.path.dirname(os.path.realpath(__file__)) + "/android_files"
 
 
+# Route in charge of updating Android cache locally - returns 503 if phone unplugged, 200 if phone transfer successful
+# Has to check for OS in order to get location "correct" - still RELIES ON SPECIFIC INSTALL LOCATION - 500 if not
+# expected OS
 @app.route("/updateAndroidFiles")
 def update_android_files():
-    # TODO: Find out how to generalize / determine the location of adb below if possible
+
     system_name = platform.system()
+
     if system_name == 'Windows':
         adb_location = 'C:/Android/sdk/platform-tools/adb'
+
     elif system_name == 'Linux':
         adb_location = "/usr/bin/adb"
+
     else:
-        return jsonify(status_code=503)
+        return jsonify(status_code=500)
+
     repository_dir_location = get_android_route()
-    cmd = adb_location + ' pull sdcard/Android/data/edu.rose_hulman.nswccrane.dataacquisition/files/records ' + \
-        repository_dir_location
+
+    app_repo_location = 'sdcard/Android/data/edu.rose_hulman.nswccrane.dataacquisition/files/records'
+
+    if not os.path.exists(get_android_route()):
+        os.makedirs(get_android_route())
+
+    cmd = 'pull'
+
+    sep = ' '
+
+    cmd = adb_location + sep + cmd + sep + app_repo_location + sep + repository_dir_location
+
     try:
         subprocess.check_output(cmd.split())
+
     except:
+        # TODO: This is an area where additional status codes could and probably should be used
         e = sys.exc_info()[0]
         print(e)
-        # COULD create different status codes for catch only certain exceptions, but for now we will say the \
-        # "service is unavailable"
         return jsonify(status_code=503)
+
     return jsonify(status_code=200)
 
 

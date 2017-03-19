@@ -4,6 +4,7 @@ import atexit
 import os
 from pathlib import Path
 from flask_compress import Compress
+import shutil
 
 from database import crud_class
 
@@ -85,3 +86,11 @@ else:
     app = Flask(__name__)
 
 import flask_server.server
+
+
+def delete_android_cache():
+    if os.path.exists(server.get_android_route()):
+        shutil.rmtree(server.get_android_route())
+
+import atexit
+atexit.register(delete_android_cache)

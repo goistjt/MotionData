@@ -62,11 +62,13 @@
             <!-- /.navbar-collapse -->
         </nav>
 
+        <!-- Below: the button to initiate Android transfer and to display Android cache root -->
+
         <div>
             <input id="update_button" type="submit" name="update_files"
-                   onclick="clicked_update_android_files()" value="Update Pulled Android Collection Files" />
+                   onclick="clicked_update_android_files()" value="Update Local Android Cache" />
             <br/>
-            <p id="android_route" style="color:white;">Local Android Files Path: {{android_route|safe}}</p>
+            <p id="android_route" style="color:white;">Local Android Cache: {{android_route|safe}}</p>
         </div>
 
         <div id="page-wrapper">
@@ -203,6 +205,7 @@
             }
         }
 
+        // Function to send call to endpoint that updates Android cache
         function clicked_update_android_files(){
             var server_endpoint = '/updateAndroidFiles';
             $.ajax({headers : {},
@@ -211,8 +214,11 @@
                     if (data.status_code === 503) {
                         alert("Update Functionality Failed: Perhaps Unavailable");
                     }
-                    else {
+                    else if (data.status_code === 200) {
                         alert("Update Successful!");
+                    }
+                    else {
+                        alert("Unknown Error - Update Not Successful");
                     }
                 }});
         }
