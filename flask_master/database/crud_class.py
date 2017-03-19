@@ -172,33 +172,6 @@ class Crud(object):
         m = hashlib.sha1()
         m.update(sha_input.encode('utf-8'))
         return m.hexdigest()
-    
-    # ********* device ********* #
-    def create_device_entry(self, device_id, device_name):
-        """
-        What comes in:  device id, device name
-        What goes out: accel and gyro points from a record in a pair
-        Side effects: None 
-        Description: Select the accel and gyro points from a record, and return them in two separate lists
-        """
-        query = "INSERT INTO DeviceNames" \
-                "(device_name, device_id)" \
-                "VALUES (%s, %s)"
-        args = [device_name, device_id]
-        return self.insert(query, args)
-
-    def update_device_entry(self, device_id, device_name):
-        
-        query = "UPDATE DeviceNames" \
-                "SET device_name = %s" \
-                "WHERE device_id = %s"
-        args = [device_name, device_id]
-        return self.insert(query, args)
-
-    def get_device_name(self, device_id):
-        query = "SELECT device_name FROM DeviceNames WHERE device_id = %s"
-        args = [device_id]
-        return self.insert(query, args)
 
     # ********* gyro_points ********#
     
