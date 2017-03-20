@@ -11,6 +11,7 @@ import pandas as pd
 import sys
 import string
 import os
+import shutil
 import subprocess
 import platform
 
@@ -331,15 +332,23 @@ def get_sessions(device_id):
     return jsonify(sessions=ret_list)
 
 
-# Used as default Android cache location resource
+"""
+Used as default Android cache location resource
+"""
+
+
 def get_android_route():
     return os.path.dirname(os.path.realpath(__file__)) + "/android_files"
 
 
-# Route in charge of updating Android cache locally - returns 503 if phone unplugged, 200 if phone transfer successful
-# Has to check for OS in order to get location "correct" - still RELIES ON SPECIFIC INSTALL LOCATION - 500 if not
-# expected OS
-@app.route("/updateAndroidFiles")
+"""
+Route in charge of updating Android cache locally - returns 503 if phone unplugged, 200 if phone transfer successful
+Has to check for OS in order to get location "correct" - still RELIES ON SPECIFIC INSTALL LOCATION - 500 if not
+expected OS
+"""
+
+
+@app.route("/updateAndroidCache")
 def update_android_files():
 
     system_name = platform.system()
@@ -377,6 +386,23 @@ def update_android_files():
 
     return jsonify(status_code=200)
 
+
+"""
+Route in charge of deleting / clearing the Android cache.
+"""
+
+
+@app.route("/clearAndroidCache")
+def delete_android_cache():
+    if os.path.exists(get_android_route()):
+        try:
+            shutil.rmtree(get_android_route())
+
+        except OSError as e:
+            print(e)
+            return jsonify(status_code=500)
+
+    return jsonify(status_code=200)
 
 # used to check for sql injection
 def is_possible_injection(attack_vector):

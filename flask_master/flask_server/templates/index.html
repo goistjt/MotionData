@@ -67,8 +67,11 @@
         <div>
             <input id="update_button" type="submit" name="update_files"
                    onclick="clicked_update_android_files()" value="Update Local Android Cache" />
+            <input id="clear_button" type="submit" name="clear_cache"
+                   onclick="clicked_clear_cache()" value="Clear Local Android Cache"/>
             <br/>
             <p id="android_route" style="color:white;">Local Android Cache: {{android_route|safe}}</p>
+            <br/>
         </div>
 
         <div id="page-wrapper">
@@ -207,7 +210,7 @@
 
         // Function to send call to endpoint that updates Android cache
         function clicked_update_android_files(){
-            var server_endpoint = '/updateAndroidFiles';
+            var server_endpoint = '/updateAndroidCache';
             $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
@@ -219,6 +222,24 @@
                     }
                     else {
                         alert("Unknown Error - Update Not Successful");
+                    }
+                }});
+        }
+
+        // Function to send call to endpoint that updates Android cache
+        function clicked_clear_cache(){
+            var server_endpoint = '/clearAndroidCache';
+            $.ajax({headers : {},
+                url: server_endpoint,
+                success: function (data) {
+                    if (data.status_code === 500) {
+                        alert("Error Clearing Cache - Not Successful");
+                    }
+                    else if (data.status_code === 200) {
+                        alert("Android Cache Clear Successful!");
+                    }
+                    else {
+                        alert("Unknown Error - Clearing Not Successful");
                     }
                 }});
         }
