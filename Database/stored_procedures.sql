@@ -186,5 +186,16 @@ COMMIT;
 END$$
 DELIMITER ;
 
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_device_entry`(
+	device_id_in varchar(255)
+)
+BEGIN
+START TRANSACTION;
+DELETE FROM DeviceNames where device_id = device_id_in;
+COMMIT;
+END$$
+DELIMITER ;
+
 
 
