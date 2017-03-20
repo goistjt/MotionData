@@ -8,13 +8,13 @@ import decimal as dc
 
 
 class KinematicsKeeper(object):
-
     VELOCITY = 'VELOCITY'
     ACCELERATION = 'ACCELERATION'
 
-    def __init__(self, max_collection):
+    def __init__(self, max_collection, buffer_factor):
         self.zero = dc.Decimal(0.0)
         self.one = dc.Decimal(1.0)
+        self.max_buffer_factor = dc.Decimal(buffer_factor) * self.one
         self.interval = dc.Decimal(40)
         self.interval = (self.interval * self.one) / (dc.Decimal(1000) * self.one)
         self._curr_pos = dc.Decimal(0.0)
@@ -56,52 +56,57 @@ class KinematicsKeeper(object):
 
     def check_max_accel(self, new_accel):
 
-        if self._max_collection.get_max_accel() < dc.Decimal(abs(new_accel)):
+        definitive_max = self._max_collection.get_max_accel() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(abs(new_accel)):
 
             if new_accel == dc.Decimal(0.0):
-                new_accel = self._max_collection.get_max_accel()
+                new_accel = definitive_max
 
             else:
-                new_accel = (new_accel / dc.Decimal(abs(new_accel))) * self._max_collection.get_max_accel()
+                new_accel = (new_accel / dc.Decimal(abs(new_accel))) * definitive_max
 
         return new_accel
 
     def check_accel_onset(self, new_accel):
 
-        if self._max_collection.get_max_accel_diff() < dc.Decimal(abs(new_accel - self._curr_accel) / self.interval):
+        definitive_max = self._max_collection.get_max_accel_diff() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(abs(new_accel - self._curr_accel) / self.interval):
 
             if new_accel == dc.Decimal(0.0):
-                new_accel = (self._max_collection.get_max_accel_diff() * self.interval) + self._curr_accel
+                new_accel = (definitive_max * self.interval) + self._curr_accel
 
             else:
                 new_accel = ((new_accel / dc.Decimal(abs(new_accel))) * (
-                    self._max_collection.get_max_accel_diff() * self.interval)) + self._curr_accel
+                    definitive_max * self.interval)) + self._curr_accel
 
         return new_accel
 
     def check_max_velocity(self, new_vel):
 
-        if self._max_collection.get_max_vel() < dc.Decimal(abs(new_vel)):
+        definitive_max = self._max_collection.get_max_vel() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(abs(new_vel)):
 
             if new_vel == dc.Decimal(0.0):
-                new_vel = self._max_collection.get_max_vel()
+                new_vel = definitive_max
 
             else:
-                new_vel = (new_vel / dc.Decimal(abs(new_vel))) * self._max_collection.get_max_vel()
+                new_vel = (new_vel / dc.Decimal(abs(new_vel))) * definitive_max
 
         return new_vel
 
     def check_max_neg_position(self, new_pos):
 
-        if self._max_collection.get_max_neg_exc() > dc.Decimal(new_pos):
-            new_pos = self._max_collection.get_max_neg_exc()
+        definitive_max = self._max_collection.get_max_neg_exc() * self.max_buffer_factor
+        if definitive_max > dc.Decimal(new_pos):
+            new_pos = definitive_max
 
         return new_pos
 
     def check_max_pos_position(self, new_pos):
 
-        if self._max_collection.get_max_pos_exc() < dc.Decimal(new_pos):
-            new_pos = self._max_collection.get_max_pos_exc()
+        definitive_max = self._max_collection.get_max_pos_exc() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(new_pos):
+            new_pos = definitive_max
 
         return new_pos
 
