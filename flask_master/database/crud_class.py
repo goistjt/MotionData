@@ -78,6 +78,14 @@ class Crud(object):
         return self.read_all(query)
     
     def get_sessions_not_related_to_device(self, device_id):
+        """
+        What comes in:  device id
+        What goes out:  All the sessions in the database that the provided
+                        device is not a part of
+        Side effects:   None
+        Description: Returns all the sessions, descriptions, and starting times
+                        that don't have any records from the indicated device
+        """
         args = [device_id]
         return self.call_procedure('get_sessions_not_related_to_device', args)
 
