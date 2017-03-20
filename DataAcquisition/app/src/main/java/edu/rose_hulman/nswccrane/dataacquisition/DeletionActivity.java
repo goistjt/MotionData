@@ -48,6 +48,9 @@ public class DeletionActivity extends AppCompatActivity {
                     Log.d("DATA LIST", "onItemClick: " + pos);
                     adapter.notifyDataSetChanged();
                 }
+                if (timeData.isEmpty()) {
+                    DeletionActivity.this.finish();
+                }
             }
         });
     }
