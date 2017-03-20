@@ -201,10 +201,14 @@ def process_accelerations(start, end, interval, points):
             fv3 = float(((dc.Decimal(next_point[3]) * time_ratio) - dc.Decimal(curr_point[3])) / num_elements)
 
             while True:
+
                 next_time = dc.Decimal(curr_point[0]) * dc.Decimal(1.0) + interval_d
+
                 if next_time > last_time:
                     break
+
                 curr_point = [float(next_time), curr_point[1] + fv1, curr_point[2] + fv2, curr_point[3] + fv3]
+
                 final_points.append(curr_point)
 
             z = len(final_points) - 1
@@ -213,32 +217,46 @@ def process_accelerations(start, end, interval, points):
 
 
 def determine_end(points, real_end):
+
     one = dc.Decimal(1.0)
+
     end_index = len(points) - 1
+
     while end_index >= 0:
+
         curr_comparison = dc.Decimal(points[end_index][0]) * one
+
         if curr_comparison <= real_end:
+
             break
+
         end_index -= 1
 
     return end_index + 1
 
 
 def determine_start(points, start, end_index):
+
     one = dc.Decimal(1.0)
     start_index = 0
+
     while start_index <= end_index:
+
         if start_index >= len(points):
             return end_index
+
         curr_comparison = dc.Decimal(points[start_index][0]) * one
+
         if curr_comparison > start:
             break
+
         start_index += 1
 
     return start_index
 
 
 def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
+
     default_list = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
     if start_time >= end_time:
@@ -269,23 +287,27 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
     session = []
 
     for i in range(len(gyro_list)):
+
         next_set = []
 
-        next_set = process_normal_state_generations(keeps_accel, accel_list, i, next_set)
+        next_set = process_states(keeps_accel, accel_list, i, next_set, kk.KinematicsKeeper.ACCELERATION)
 
-        next_set = process_normal_state_generations(keeps_gyro, gyro_list, i, next_set)
+        next_set = process_states(keeps_gyro, gyro_list, i, next_set, kk.KinematicsKeeper.VELOCITY)
 
         session.append(next_set)
 
     return process_return_to_zero(keeps_accel, keeps_gyro, session)
 
 
-def process_normal_state_generations(keeps_list, values_list, position, next_set):
+def process_states(keeps_list, values_list, position, next_set, starting_value_type):
+
     for x in range(len(keeps_list)):
-        accel_val = values_list[position][x + 1]
+
+        val = values_list[position][x + 1]
+
         curr_keep = keeps_list[x]
 
-        curr_keep.generate_next_state(accel_val)
+        curr_keep.generate_next_state(val, starting_value_type)
 
         next_set.append(curr_keep.get_position())
 
@@ -293,6 +315,7 @@ def process_normal_state_generations(keeps_list, values_list, position, next_set
 
 
 def process_return_to_zero(keeps_accel, keeps_gyro, session):
+
     while True:
 
         next_set = []
@@ -312,6 +335,7 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
 
 def process_for_next_set(keeps_list, next_set):
+
     # TODO: Could very much move things like this into a configuration file or make the data analysis class instantiated
     maximum_buffer_factor = 0.5
 
@@ -330,7 +354,7 @@ def process_for_next_set(keeps_list, next_set):
         else:
             accel_val = curr_keep.get_max_acceleration() * maximum_buffer_factor
 
-        curr_keep.generate_next_state(accel_val)
+        curr_keep.generate_next_state(accel_val, kk.KinematicsKeeper.ACCELERATION)
 
         pos_next = curr_keep.get_position()
 

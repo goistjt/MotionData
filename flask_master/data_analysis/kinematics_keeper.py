@@ -9,6 +9,9 @@ import decimal as dc
 
 class KinematicsKeeper(object):
 
+    VELOCITY = 'VELOCITY'
+    ACCELERATION = 'ACCELERATION'
+
     def __init__(self, max_collection):
         self.zero = dc.Decimal(0.0)
         self.one = dc.Decimal(1.0)
@@ -19,11 +22,19 @@ class KinematicsKeeper(object):
         self._curr_accel = dc.Decimal(0.0)
         self._max_collection = max_collection
 
-    def generate_next_state(self, new_accel):
+    def generate_next_state(self, new_val, starting_val_type):
 
         dc.getcontext().prec = 6
 
-        new_accel = dc.Decimal(new_accel) * self.one
+        new_val = dc.Decimal(new_val) * self.one
+
+        new_accel = new_val
+
+        if starting_val_type == self.VELOCITY:
+            new_accel = self._determine_next_acceleration_by_vel(new_val)
+
+        elif starting_val_type == self.ACCELERATION:
+            new_accel = self._determine_next_acceleration_by_pos(new_val)
 
         new_accel = self.check_max_accel(new_accel)
 
