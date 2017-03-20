@@ -79,6 +79,36 @@ class CrudTest(unittest.TestCase):
         self.crud.delete_entire_session(last_id_1)
         self.crud.reset_session_auto_index()
 
+    def test_create_device_entry(self):
+        """
+            tests adding a device entry to the database
+            verifies that the name used to create the entry matches what
+                is returned when we get the device name from the database
+        """
+        device_id = 'crud_test_device'
+        device_name_create = 'crud_test_create_device'
+        self.crud.create_device_entry(device_id, device_name_create)
+        device_name_db = self.crud.get_device_name(device_id)[0]
+        self.assertEquals(device_name_create, device_name_db)
+        self.crud.delete_device_entry(device_id)
+
+    def test_create_update_device_entry(self):
+        """
+            tests creating and then updating a device entry in the database
+            verifies that the name used to update the entry matches what
+                is returned when we get the device name from the database
+        """
+        device_id = 'crud_test_device'
+        device_name_create = 'crud_test_create_device'
+        device_name_update = 'crud_test_update_device'
+        self.crud.create_device_entry(device_id, device_name_create)
+        device_name_db = self.crud.get_device_name(device_id)[0]
+        self.assertEquals(device_name_create, device_name_db)
+        self.crud.update_device_entry(device_id, device_name_update)
+        device_name_db = self.crud.get_device_name(device_id)[0]
+        self.assertEquals(device_name_update, device_name_db)
+        self.crud.delete_device_entry(device_id)
+
 
 if __name__ == '__main__':
     unittest.main()

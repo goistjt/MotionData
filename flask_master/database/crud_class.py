@@ -90,20 +90,51 @@ class Crud(object):
 
     # ********* device ******** #
     def create_device_entry(self, device_id, device_name):
+        """
+        What comes in:  The device id and user-defined device name
+        What goes out:  None
+        Side effects:   None
+        Description: Creates a new entry in the DeviceNames table with the provided
+                        device name and id
+        """
         args = (device_id, device_name)
         return self.call_procedure('create_device_entry', args)
 
     def update_device_entry(self, device_id, device_name):
+        """
+        What comes in:  The device id and user-defined device name
+        What goes out:  None
+        Side effects:   None
+        Description: Updates the device name of the entry in the DeviceNames
+                    table that has the given id
+        """
         args = (device_id, device_name)
         return self.call_procedure('update_device_entry', args)
 
     def get_device_name(self, device_id):
+        """
+        What comes in:  The device id
+        What goes out:  The name of the device with the given id
+        Side effects:   None
+        Description: Returns the device name of the device with the specified id
+        """
         args = [device_id]
         name = self.call_procedure('get_device_name', args)
         if len(name) == 0:
             return name
         else:
             return name[0]
+
+    def delete_device_entry(self, device_id):
+        """
+        What comes in:  The device id
+        What goes out:  None
+        Side effects:   None
+        Description: Deletes the entry in the DeviceNames table corresponding
+                        to the provided device id
+        """
+        args = [device_id]
+        return self.call_procedure('delete_device_entry', args)
 
     # ********* gyro_points ********#
     '''

@@ -25,6 +25,8 @@ class FlaskTestCase(unittest.TestCase):
         app.config['TESTING'] = True
         cls.app = app.test_client()
         cls.session = None
+        cls.device_id = None
+        cls.device_id_2 = None
 
     @classmethod
     def tearDownClass(cls):
@@ -35,7 +37,8 @@ class FlaskTestCase(unittest.TestCase):
 
     def tearDown(self):
         """
-            Deletes the created session from the database, if applicable
+            Deletes the created session and device entry(s) from the database,
+            if applicable
         """
         if self.session:
             time.sleep(30)
@@ -44,6 +47,12 @@ class FlaskTestCase(unittest.TestCase):
             resp_json = json.loads(response.data.decode("utf-8"))
             self.assertIsNotNone(resp_json)
             self.session = None
+        if self.device_id:
+            fs.crud.delete_device_entry(self.device_id)
+            self.device_id = None
+        if self.device_id_2:
+            fs.crud.delete_device_entry(self.device_id_2)
+            self.device_id_2 = None
 
     def test_get_record_data_raw(self):
         """
@@ -52,8 +61,8 @@ class FlaskTestCase(unittest.TestCase):
             Verifies that the response data is the same as what was used to create the session
             Sets the self.session variable so that the session can be deleted in tearDown
         """
-        device_id = "oqewiruo_t1"
-        create_data = {"device_id": device_id,
+        self.device_id = "oqewiruo_t1"
+        create_data = {"device_id": self.device_id,
                        "device_name": "test_device",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
@@ -67,7 +76,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
         self.session = resp_json['session_id']
 
-        sha_input = str(self.session) + device_id
+        sha_input = str(self.session) + self.device_id
         m = hashlib.sha1()
         m.update(sha_input.encode('utf-8'))
         record_id = m.hexdigest()
@@ -89,8 +98,8 @@ class FlaskTestCase(unittest.TestCase):
             Verifies that the response data is appropriate for what was used to create the session
             Sets the self.session variable so that the session can be deleted in tearDown
         """
-        device_id = "oqewiruo_t1"
-        create_data = {"device_id": device_id,
+        self.device_id = "oqewiruo_t1"
+        create_data = {"device_id": self.device_id,
                        "device_name": "test_device",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1},
                                       {"time_val": 123876098274, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
@@ -106,7 +115,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
         self.session = resp_json['session_id']
 
-        sha_input = str(self.session) + device_id
+        sha_input = str(self.session) + self.device_id
         m = hashlib.sha1()
         m.update(sha_input.encode('utf-8'))
         record_id = m.hexdigest()
@@ -133,8 +142,8 @@ class FlaskTestCase(unittest.TestCase):
             Verifies that the response data is the same as what was used to create the session
             Sets the self.session variable so that the session can be deleted in tearDown
         """
-        device_id = "oqewiruo_t1"
-        create_data = {"device_id": device_id,
+        self.device_id = "oqewiruo_t1"
+        create_data = {"device_id": self.device_id,
                        "device_name": "test_device",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
@@ -166,8 +175,8 @@ class FlaskTestCase(unittest.TestCase):
             Verifies that the response data is appropriate for what was used to create the session
             Sets the self.session variable so that the session can be deleted in tearDown
         """
-        device_id = "oqewiruo_t1"
-        create_data = {"device_id": device_id,
+        self.device_id = "oqewiruo_t1"
+        create_data = {"device_id": self.device_id,
                        "device_name": "test_device",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
@@ -191,13 +200,14 @@ class FlaskTestCase(unittest.TestCase):
         data = df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")
         self.assertEquals(resp_json['data'], data)
 
-    def test_create_delete_session(self):
+    def test_create_session(self):
         """
             Tests the createSession server call
             Verifies that the response and session ID are returned
             Sets the self.session variable so that the session can be deleted in tearDown
         """
-        create_data = {"device_id": "oqewiruo_t1",
+        self.device_id = "oqewiruo_t1"
+        create_data = {"device_id": self.device_id,
                        "device_name": "test_device",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
@@ -218,7 +228,8 @@ class FlaskTestCase(unittest.TestCase):
             Verifies that the two returned session IDs match
             Sets the self.session variable so that the session can be deleted in tearDown
         """
-        create_data = {"device_id": "oqewiruo_t1",
+        self.device_id = "oqewiruo_t1"
+        create_data = {"device_id": self.device_id,
                        "device_name": "test_device_1",
                        "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
                        "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
@@ -231,8 +242,9 @@ class FlaskTestCase(unittest.TestCase):
         self.session = resp_json['session_id']
         self.assertIsNotNone(resp_json)
 
+        self.device_id_2 = "oqewiruo_t2"
         add_data = {"sess_id": self.session,
-                    "device_id": "oqewiruo_t2",
+                    "device_id": self.device_id_2,
                     "device_name": "test_device_2",
                     "gyroModels": [{"time_val": 123876098235, "roll_val": 2, "pitch_val": 2, "yaw_val": 2}],
                     "accelModels": [{"time_val": 123876098235, "x_val": 2, "y_val": 2, "z_val": 2}],
