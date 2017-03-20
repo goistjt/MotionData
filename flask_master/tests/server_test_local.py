@@ -167,7 +167,6 @@ class FlaskTestCase(unittest.TestCase):
         data = df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")
         self.assertEquals(resp_json['data'], data)
 
-    @unittest.skip("skipping")
     def test_get_session_data_analyzed(self):
         """
             Tests the getSessionAnalyzed server call
@@ -178,8 +177,10 @@ class FlaskTestCase(unittest.TestCase):
         self.device_id = "oqewiruo_t1"
         create_data = {"device_id": self.device_id,
                        "device_name": "test_device",
-                       "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
-                       "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1}],
+                       "gyroModels": [{"time_val": 123876098234, "roll_val": 1, "pitch_val": 1, "yaw_val": 1},
+                                      {"time_val": 123876098274, "roll_val": 1, "pitch_val": 1, "yaw_val": 1}],
+                       "accelModels": [{"time_val": 123876098234, "x_val": 1, "y_val": 1, "z_val": 1},
+                                       {"time_val": 123876098274, "x_val": 1, "y_val": 1, "z_val": 1}],
                        "sess_desc": "This is a description that I'm typing for no reason whatsoever",
                        "begin": 123876098234}
         zlibbed = gzip.compress(bytes(json.dumps(create_data), 'utf-8'))
@@ -195,8 +196,13 @@ class FlaskTestCase(unittest.TestCase):
         resp_json = json.loads(response.data.decode("utf-8"))
         self.assertIsNotNone(resp_json)
 
-        zero = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        df = pd.DataFrame(np.array([zero, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0], zero]))
+        data = [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0], [0.000267, 0.000267, 0.000267, 0.000267, 0.000267, 0.000267],
+                [0.001867, 0.001867, 0.001867, 0.001867, 0.001867, 0.001867],
+                [0.004800, 0.004800, 0.004800, 0.004800, 0.004800, 0.004800],
+                [0.007163, 0.007215, 0.007215, 0.000000, 0.000000, 0.000000],
+                [0.005327, 0.005706, 0.005706, 0.000000, 0.000000, 0.000000],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
+        df = pd.DataFrame(np.array(data))
         data = df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")
         self.assertEquals(resp_json['data'], data)
 

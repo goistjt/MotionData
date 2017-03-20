@@ -23,10 +23,12 @@ class CrudTest(unittest.TestCase):
         self.starting_time = round(starting_time, 5)
         self.app = app.test_client()
         self.session_id = None
+        self.device_id = None
 
     def tearDown(self):
         time.sleep(30)
         self.crud.delete_entire_session(self.session_id)
+        self.crud.delete_device_entry(self.device_id)
         server.t.cancel()
 
     def test_load_infile(self):
@@ -35,8 +37,10 @@ class CrudTest(unittest.TestCase):
         description = "test_data_output"
         test_data = -1
         self.session_id = self.crud.create_session(description, starting_time)
-        device_id = "-1"
-        record_id = self.crud.create_record(self.session_id, device_id)
+        self.device_id = "-1"
+        device_name = "crud_stress_test"
+        self.crud.create_device_entry(self.device_id, device_name)
+        record_id = self.crud.create_record(self.session_id, self.device_id)
 
         gyro_points = []
         access_points = []
