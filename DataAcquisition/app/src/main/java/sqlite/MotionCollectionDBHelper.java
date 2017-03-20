@@ -40,6 +40,8 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
 
     private long currentStartTime;
     private long currentEndTime;
+    private String start;
+    private String end;
 
     public MotionCollectionDBHelper(Context context) {
         super(context, context.getString(R.string.db_name), null, 1);
@@ -273,5 +275,21 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
     public long deleteCurrentTimeframeData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_timeframe));
         return (long) statement.executeUpdateDelete();
+    }
+
+    public void deleteDataBetween(long startTime, long endTime) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String ts = mContext.getString(R.string.timestamp);
+        start = String.valueOf(startTime);
+        end = String.valueOf(endTime);
+        db.delete(mContext.getString(R.string.acceleration_table_name),
+                String.format("%s >= ? AND %s <= ?", ts, ts),
+                new String[]{start, end});
+        db.delete("Timeframe",
+                "start_time >= ? AND end_time <= ?",
+                new String[]{start, end});
+        db.delete(mContext.getString(R.string.gyroscope_table_name),
+                String.format("%s >= ? AND %s <= ?", ts, ts),
+                new String[]{start, end});
     }
 }

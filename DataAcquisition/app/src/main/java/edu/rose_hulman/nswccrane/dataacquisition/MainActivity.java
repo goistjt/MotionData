@@ -107,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
+            case R.id.delete:
+                startActivity(new Intent(this, DeletionActivity.class));
+                break;
             default:
                 //No other cases
         }
