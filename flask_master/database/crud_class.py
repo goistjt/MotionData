@@ -229,7 +229,7 @@ class Crud(object):
         What comes in:  record_id, timestamp, roll, pitch, yaw
         What goes out: row id
         Side effects: None
-        Description:  This function is here for easier testing purpose, in genearl, you should use bulk insert
+        Description:  This function is here for easier testing purpose, in general, you should use bulk insert
         """
         query = "INSERT INTO GyroPoints" \
                 "(record_id, timestamp, roll, pitch, yaw) " \
@@ -273,7 +273,7 @@ class Crud(object):
         What comes in:  record_id, timestamp, x, y, z
         What goes out: row id
         Side effects: None
-        Description:  This function is here for easier testing purpose, in genearl, you should use bulk insert
+        Description:  This function is here for easier testing purpose, in general, you should use bulk insert
         """
         query = "INSERT INTO AccelPoints " \
                 "(record_id, timestamp, surge, sway, heave) " \
