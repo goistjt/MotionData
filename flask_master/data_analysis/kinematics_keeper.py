@@ -14,8 +14,10 @@ valid motions based upon input and specified constraints.
 
 class KinematicsKeeper(object):
     # For usage in determining what a "new acceleration" is defined as in generating state
+
     VELOCITY = 'VELOCITY'
     ACCELERATION = 'ACCELERATION'
+    POSITION = 'POSITION'
 
     def __init__(self, max_collection, buffer_factor):
         self.zero = dc.Decimal(0.0)
@@ -44,7 +46,7 @@ class KinematicsKeeper(object):
         if starting_val_type == self.VELOCITY:
             new_accel = self._determine_next_acceleration_by_vel(new_val)
 
-        elif starting_val_type == self.ACCELERATION:
+        elif starting_val_type == self.POSITION:
             new_accel = self._determine_next_acceleration_by_pos(new_val)
 
         new_accel = self.check_max_accel(new_accel)
@@ -89,14 +91,13 @@ class KinematicsKeeper(object):
     def check_accel_onset(self, new_accel):
 
         definitive_max = self._max_collection.get_max_accel_diff() * self.max_buffer_factor
-        if definitive_max < dc.Decimal(abs(new_accel - self._curr_accel) / self.interval):
+        if definitive_max < dc.Decimal(abs(new_accel - self._curr_accel)):
 
             if new_accel == dc.Decimal(0.0):
-                new_accel = (definitive_max * self.interval) + self._curr_accel
+                new_accel = definitive_max + self._curr_accel
 
             else:
-                new_accel = ((new_accel / dc.Decimal(abs(new_accel))) * (
-                    definitive_max * self.interval)) + self._curr_accel
+                new_accel = ((new_accel / dc.Decimal(abs(new_accel))) * definitive_max) + self._curr_accel
 
         return new_accel
 

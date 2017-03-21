@@ -3,6 +3,7 @@ Created on Oct 29, 2016
 
 @author: steve
 """
+
 import unittest
 import data_analysis.data_analysis as da
 import numpy as np
@@ -14,7 +15,7 @@ import data_analysis.max_collection_factories as mcf
 class TestKinematics(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.kin_keep = kk.KinematicsKeeper(self.max_coll_fact.create_max_collection(self.max_coll_fact.SURGE))
+        self.kin_keep = kk.KinematicsKeeper(self.max_coll_fact.create_max_collection(self.max_coll_fact.SURGE), 1.0)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
@@ -155,18 +156,48 @@ class TestKinematics(unittest.TestCase):
         expected = dc.Decimal(-0.1239999) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
 
+    def test_kk_determine_next_state_velocity(self):
+        dc.getcontext().prec = 6
+        self.kin_keep.set_interval(40)
+        new_vel = dc.Decimal(2.0)
+        self.kin_keep.generate_next_state(new_vel, kk.KinematicsKeeper.VELOCITY)
+        actual_pos = self.kin_keep.get_position()
+        actual_vel = self.kin_keep.get_velocity()
+        actual_accel = self.kin_keep.get_acceleration()
+        expected_accel = self.kin_keep.get_max_acceleration()
+        expected_vel = expected_accel * (1/2) * 0.04
+        expected_pos = expected_accel * (1/6) * (0.04 ** 2)
+        self.assertEqual(expected_accel, actual_accel)
+        self.assertEqual(expected_vel, actual_vel)
+        self.assertEqual(expected_pos, actual_pos)
+
+    def test_kk_determine_next_state_position(self):
+        dc.getcontext().prec = 6
+        self.kin_keep.set_interval(40)
+        new_vel = dc.Decimal(0.00015)
+        self.kin_keep.generate_next_state(new_vel, kk.KinematicsKeeper.POSITION)
+        actual_pos = self.kin_keep.get_position()
+        actual_vel = self.kin_keep.get_velocity()
+        actual_accel = self.kin_keep.get_acceleration()
+        expected_accel = 0.5625
+        expected_vel = dc.Decimal(expected_accel * (1/2) * 0.04) * dc.Decimal(1.0)
+        expected_pos = dc.Decimal(expected_accel * (1/6) * (0.04 ** 2)) * dc.Decimal(1.0)
+        self.assertEqual(expected_accel, actual_accel)
+        self.assertEqual(float(expected_vel), actual_vel)
+        self.assertEqual(float(expected_pos), actual_pos)
+
     def test_process_return_to_zero_trivial(self):
         max_fact = mcf.MaxCollectionFactory()
         modified_heave_collection = max_fact.create_max_collection(max_fact.HEAVE)
         modified_heave_collection._max_accel = 0.408
 
-        surge_k = kk.KinematicsKeeper(modified_heave_collection)
-        sway_k = kk.KinematicsKeeper(modified_heave_collection)
-        heave_k = kk.KinematicsKeeper(modified_heave_collection)
+        surge_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
+        sway_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
+        heave_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
 
-        roll_k = kk.KinematicsKeeper(modified_heave_collection)
-        pitch_k = kk.KinematicsKeeper(modified_heave_collection)
-        yaw_k = kk.KinematicsKeeper(modified_heave_collection)
+        roll_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
+        pitch_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
+        yaw_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
 
         keeps_accel = [surge_k, sway_k, heave_k]
         keeps_gyro = [roll_k, pitch_k, yaw_k]
@@ -181,18 +212,18 @@ class TestKinematics(unittest.TestCase):
         max_fact = mcf.MaxCollectionFactory()
         modified_heave_collection = max_fact.create_max_collection(max_fact.HEAVE)
 
-        surge_k = kk.KinematicsKeeper(modified_heave_collection)
+        surge_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
         surge_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
-        sway_k = kk.KinematicsKeeper(modified_heave_collection)
+        sway_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
         sway_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
-        heave_k = kk.KinematicsKeeper(modified_heave_collection)
+        heave_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
         heave_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
 
-        roll_k = kk.KinematicsKeeper(modified_heave_collection)
+        roll_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
         roll_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
-        pitch_k = kk.KinematicsKeeper(modified_heave_collection)
+        pitch_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
         pitch_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
-        yaw_k = kk.KinematicsKeeper(modified_heave_collection)
+        yaw_k = kk.KinematicsKeeper(modified_heave_collection, 1.0)
         yaw_k._curr_pos = dc.Decimal(0.261) * dc.Decimal(1.0)
 
         keeps_accel = [surge_k, sway_k, heave_k]
