@@ -18,7 +18,7 @@ class Crud(object):
         """
         What comes in: Nothing
         What goes out: Nothing
-        Side effects: 
+        Side effects:
         Description: Creates a connection with the database
         """
         self.conn = self.get_connection()
@@ -27,13 +27,13 @@ class Crud(object):
 
     def close(self):
         """
-        What comes in: 
-        What goes out: 
-        Side effects: 
+        What comes in:
+        What goes out:
+        Side effects:
         Description:  Close the connection with the datbase
         """
         self.conn.close()
-    
+
     def get_connection(self):
         """
         What comes in:  Nothing
@@ -45,20 +45,20 @@ class Crud(object):
         return connect(**db_config)
 
     # ********* session ********#
-  
+
     def create_session(self, description, starting_time):
         """
         What comes in:  Description of the session, the starting time of the session
         What goes out:  The integer session id created in the database
         Side effects:   None
-        Description: Creates a session 
-        """        
+        Description: Creates a session
+        """
         args = (description, starting_time)
         return self.call_procedure('add_session', args, fetchall=False)[0]
 
     def read_session(self, sess_id):
         """
-        What comes in:  The id of the session 
+        What comes in:  The id of the session
         What goes out:  The session id, description and starting time
         Side effects:   None
         Description: returns the session row correspondent to the session id from the database
@@ -73,16 +73,21 @@ class Crud(object):
         What goes out:  All the sessions in the database
         Side effects:   None
         Description: Returns all the sessions and their description and starting time
-        """  
+        """
         query = "SELECT * FROM Session"
         return self.read_all(query)
     
-    def get_sessions_related_to_device(self, device_id):
+    def get_sessions_not_related_to_device(self, device_id):
         """
-        Remove this function, it is outdated
+        What comes in:  device id
+        What goes out:  All the sessions in the database that the provided
+                        device is not a part of
+        Side effects:   None
+        Description: Returns all the sessions, descriptions, and starting times
+                        that don't have any records from the indicated device
         """
         args = [device_id]
-        return self.call_procedure('get_sessions_related_to_device', args)
+        return self.call_procedure('get_sessions_not_related_to_device', args)
 
     def get_all_records_from_session(self, session_id):
         """
@@ -90,7 +95,7 @@ class Crud(object):
         What goes out:  All the sessions in the database
         Side effects:   None
         Description: Returns all the sessions and their description and starting time
-        """         
+        """
         args = [session_id]
         return self.call_procedure('get_all_records_from_session', args)
     
@@ -100,10 +105,11 @@ class Crud(object):
         What goes out:  A pair contains the accel points and gyro points
         Side effects:   None
         Description: The accel points from different records are added together sorted by timestamp, same for gyro points.
-        """      
+        """
         return (self.get_all_accel_points_from_session(session_id), self.get_all_gyro_points_from_session(session_id))
-    
+
     def get_record(self, record_id):
+        args = [record_id]
         """
         What comes in:  Record_id
         What goes out: All the information for a record
@@ -137,7 +143,7 @@ class Crud(object):
         """
         What comes in:  session id, and device id
         What goes out: record id
-        Side effects: 
+        Side effects:
         Description: Creates a record id(sha1) base on the session_id and device_id
         """
         record_id = self.sha1(str(session_id) + device_id)
@@ -149,7 +155,7 @@ class Crud(object):
         """
         What comes in:  record id
         What goes out: accel and gyro points from a record in a pair
-        Side effects: None 
+        Side effects: None
         Description: Select the accel and gyro points from a record, and return them in two sperate lists
         """
         args = [record_id]
@@ -168,35 +174,83 @@ class Crud(object):
         m.update(sha_input.encode('utf-8'))
         return m.hexdigest()
 
+    # ********* device ******** #
+    def create_device_entry(self, device_id, device_name):
+        """
+        What comes in:  The device id and user-defined device name
+        What goes out:  None
+        Side effects:   None
+        Description: Creates a new entry in the DeviceNames table with the provided
+                        device name and id
+        """
+        args = (device_id, device_name)
+        return self.call_procedure('create_device_entry', args)
+
+    def update_device_entry(self, device_id, device_name):
+        """
+        What comes in:  The device id and user-defined device name
+        What goes out:  None
+        Side effects:   None
+        Description: Updates the device name of the entry in the DeviceNames
+                    table that has the given id
+        """
+        args = (device_id, device_name)
+        return self.call_procedure('update_device_entry', args)
+
+    def get_device_name(self, device_id):
+        """
+        What comes in:  The device id
+        What goes out:  The name of the device with the given id
+        Side effects:   None
+        Description: Returns the device name of the device with the specified id
+        """
+        args = [device_id]
+        name = self.call_procedure('get_device_name', args)
+        if len(name) == 0:
+            return name
+        else:
+            return name[0]
+
+    def delete_device_entry(self, device_id):
+        """
+        What comes in:  The device id
+        What goes out:  None
+        Side effects:   None
+        Description: Deletes the entry in the DeviceNames table corresponding
+                        to the provided device id
+        """
+        args = [device_id]
+        return self.call_procedure('delete_device_entry', args)
+
     # ********* gyro_points ********#
-    
+
     def insert_gyro_points(self, record_id, timestamp, roll, pitch, yaw):
         """
         What comes in:  record_id, timestamp, roll, pitch, yaw
         What goes out: row id
-        Side effects: None 
-        Description:  This function is here for easier testing purpose, in genearl, you should use bulk insert
+        Side effects: None
+        Description:  This function is here for easier testing purpose, in general, you should use bulk insert
         """
         query = "INSERT INTO GyroPoints" \
                 "(record_id, timestamp, roll, pitch, yaw) " \
                 "VALUES(%s,%s, %s, %s, %s)"
         args = (record_id, timestamp, roll, pitch, yaw)
         return self.insert(query, args)
-    
+
     def get_all_gyro_points_from_session(self, session_id):
         """
         What comes in:  session id
         What goes out: all the gyro points within this session, despite the record id, sorted by time
-        Side effects: None 
-        Description:  
+        Side effects: None
+        Description:
         """
         return self.call_procedure('select_all_gyro_from_session', [session_id])
- 
+
     def bulk_insert_gyro_points(self, data_path, local=False):
         """
         What comes in:  path of the files,  if the file is on the server or a remote machine
         What goes out: Nothing
-        Side effects: None 
+        Side effects: None
         Description: This allows inserting gyropoints to a record from a csv file, if insert from the server local = false, if insert from a remote client, then local = True
         """
         args = ["GyroPoints", '(record_id, timestamp, roll, pitch, yaw)']
@@ -206,8 +260,8 @@ class Crud(object):
         """
         What comes in:  record_id
         What goes out: Return the gyro points of one record
-        Side effects: None 
-        Description: 
+        Side effects: None
+        Description:
         """
         args = [record_id]
         return self.call_procedure('select_gyro', args)
@@ -218,21 +272,21 @@ class Crud(object):
         """
         What comes in:  record_id, timestamp, x, y, z
         What goes out: row id
-        Side effects: None 
-        Description:  This function is here for easier testing purpose, in genearl, you should use bulk insert
+        Side effects: None
+        Description:  This function is here for easier testing purpose, in general, you should use bulk insert
         """
         query = "INSERT INTO AccelPoints " \
                 "(record_id, timestamp, surge, sway, heave) " \
                 "VALUES(%s,%s, %s, %s, %s)"
         args = (record_id, timestamp, x, y, z)
         return self.insert(query, args)
-    
+
     def get_all_accel_points_from_session(self, session_id):
         """
         What comes in:  session id
         What goes out: all the accel points within this session, despite the record id, sorted by time
-        Side effects: None 
-        Description:  
+        Side effects: None
+        Description:
         """
         return self.call_procedure('select_all_accel_from_session', [session_id])
 
@@ -240,9 +294,9 @@ class Crud(object):
         """
         What comes in:  record_id
         What goes out: Return the accel points of one record
-        Side effects: None 
-        Description: 
-        """      
+        Side effects: None
+        Description:
+        """
         args = [record_id]
         return self.call_procedure('select_accel', args)
 
@@ -251,7 +305,7 @@ class Crud(object):
         """
         What comes in:  path of the files,  if the file is on the server or a remote machine
         What goes out: Nothing
-        Side effects: None 
+        Side effects: None
         Description: This allows inserting accel points to a record from a csv file, if insert from the server local = false, if insert from a remote client, then local = True
         """
         args = ["AccelPoints", '(record_id, timestamp, surge, sway, heave)']
@@ -263,7 +317,7 @@ class Crud(object):
         What comes in:  session id
         What goes out: Nothing
         Side effects: The auto index in the session table is reseted.
-        Description: 
+        Description:
         """
         args = [session_id]
         self.call_procedure('delete_session', args)
@@ -274,7 +328,7 @@ class Crud(object):
         """
         What comes in:  table name, record_id, timestamp
         What goes out: One row of accel or gyro data
-        Side effects: 
+        Side effects:
         Description: Return one row from accel or gyro table based on the record id and timestamp
         """
         query = "SELECT * FROM " + table + " WHERE record_id = %s AND timestamp = %s"
@@ -285,7 +339,7 @@ class Crud(object):
         """
         What comes in:  MySql query, arguments
         What goes out: One row from the query result
-        Side effects: 
+        Side effects:
         Description: Read and return the first row from the result
         """
         try:
@@ -301,7 +355,7 @@ class Crud(object):
         """
         What comes in:  MySql query, arguments
         What goes out: The result of the query
-        Side effects: 
+        Side effects:
         Description: Read and return the entire result
         """
         try:
@@ -319,7 +373,7 @@ class Crud(object):
         What comes in:  MySql query, arguments
         What goes out: Nothing
         Side effects: Remove elements that is a foreign key may cascade the entire database
-        Description: 
+        Description:
         """
         self.execute_transaction_query(query, args)
 
@@ -329,7 +383,7 @@ class Crud(object):
         What comes in:  MySql query, arguments, If the insert is single row or multiple row
         What goes out: last inserted id
         Side effects: Multiple row might not have last inserted id
-        Description: 
+        Description:
         """
         try:
             cursor = self.conn.cursor()
@@ -344,12 +398,12 @@ class Crud(object):
             return last_id
         except Error as error:
             print(error)
-    
+
     def load_csv_data(self, local, path, args):
         """
         What comes in: If the location of the file is remote or local on the server, path to the file, args contains table name, column names
         What goes out: last inserted id
-        Side effects: 
+        Side effects:
         Description:  load csv data to mysql database
         """
         if local:
@@ -366,7 +420,7 @@ class Crud(object):
         """
         What comes in: Procedure name, the arguments for that procedure, return all result or just one row
         What goes out: Result of the query
-        Side effects: 
+        Side effects:
         Description:  Generic procedure call
         """
         try:
@@ -385,7 +439,7 @@ class Crud(object):
         """
         What comes in: Procedure name, the arguments for that procedure
         What goes out: Result of the query
-        Side effects: 
+        Side effects:
         Description:  Generic transaction call
         """
         try:

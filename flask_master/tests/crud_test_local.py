@@ -28,10 +28,13 @@ class CrudTest(unittest.TestCase):
 
     def test_create_record(self):
         device_id = "-1"
+        device_name = "crud_test"
+        self.crud.create_device_entry(device_id, device_name)
         session_id = self.crud.create_session(self.description, self.starting_time)
         last_id = self.crud.create_record(session_id, device_id)
         self.assertEqual(last_id, self.crud.sha1(str(session_id) + device_id))
         self.crud.delete_entire_session(session_id)
+        self.crud.delete_device_entry(device_id)
 
     def test_get_session_id(self):
         last_id = self.crud.create_session(self.description, self.starting_time)
@@ -40,7 +43,9 @@ class CrudTest(unittest.TestCase):
         self.crud.reset_session_auto_index()
 
     def test_insert_gyro_points_and_read_data_points(self):
-        device_id = 'test'
+        device_id = 'test_gyro'
+        device_name = 'crud_test'
+        self.crud.create_device_entry(device_id, device_name)
         sess_id = self.crud.create_session(self.description, self.starting_time)
         record_id = self.crud.create_record(sess_id, device_id)
         roll, pitch, yaw = 1.0, 1.0, 1.0
@@ -48,9 +53,12 @@ class CrudTest(unittest.TestCase):
         data = self.crud.read_data_points("GyroPoints", record_id, self.starting_time)
         self.assertEqual(data, (record_id, self.starting_time, roll, pitch, yaw))
         self.crud.delete_entire_session(sess_id)
+        self.crud.delete_device_entry(device_id)
 
     def test_insert_accel_points_and_read_data_points(self):
-        device_id = 'test'
+        device_id = 'test_accel'
+        device_name = 'crud_test'
+        self.crud.create_device_entry(device_id, device_name)
         x, y, z = 1.0, 1.0, 1.0
         sess_id = self.crud.create_session(self.description, self.starting_time)
         record_id = self.crud.create_record(sess_id, device_id)
@@ -58,6 +66,7 @@ class CrudTest(unittest.TestCase):
         data = self.crud.read_data_points("AccelPoints", record_id, self.starting_time)
         self.assertEqual(data, (record_id, self.starting_time, x, y, z))
         self.crud.delete_entire_session(sess_id)
+        self.crud.delete_device_entry(device_id)
 
     def test_read_all(self):
         last_id = self.crud.create_session(self.description, self.starting_time)
@@ -78,6 +87,36 @@ class CrudTest(unittest.TestCase):
         self.assertEqual(last_id, last_id_1)
         self.crud.delete_entire_session(last_id_1)
         self.crud.reset_session_auto_index()
+
+    def test_create_device_entry(self):
+        """
+            tests adding a device entry to the database
+            verifies that the name used to create the entry matches what
+                is returned when we get the device name from the database
+        """
+        device_id = 'crud_test_device'
+        device_name_create = 'crud_test_create_device'
+        self.crud.create_device_entry(device_id, device_name_create)
+        device_name_db = self.crud.get_device_name(device_id)[0]
+        self.assertEquals(device_name_create, device_name_db)
+        self.crud.delete_device_entry(device_id)
+
+    def test_create_update_device_entry(self):
+        """
+            tests creating and then updating a device entry in the database
+            verifies that the name used to update the entry matches what
+                is returned when we get the device name from the database
+        """
+        device_id = 'crud_test_device'
+        device_name_create = 'crud_test_create_device'
+        device_name_update = 'crud_test_update_device'
+        self.crud.create_device_entry(device_id, device_name_create)
+        device_name_db = self.crud.get_device_name(device_id)[0]
+        self.assertEquals(device_name_create, device_name_db)
+        self.crud.update_device_entry(device_id, device_name_update)
+        device_name_db = self.crud.get_device_name(device_id)[0]
+        self.assertEquals(device_name_update, device_name_db)
+        self.crud.delete_device_entry(device_id)
 
 
 if __name__ == '__main__':
