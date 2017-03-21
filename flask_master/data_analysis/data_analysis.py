@@ -150,6 +150,10 @@ def download_session_analyzed(session_id=[]):
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
+"""
+The main preprocessing function in charge of transforming raw accelerations and timestamps into uniformed and matching
+accelerations for each expected interval.
+"""
 
 def process_accelerations(start, end, interval, points):
     # Sets the precision level for operations referencing the Decimal datatype
@@ -215,6 +219,11 @@ def process_accelerations(start, end, interval, points):
 
         n += 1
 
+"""
+Determines the correct ending time of the data provided in order to ensure a logical start to the series before
+preprocessing begins.
+"""
+
 
 def determine_end(points, real_end):
 
@@ -233,6 +242,11 @@ def determine_end(points, real_end):
         end_index -= 1
 
     return end_index + 1
+
+"""
+Determines the correct starting time of the data provided in order to ensure a logical start to the series before
+preprocessing begins.
+"""
 
 
 def determine_start(points, start, end_index):
@@ -253,6 +267,11 @@ def determine_start(points, start, end_index):
         start_index += 1
 
     return start_index
+
+"""
+The main "state machine" used to generate the processed positional data from the preprocessed acceleration data derived
+from the raw collected data. The output of this function should serve as the content of the simulation file.
+"""
 
 
 def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
@@ -299,6 +318,11 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
 
     return process_return_to_zero(keeps_accel, keeps_gyro, session)
 
+"""
+For each degree of freedom in the list specified and for the starting position specified, will generate the next state
+of the keeper associated and append the new position for the set for a particular interval / time.
+"""
+
 
 def process_states(keeps_list, values_list, position, next_set, starting_value_type):
 
@@ -313,6 +337,11 @@ def process_states(keeps_list, values_list, position, next_set, starting_value_t
         next_set.append(curr_keep.get_position())
 
     return next_set
+
+"""
+Modifies the existing session generated under normal inputs to extend until all values have reached zero position. Uses
+process_for_next_set to generate the next closest states to zero for each of the degrees of motion.
+"""
 
 
 def process_return_to_zero(keeps_accel, keeps_gyro, session):
@@ -333,6 +362,12 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
         session.append(next_set)
 
     return session
+
+"""
+For each KinematicsKeeper (for each degree of freedom), check if the current values are zeroed to original status, and
+if not generate the next state closer to zero by half the maximum acceleration specified by the keeper. This is a helper
+function in order to drive all keepers to zero.
+"""
 
 
 def process_for_next_set(keeps_list, next_set):
