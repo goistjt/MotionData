@@ -51,6 +51,12 @@ def get_html(sessions):
         recs = ""
         for r in records:
             rid = r[0]
+            dev_id = r[2]
+            dev_name = crud.get_device_name(dev_id)
+            if dev_name == () or dev_name[0] == '':
+                dev_name = dev_id
+            else:
+                dev_name = dev_name[0]
             curr = """<tr style="display: table-row;">\n
                        <td>{}</td>\n
                        <td>\n
@@ -59,7 +65,7 @@ def get_html(sessions):
                            <input id="analyzed_button" type="submit" name="ar_{}"
                                onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
                        </td>\n
-                   </tr>\n""".format(rid, rid, rid, rid, rid)
+                   </tr>\n""".format(dev_name, rid, rid, rid, rid)
             recs += curr
 
         sess = """<tr class="master">\n
@@ -99,7 +105,7 @@ def tables():
 
 
 @app.route("/getRecordRaw/<record_id>")
-def get_record_data_raw(record_id=[]):
+def get_record_data_raw(record_id):
     txt = da.download_record_raw(record_id)
     filename = "record_raw_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -110,7 +116,7 @@ def get_record_data_raw(record_id=[]):
 
 
 @app.route("/getRecordAnalyzed/<record_id>")
-def get_record_data_analyzed(record_id=[]):
+def get_record_data_analyzed(record_id):
     txt = da.download_record_analyzed(record_id)
     filename = "record_analyzed_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -121,7 +127,7 @@ def get_record_data_analyzed(record_id=[]):
 
 
 @app.route("/getSessionRaw/<session_id>")
-def get_session_data_raw(session_id=[]):
+def get_session_data_raw(session_id):
     txt = da.download_session_raw(session_id)
     filename = "session_raw_{}_{}.txt".format(session_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -132,7 +138,7 @@ def get_session_data_raw(session_id=[]):
 
 
 @app.route("/getSessionAnalyzed/<session_id>")
-def get_session_data_analyzed(session_id=[]):
+def get_session_data_analyzed(session_id):
     txt = da.download_session_analyzed(session_id)
     filename = "session_analyzed_{}_{}.txt".format(session_id, str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
@@ -176,13 +182,13 @@ def create_session():
 
     print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
 
-    sess_id = crud.create_session(desc, start)
-    rec_id = crud.create_record(sess_id, device_id)
     device_name_db = crud.get_device_name(device_id)
-    if device_name_db is None:
+    if device_name_db == ():
         crud.create_device_entry(device_id, device_name)
     if device_name != device_name_db:
         crud.update_device_entry(device_id, device_name)
+    sess_id = crud.create_session(desc, start)
+    rec_id = crud.create_record(sess_id, device_id)
 
     gyro_points = []
     accel_points = []
@@ -253,12 +259,12 @@ def add_to_session():
 
     print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
 
-    rec_id = crud.create_record(sess_id, device_id)
     device_name_db = crud.get_device_name(device_id)
-    if device_name_db is None:
+    if device_name_db == ():
         crud.create_device_entry(device_id, device_name)
     if device_name != device_name_db:
         crud.update_device_entry(device_id, device_name)
+    rec_id = crud.create_record(sess_id, device_id)
 
     gyro_points = []
     accel_points = []
@@ -311,7 +317,7 @@ def delete_session():
 
 @app.route("/getSessions/<device_id>")
 def get_sessions(device_id):
-    result = list(crud.get_sessions(device_id))
+    result = list(crud.get_sessions_not_related_to_device(device_id))
     ret_list = []
     for row in result:
         row = list(row)

@@ -13,24 +13,21 @@ import data_analysis.max_collection_factories as mcf
 
 
 class TestKinematics(unittest.TestCase):
+
     def setUp(self):
-        unittest.TestCase.setUp(self)
         self.kin_keep = kk.KinematicsKeeper(self.max_coll_fact.create_max_collection(self.max_coll_fact.SURGE), 1.0)
 
     def tearDown(self):
-        unittest.TestCase.tearDown(self)
         self.kin_keep = None
 
     @classmethod
     def setUpClass(cls):
-        super(TestKinematics, cls).setUpClass()
         dc.getcontext().prec = 6
         cls.MAX_EPSILON = 0.000001
         cls.max_coll_fact = mcf.MaxCollectionFactory()
 
     @classmethod
     def tearDownClass(cls):
-        super(TestKinematics, cls).tearDownClass()
         cls.max_coll_fact = None
 
     def test_points_normalizer_same(self):
@@ -77,7 +74,6 @@ class TestKinematics(unittest.TestCase):
                   [3.5, 1.0, 4.0, 9.2]]
         points_exp = [[0.5, 0.0, 0.0, 0.0], [1.5, 1.0, 1.0, 1.0], [2.5, 2.0, 2.0, 2.0], [3.5, 0.0, 0.0, 0.0]]
         points = da.process_accelerations(0.5, 3.5, 1.0, points)
-        print(points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_kk_determine_next_acceleration_by_pos(self):
@@ -237,6 +233,6 @@ class TestKinematics(unittest.TestCase):
 
         self.assertTrue(np.allclose(actual, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0000001))
 
-
-if __name__ == "__main__":
-    unittest.main()
+# if __name__ == "__main__":
+#     # import sys;sys.argv = ['', 'Test.testName']
+#     unittest.main()

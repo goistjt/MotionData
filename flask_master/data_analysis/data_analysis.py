@@ -69,16 +69,15 @@ def point_alignment(accel_base, gyro_base):
 
 
 def download_record_analyzed(record_id):
-    # TODO: Replace some of the below code with calls to Runzhi's new procedures / functions
     accel_base = list(crud.select_accel(record_id))
     gyro_base = list(crud.select_gyro(record_id))
 
     start = 0
     end = 0
 
-    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
-        start = max(accel_base[0][0], gyro_base[0][0])
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+    if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
+        start = max(accel_base[0][0], gyro_base[0][0]) - 40
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
 
@@ -136,15 +135,12 @@ def download_session_analyzed(session_id=[]):
     accel_base = list(crud.get_all_accel_points_from_session(session_id))
     gyro_base = list(crud.get_all_gyro_points_from_session(session_id))
 
-    print(accel_base)
-    print(gyro_base)
-
     start = 0
     end = 0
 
-    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
-        start = max(accel_base[0][0], gyro_base[0][0])
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+    if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
+        start = max(accel_base[0][0], gyro_base[0][0]) - 40
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
 
