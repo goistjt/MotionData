@@ -159,14 +159,14 @@ Params: start - time in milliseconds
         points - the original sequence of accelerations
 
 Returns: final_points - a sequence of preprocessed accelerations for future use
-         
+
 """
 
 
 def process_accelerations(start, end, interval, points):
 
     # Sets the precision level for operations referencing the Decimal datatype
-    dc.getcontext().prec = 20
+    dc.getcontext().prec = 6
 
     # Max distance between two collected points' times.
     max_time_diff = 120000
@@ -195,7 +195,7 @@ def process_accelerations(start, end, interval, points):
 
     for next_point in points:
 
-        if next_point[0] >= end_d:
+        if dc.Decimal(next_point[0]) * ONE > end_d:
             return final_points, end
 
         curr_point = final_points[len(final_points) - 1]
@@ -204,7 +204,7 @@ def process_accelerations(start, end, interval, points):
         time_diff = (dc.Decimal(next_point[0]) * ONE) - (dc.Decimal(curr_point[0]) * ONE)
 
         if time_diff > max_time_diff:
-            return final_points, end
+            return final_points, next_point[0]
 
         elif time_diff == ZERO:
             final_points[len(final_points) - 1] = next_point
@@ -226,11 +226,11 @@ def process_accelerations(start, end, interval, points):
 
             i = 0
 
-            while i < num_elements:
+            while True:
 
                 next_time = dc.Decimal(curr_point[0]) * dc.Decimal(1.0) + interval_d
 
-                if next_time > last_time or next_time >= end_d:
+                if next_time > last_time or next_time > end_d:
                     break
 
                 curr_point = [float(next_time), curr_point[1] + fv1, curr_point[2] + fv2, curr_point[3] + fv3]
@@ -304,11 +304,7 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
 
     accel_list, end_time = process_accelerations(start_time, end_time, interval, accel_points)
 
-    print(end_time)
-
     gyro_list, end_time = process_accelerations(start_time, end_time, interval, gyro_points)
-
-    print(len(accel_list), len(gyro_list))
 
     if ((accel_list is None or len(accel_list) == 0) or (gyro_list is None or len(gyro_list) == 0) or (
                 len(gyro_list) != len(accel_list))):
@@ -426,7 +422,5 @@ def process_for_next_set(keeps_list, next_set):
             continue
 
         next_set.append(curr_keep.get_position())
-
-    print(next_set)
 
     return next_set
