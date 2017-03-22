@@ -5,6 +5,7 @@ Created on Oct 29, 2016
 """
 
 import unittest
+import flask_server
 import data_analysis.data_analysis as da
 import numpy as np
 import decimal as dc
@@ -29,6 +30,7 @@ class TestKinematics(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.max_coll_fact = None
+        flask_server.t.cancel()
 
     def test_points_normalizer_same(self):
         points = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
