@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -70,10 +71,20 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
+    /**
+     * Caches a start time for later use in updating the Timeframe table
+     *
+     * @param startTime time the recording started, in milliseconds since the epoch
+     */
     public void setStartTime(long startTime) {
         currentStartTime = startTime;
     }
 
+    /**
+     * Creates a row in the Timeframe table with a cached startTime, and the provided endTime
+     *
+     * @param endTime time that the recording ended, in milliseconds since the epoch
+     */
     public void setEndTime(long endTime) {
         currentEndTime = endTime;
         SQLiteDatabase db = this.getWritableDatabase();
@@ -94,6 +105,11 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * @param startTime times to search from, in milliseconds since the epoch
+     * @param endTime   times to search until, in milliseconds since the epoch
+     * @return List of all Timeframes for which data has been recorded
+     */
     public List<TimeframeDataModel> getAllTimeframesBetween(long startTime, long endTime) {
         Cursor timeframeCursor;
         List<TimeframeDataModel> timeframeList = new ArrayList<>();
@@ -119,6 +135,11 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         return timeframeList;
     }
 
+    /**
+     * @param startTime times to search from, in milliseconds since the epoch
+     * @param endTime   times to search until, in milliseconds since the epoch
+     * @return SessionModel containing all the Accel and Gyro data between the startTime and endTime
+     */
     public SessionModel getAllDataBetween(long startTime, long endTime) {
         Cursor accelCursor;
         Cursor gyroCursor;
@@ -163,12 +184,20 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
 
     }
 
+    /**
+     * @param startTime times to search from, in milliseconds since the epoch
+     * @param endTime   times to search until, in milliseconds since the epoch
+     * @return All Acceleration and Gyroscope data between the startTime and endTime formatted as a JSON String
+     */
     public String getAllDataAsJson(long startTime, long endTime) {
         SessionModel session = getAllDataBetween(startTime, endTime);
         Gson gson = new Gson();
         return gson.toJson(session);
     }
 
+    /**
+     * Pushes a Stack filled with Acceleration data into the database
+     */
     public void pushAccelData() {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
@@ -199,6 +228,9 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         }
     }
 
+    /**
+     * Pushes a Stack filled with Gyroscope data into the database
+     */
     public void pushGyroData() {
         SQLiteDatabase db = this.getWritableDatabase();
         try {
@@ -229,7 +261,12 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void insertAccelData(AccelDataModel data) {
+    /**
+     * Pushes a single {@link AccelDataModel} onto a Stack which is periodically inserted into the Acceleration table
+     *
+     * @param data {@link AccelDataModel}
+     */
+    public void insertAccelData(@NonNull AccelDataModel data) {
         mAccelStack.push(data);
         try {
             mBlockAccelCheckSemaphore.acquire();
@@ -245,7 +282,12 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         mBlockAccelCheckSemaphore.release();
     }
 
-    public void insertGyroData(GyroDataModel data) {
+    /**
+     * Pushes a single {@link GyroDataModel} onto a Stack which is periodically inserted into the Gyroscope table
+     *
+     * @param data {@link GyroDataModel}
+     */
+    public void insertGyroData(@NonNull GyroDataModel data) {
         mGyroStack.push(data);
         try {
             mBlockGyroCheckSemaphore.acquire();
@@ -261,22 +303,42 @@ public class MotionCollectionDBHelper extends SQLiteOpenHelper {
         mBlockGyroCheckSemaphore.release();
     }
 
-
+    /**
+     * Wipes the Acceleration table
+     *
+     * @return number of rows deleted
+     */
     public long deleteCurrentAccelData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_accel_data));
         return (long) statement.executeUpdateDelete();
     }
 
+    /**
+     * Wipes the Gyroscope tables
+     *
+     * @return number of rows deleted
+     */
     public long deleteCurrentGyroData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_gyro_data));
         return (long) statement.executeUpdateDelete();
     }
 
+    /**
+     * Wipes the Timeframe table
+     *
+     * @return number of rows deleted
+     */
     public long deleteCurrentTimeframeData() {
         SQLiteStatement statement = this.getWritableDatabase().compileStatement(mContext.getString(R.string.delete_timeframe));
         return (long) statement.executeUpdateDelete();
     }
 
+    /**
+     * Deletes all data in the Acceleration, Gyroscope, and Timeframe tables between the input value
+     *
+     * @param startTime times to delete from, in milliseconds since the epoch
+     * @param endTime   times to deletes until, in milliseconds since the epoch
+     */
     public void deleteDataBetween(long startTime, long endTime) {
         SQLiteDatabase db = this.getReadableDatabase();
         String ts = mContext.getString(R.string.timestamp);
