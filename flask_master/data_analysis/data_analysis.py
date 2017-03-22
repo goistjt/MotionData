@@ -79,6 +79,8 @@ def download_record_analyzed(record_id):
         start = max(accel_base[0][0], gyro_base[0][0]) - 40
         end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
+    print("made past data")
+
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
@@ -146,74 +148,99 @@ def download_session_analyzed(session_id=[]):
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
+
 """
 The main preprocessing function in charge of transforming raw accelerations and timestamps into uniformed and matching
 accelerations for each expected interval.
+
+Params: start - time in milliseconds
+        end - time in milliseconds
+        interval - time between points in milliseconds
+        points - the original sequence of accelerations
+
+Returns: final_points - a sequence of preprocessed accelerations for future use
+         
 """
 
+
 def process_accelerations(start, end, interval, points):
+
     # Sets the precision level for operations referencing the Decimal datatype
     dc.getcontext().prec = 20
-    # Default one and zero values
-    zero = dc.Decimal(0.0)
-    one = dc.Decimal(1.0)
 
-    interval_d = dc.Decimal(interval) * one
-    start_d = dc.Decimal(start) * one
-    end_d = dc.Decimal(end) * one
+    # Max distance between two collected points' times.
+    max_time_diff = 120000
+
+    # Default one and zero values
+    ZERO = dc.Decimal(0.0)
+    ONE = dc.Decimal(1.0)
+
+    # Converting intervals and start times to Decimals
+    interval_d = dc.Decimal(interval) * ONE
+    start_d = dc.Decimal(start) * ONE
+    end_d = dc.Decimal(end) * ONE
+
+    # Finding the ending interval based on interval and time difference from start
     real_end_d = start_d + ((end_d - start_d) // interval_d) * interval_d
+
+    # Potentially cutting off beginning and end based on start and end times
     end_index = determine_end(points, real_end_d)
     start_index = determine_start(points, start_d, end_index)
+
     points = points[start_index:end_index]
+
     final_points = [[start, 0.0, 0.0, 0.0]]
 
     points.append([float(real_end_d), 0.0, 0.0, 0.0])
 
-    n = 0
-    z = 0
-    while True:
-        # At end of original
-        if n >= len(points):
-            return final_points
+    for next_point in points:
 
-        curr_point = final_points[z]
-        next_point = points[n]
+        if next_point[0] >= end_d:
+            return final_points, end
+
+        curr_point = final_points[len(final_points) - 1]
 
         # Current time difference
-        time_diff = (dc.Decimal(next_point[0]) * one) - (dc.Decimal(curr_point[0]) * one)
+        time_diff = (dc.Decimal(next_point[0]) * ONE) - (dc.Decimal(curr_point[0]) * ONE)
 
-        if time_diff == zero:
-            final_points[z] = next_point
+        if time_diff > max_time_diff:
+            return final_points, end
+
+        elif time_diff == ZERO:
+            final_points[len(final_points) - 1] = next_point
 
         elif time_diff == interval_d:
             final_points.append(next_point)
-            z += 1
 
-        elif time_diff > zero and time_diff > interval_d:
+        elif time_diff > ZERO and time_diff > interval_d:
+
             raw_ratio = time_diff / interval_d
             num_elements = math.floor(raw_ratio)
 
-            last_time = (dc.Decimal(curr_point[0]) * one) + (num_elements * interval_d)
+            last_time = (dc.Decimal(curr_point[0]) * ONE) + (num_elements * interval_d)
             time_ratio = last_time / dc.Decimal(next_point[0])
 
             fv1 = float(((dc.Decimal(next_point[1]) * time_ratio) - dc.Decimal(curr_point[1])) / num_elements)
             fv2 = float(((dc.Decimal(next_point[2]) * time_ratio) - dc.Decimal(curr_point[2])) / num_elements)
             fv3 = float(((dc.Decimal(next_point[3]) * time_ratio) - dc.Decimal(curr_point[3])) / num_elements)
 
-            while True:
+            i = 0
+
+            while i < num_elements:
 
                 next_time = dc.Decimal(curr_point[0]) * dc.Decimal(1.0) + interval_d
 
-                if next_time > last_time:
+                if next_time > last_time or next_time >= end_d:
                     break
 
                 curr_point = [float(next_time), curr_point[1] + fv1, curr_point[2] + fv2, curr_point[3] + fv3]
 
                 final_points.append(curr_point)
 
-            z = len(final_points) - 1
+                i += 1
 
-        n += 1
+    return final_points, end
+
 
 """
 Determines the correct ending time of the data provided in order to ensure a logical start to the series before
@@ -222,22 +249,21 @@ preprocessing begins.
 
 
 def determine_end(points, real_end):
-
-    one = dc.Decimal(1.0)
+    ONE = dc.Decimal(1.0)
 
     end_index = len(points) - 1
 
     while end_index >= 0:
 
-        curr_comparison = dc.Decimal(points[end_index][0]) * one
+        curr_comparison = dc.Decimal(points[end_index][0]) * ONE
 
         if curr_comparison <= real_end:
-
             break
 
         end_index -= 1
 
     return end_index + 1
+
 
 """
 Determines the correct starting time of the data provided in order to ensure a logical start to the series before
@@ -246,8 +272,7 @@ preprocessing begins.
 
 
 def determine_start(points, start, end_index):
-
-    one = dc.Decimal(1.0)
+    ONE = dc.Decimal(1.0)
     start_index = 0
 
     while start_index <= end_index:
@@ -255,7 +280,7 @@ def determine_start(points, start, end_index):
         if start_index >= len(points):
             return end_index
 
-        curr_comparison = dc.Decimal(points[start_index][0]) * one
+        curr_comparison = dc.Decimal(points[start_index][0]) * ONE
 
         if curr_comparison > start:
             break
@@ -264,6 +289,7 @@ def determine_start(points, start, end_index):
 
     return start_index
 
+
 """
 The main "state machine" used to generate the processed positional data from the preprocessed acceleration data derived
 from the raw collected data. The output of this function should serve as the content of the simulation file.
@@ -271,15 +297,18 @@ from the raw collected data. The output of this function should serve as the con
 
 
 def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
-
     default_list = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
     if start_time >= end_time:
         return default_list
 
-    accel_list = process_accelerations(start_time, end_time, interval, accel_points)
+    accel_list, end_time = process_accelerations(start_time, end_time, interval, accel_points)
 
-    gyro_list = process_accelerations(start_time, end_time, interval, gyro_points)
+    print(end_time)
+
+    gyro_list, end_time = process_accelerations(start_time, end_time, interval, gyro_points)
+
+    print(len(accel_list), len(gyro_list))
 
     if ((accel_list is None or len(accel_list) == 0) or (gyro_list is None or len(gyro_list) == 0) or (
                 len(gyro_list) != len(accel_list))):
@@ -314,6 +343,7 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
 
     return process_return_to_zero(keeps_accel, keeps_gyro, session)
 
+
 """
 For each degree of freedom in the list specified and for the starting position specified, will generate the next state
 of the keeper associated and append the new position for the set for a particular interval / time.
@@ -334,6 +364,7 @@ def process_states(keeps_list, values_list, position, next_set, starting_value_t
 
     return next_set
 
+
 """
 Modifies the existing session generated under normal inputs to extend until all values have reached zero position. Uses
 process_for_next_set to generate the next closest states to zero for each of the degrees of motion.
@@ -341,7 +372,6 @@ process_for_next_set to generate the next closest states to zero for each of the
 
 
 def process_return_to_zero(keeps_accel, keeps_gyro, session):
-
     while True:
 
         next_set = []
@@ -359,6 +389,7 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
     return session
 
+
 """
 For each KinematicsKeeper (for each degree of freedom), check if the current values are zeroed to original status, and
 if not generate the next state closer to zero by half the maximum acceleration specified by the keeper. This is a helper
@@ -367,7 +398,6 @@ function in order to drive all keepers to zero.
 
 
 def process_for_next_set(keeps_list, next_set):
-
     # TODO: Could very much move things like this into a configuration file or make the data analysis class instantiated
     maximum_buffer_factor = 0.5
 
@@ -396,5 +426,7 @@ def process_for_next_set(keeps_list, next_set):
             continue
 
         next_set.append(curr_keep.get_position())
+
+    print(next_set)
 
     return next_set
