@@ -1,7 +1,9 @@
 package edu.rose_hulman.nswccrane.dataacquisition;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -11,7 +13,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -21,11 +27,11 @@ import sqlite.MotionCollectionDBHelper;
 
 public class DeletionActivity extends AppCompatActivity {
 
+    @BindView(R.id.delete_list)
+    ListView listView;
     private List<TimeframeDataModel> timeData;
     private TimeframeAdapter adapter;
     private MotionCollectionDBHelper motionDB;
-    @BindView(R.id.delete_list)
-    ListView listView;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,7 +53,7 @@ public class DeletionActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
                 TimeframeDataModel data = adapter.getItem(pos);
                 if (data != null) {
-                    deleteData(pos, data);
+                    displayConfirmation(pos, data);
                 }
                 autoFinish();
             }
@@ -64,13 +70,39 @@ public class DeletionActivity extends AppCompatActivity {
     }
 
     /**
-     * Deletes data at the specified position from the database and the {@link ListView}
+     * Displays a dialog to confirm/cancel the deletion of the selected data
      *
      * @param pos  position of item pressed in the list
      * @param data data selected to delete
      */
-    private void deleteData(int pos, TimeframeDataModel data) {
+    private void displayConfirmation(final int pos, final TimeframeDataModel data) {
         //TODO: Display a dialog asking for confirmation before delete
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.US);
+
+        Date date = new Date(data.getStartTime());
+        String startTime = dateFormat.format(date);
+        String endTime = dateFormat.format(new Date(data.getEndTime()));
+
+        new AlertDialog.Builder(this)
+                .setTitle("Warning")
+                .setMessage(String.format("Are you sure you wish to delete data starting from %s and ending %s?", startTime, endTime))
+                .setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        deleteData(data, pos);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Deletes the data at the specified location from the SQLite database
+     *
+     * @param data the {@link TimeframeDataModel} with the timestamps to be deleted
+     * @param pos  position in the list that the data came from
+     */
+    private void deleteData(TimeframeDataModel data, int pos) {
         motionDB.deleteDataBetween(data.getStartTime(), data.getEndTime());
         timeData.remove(pos);
         Log.d("DATA LIST", "onItemClick: " + pos);
