@@ -165,7 +165,7 @@ def process_accelerations(start, end, interval, points):
     """
 
     # Sets the precision level for operations referencing the Decimal datatype
-    dc.getcontext().prec = 6
+    dc.getcontext().prec = 20
 
     # Max distance between two collected points' times.
     max_time_diff = 120000
