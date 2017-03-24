@@ -8,10 +8,20 @@ import decimal as dc
 
 
 class KinematicsKeeper(object):
+    """
+    This class represents the state of a particular degree of motion and composes what is needed to determine the next
+    valid motions based upon input and specified constraints.
+    """
 
-    def __init__(self, max_collection):
+    # For usage in determining what a "new acceleration" is defined as in generating state
+    VELOCITY = 'VELOCITY'
+    ACCELERATION = 'ACCELERATION'
+    POSITION = 'POSITION'
+
+    def __init__(self, max_collection, buffer_factor):
         self.zero = dc.Decimal(0.0)
         self.one = dc.Decimal(1.0)
+        self.max_buffer_factor = dc.Decimal(buffer_factor) * self.one
         self.interval = dc.Decimal(40)
         self.interval = (self.interval * self.one) / (dc.Decimal(1000) * self.one)
         self._curr_pos = dc.Decimal(0.0)
@@ -19,11 +29,29 @@ class KinematicsKeeper(object):
         self._curr_accel = dc.Decimal(0.0)
         self._max_collection = max_collection
 
-    def generate_next_state(self, new_accel):
+    def generate_next_state(self, new_val, starting_val_type):
+        """
+        Adjusts the values of position, velocity, and acceleration for each interval of this degree of motion.
+        The user can then query for these values at a particular moment in time.
+
+        Params: new_val - an input value, either acceleration, velocity, or position from the previous to generate from
+                starting_val_type - acceleration, velocity, or position based on the constants included in this class
+
+        Returns: None
+
+        """
 
         dc.getcontext().prec = 6
 
-        new_accel = dc.Decimal(new_accel) * self.one
+        new_val = dc.Decimal(new_val) * self.one
+
+        new_accel = new_val
+
+        if starting_val_type == self.VELOCITY:
+            new_accel = self._determine_next_acceleration_by_vel(new_val)
+
+        elif starting_val_type == self.POSITION:
+            new_accel = self._determine_next_acceleration_by_pos(new_val)
 
         new_accel = self.check_max_accel(new_accel)
 
@@ -44,98 +72,173 @@ class KinematicsKeeper(object):
         self._curr_pos = new_pos
 
     def check_max_accel(self, new_accel):
+        """
+        Determines if the maximum acceleration was reached.
 
-        if self._max_collection.get_max_accel() < dc.Decimal(abs(new_accel)):
+        Params: new_accel - the acceleration to check against the maximum allowed
+
+        Returns: the acceleration deemed appropriate after checks have been made
+        """
+
+        definitive_max = self._max_collection.get_max_accel() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(abs(new_accel)):
 
             if new_accel == dc.Decimal(0.0):
-                new_accel = self._max_collection.get_max_accel()
+                new_accel = definitive_max
 
             else:
-                new_accel = (new_accel / dc.Decimal(abs(new_accel))) * self._max_collection.get_max_accel()
+                new_accel = (new_accel / dc.Decimal(abs(new_accel))) * definitive_max
 
         return new_accel
 
     def check_accel_onset(self, new_accel):
+        """
+        Determines if the maximum change in acceleration has been reached.
 
-        if self._max_collection.get_max_accel_diff() < dc.Decimal(abs(new_accel - self._curr_accel) / self.interval):
+        Params: new_accel - the acceleration to check against (with the current acceleration) the maximum allowed change
+                            in acceleration
+
+        Returns: the acceleration deemed appropriate after checks have been made
+        """
+
+        definitive_max = self._max_collection.get_max_accel_diff() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(abs(new_accel - self._curr_accel)):
 
             if new_accel == dc.Decimal(0.0):
-                new_accel = (self._max_collection.get_max_accel_diff() * self.interval) + self._curr_accel
+                new_accel = definitive_max + self._curr_accel
 
             else:
-                new_accel = ((new_accel / dc.Decimal(abs(new_accel))) * (
-                    self._max_collection.get_max_accel_diff() * self.interval)) + self._curr_accel
+                new_accel = ((new_accel / dc.Decimal(abs(new_accel))) * definitive_max) + self._curr_accel
 
         return new_accel
 
     def check_max_velocity(self, new_vel):
+        """
+        Determines if the maximum velocity has been reached.
 
-        if self._max_collection.get_max_vel() < dc.Decimal(abs(new_vel)):
+        Params: new_vel - the velocity to check against the maximum allowed
+
+        Returns: the appropriate velocity
+        """
+
+        definitive_max = self._max_collection.get_max_vel() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(abs(new_vel)):
 
             if new_vel == dc.Decimal(0.0):
-                new_vel = self._max_collection.get_max_vel()
+                new_vel = definitive_max
 
             else:
-                new_vel = (new_vel / dc.Decimal(abs(new_vel))) * self._max_collection.get_max_vel()
+                new_vel = (new_vel / dc.Decimal(abs(new_vel))) * definitive_max
 
         return new_vel
 
     def check_max_neg_position(self, new_pos):
+        """
+        Determines if the maximum negative position has been reached.
 
-        if self._max_collection.get_max_neg_exc() > dc.Decimal(new_pos):
-            new_pos = self._max_collection.get_max_neg_exc()
+        Params: new_pos - the position to check against the maximum allowed in the negative direction
+
+        Returns: the appropriate position
+
+        """
+
+        definitive_max = self._max_collection.get_max_neg_exc() * self.max_buffer_factor
+        if definitive_max > dc.Decimal(new_pos):
+            new_pos = definitive_max
 
         return new_pos
 
     def check_max_pos_position(self, new_pos):
 
-        if self._max_collection.get_max_pos_exc() < dc.Decimal(new_pos):
-            new_pos = self._max_collection.get_max_pos_exc()
+        """
+        Determines if the maximum positive position has been reached.
+
+        Params: new_pos - the position to check against the maximum allowed in the positive direction
+
+        Returns: the appropriate position
+
+        """
+
+        definitive_max = self._max_collection.get_max_pos_exc() * self.max_buffer_factor
+        if definitive_max < dc.Decimal(new_pos):
+            new_pos = definitive_max
 
         return new_pos
 
     def get_velocity(self):
-
         return float(self._curr_vel)
 
     def get_acceleration(self):
-
         return float(self._curr_accel)
 
     def get_position(self):
-
         return float(self._curr_pos)
 
     def set_position(self, new_pos):
+        """
+        Sets the current position. Used in some niche situations like returning to zero position.
+        """
 
         self._curr_pos = dc.Decimal(new_pos) * self.one
 
     def set_interval(self, interval):
-
         self.interval = (dc.Decimal(interval) * self.one) / (dc.Decimal(1000) * self.one)
 
     def get_max_acceleration(self):
+        """
+        Gets the maximum acceleration that this keeper was set to allow.
+        """
 
         return float(self._max_collection.get_max_accel())
 
     def _determine_next_acceleration_by_pos(self, new_pos):
+        """
+        Determines the next accleration based upon existing values and a new position.
+
+        Params: new_pos - the new position to determine the next acceleration from
+
+        Returns: the appropriate new acceleration for further calculations to use
+
+        """
 
         return ((dc.Decimal(-6) * (self._curr_pos + (self._curr_vel * self.interval) + (
             dc.Decimal(1 / 2) * (self._curr_accel * (self.interval ** dc.Decimal(2)))) - new_pos)) / (
                     self.interval ** dc.Decimal(2))) + self._curr_accel
 
     def _determine_next_acceleration_by_vel(self, new_vel):
+        """
+        Determines the next acceleration based upon existing values and a new velocity.
 
+        Params: new_vel - the velocity to determine the new acceleration from
+
+        Returns: the appropriate new acceleration for further calculations to use
+        """
         return ((dc.Decimal(-2) * (self._curr_vel + (self._curr_accel * self.interval) - new_vel)) / (
             self.interval)) + self._curr_accel
 
     def _determine_next_position(self, new_accel):
+        """
+        Determines the next position based upon existing values and a new acceleration.
+
+        Params: new_accel - the next accel value to generate state from
+
+        Returns: the position of the next state
+
+        """
 
         return self._curr_pos + (self._curr_vel * self.interval) + (
             dc.Decimal(1 / 2) * self._curr_accel * (self.interval ** dc.Decimal(2))) + (
                    dc.Decimal(1 / 6) * ((new_accel - self._curr_accel) * (self.interval ** dc.Decimal(2))))
 
     def _determine_next_velocity(self, new_accel):
+        """
+        Determines the next velocity based upon existing values and a new acceleration.
+
+        Params: new_accel - the next accel to generate state from
+
+        Returns: the velocity of the next state
+
+        """
 
         return self._curr_vel + self._curr_accel * self.interval + dc.Decimal(1 / 2) * (
             (new_accel - self._curr_accel) * self.interval)

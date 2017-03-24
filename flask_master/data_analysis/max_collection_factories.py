@@ -10,6 +10,11 @@ import data_analysis.max_collections as mc
 
 
 class MaxCollectionFactory:
+    """
+    This class is responsible for delivering the corresponding colleciton of maximum values (MaxCollections) based upon the
+    degree of freedom designation specified.
+    """
+
     def __init__(self):
         self.SURGE = 'surge'
         self.SWAY = 'sway'
@@ -27,7 +32,26 @@ class MaxCollectionFactory:
             }
 
     def add_collection(self, fid, max_collection):
+        """
+        Adds a collection to the dictionary with an id and a collection class.
+
+        Params: fid - the identifier for the input collection object
+                max_collection - the MaxCollection object to be stored in the dictionary
+
+        Returns: None
+
+        """
+
         self.factories.put[fid] = max_collection
 
     def create_max_collection(self, fid):
+        """
+        Retrieves the correct class from the dictionary and instantiates an instance of it.
+
+        Params: fid - the identifier for the object to retrieve
+
+        Returns: MaxCollection object desired with that fid or None if not found from fid input
+
+        """
+
         return self.factories[fid]()

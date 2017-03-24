@@ -10,6 +10,11 @@ GRAVITY = 9.81
 
 
 class MaxCollection(object):
+    """
+    This class is responsible for composing the various constraints that must be considered for each degree of freedom.
+    Additional subclasses may be made for differing machines / setups.
+    """
+
     def __init__(self):
         self._max_vel = dc.Decimal(0.0)
         self._max_neg_exc = dc.Decimal(0.0)

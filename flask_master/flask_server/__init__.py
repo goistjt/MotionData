@@ -31,6 +31,9 @@ def create_app():
         crud.close()
 
     def upload_to_db():
+        if app.testing:
+            interrupt()
+
         global upload_files
         global t
         data = []
