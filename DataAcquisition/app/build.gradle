@@ -3,13 +3,13 @@ apply plugin: 'android-apt'
 apply plugin: 'spoon'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 25
+    buildToolsVersion '25.0.1'
 
     defaultConfig {
         applicationId "edu.rose_hulman.nswccrane.dataacquisition"
         minSdkVersion 19
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -39,7 +39,7 @@ repositories {
 dependencies {
     // BUILD
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:appcompat-v7:25.2.0'
 
     // Syntactic sugar
     compile 'com.jakewharton:butterknife:8.4.0'
@@ -50,12 +50,12 @@ dependencies {
     // Http Requests
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     compile 'com.squareup.okio:okio:1.11.0'
-    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.google.code.gson:gson:2.7'
 
     // UNIT TESTING
     testCompile(
             'junit:junit:4.12',
-            'com.android.support:support-annotations:24.2.1',
+            'com.android.support:support-annotations:25.2.0',
             'com.squareup.assertj:assertj-android:1.0.0',
             'org.mockito:mockito-core:1.9.5',
             'org.assertj:assertj-core:1.7.0'
