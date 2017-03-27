@@ -5,6 +5,7 @@ Created on Oct 29, 2016
 """
 
 import unittest
+import flask_server
 import data_analysis.data_analysis as da
 import numpy as np
 import decimal as dc
@@ -22,9 +23,11 @@ class TestKinematics(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        flask_server.app.testing = True
         dc.getcontext().prec = 6
         cls.MAX_EPSILON = 0.000001
         cls.max_coll_fact = mcf.MaxCollectionFactory()
+
 
     @classmethod
     def tearDownClass(cls):
@@ -35,7 +38,7 @@ class TestKinematics(unittest.TestCase):
                   [4.0, 0.0, 0.0, 0.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_normalizer_beginning_off(self):
@@ -43,7 +46,7 @@ class TestKinematics(unittest.TestCase):
                   [4.0, 0.0, 0.0, 0.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_normalizer_end_off(self):
@@ -51,21 +54,21 @@ class TestKinematics(unittest.TestCase):
                   [3.9, 22.0, 0.42, 42.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_simple_shift(self):
         points = [[0.1, 0.0, 0.0, 0.0], [0.8, 2.0, 1.0, 8.0], [1.2, 1.2, 1.2, 1.2], [1.5, 2.0, 8.0, 9.0],
                   [2.3, 43.0, 42.1, 42.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.1, 1.1, 1.1, 1.1], [2.2, 0.0, 0.0, 0.0]]
-        points = da.process_accelerations(0.0, 2.2, 1.1, points)
+        points, end_time = da.process_accelerations(0.0, 2.2, 1.1, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_normalizer_both(self):
         points = [[2.0, 1.0, 1.0, 1.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_complex_shift(self):
@@ -73,7 +76,7 @@ class TestKinematics(unittest.TestCase):
                   [0.9, 8.0, 2.0, 3.0], [1.3, 0.0, 1.0, 2.0], [2.9, 2.32, 2.32, 2.32], [3.0, 8.0, 2.0, 3.0],
                   [3.5, 1.0, 4.0, 9.2]]
         points_exp = [[0.5, 0.0, 0.0, 0.0], [1.5, 1.0, 1.0, 1.0], [2.5, 2.0, 2.0, 2.0], [3.5, 0.0, 0.0, 0.0]]
-        points = da.process_accelerations(0.5, 3.5, 1.0, points)
+        points, end_time = da.process_accelerations(0.5, 3.5, 1.0, points)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_kk_determine_next_acceleration_by_pos(self):
@@ -233,6 +236,6 @@ class TestKinematics(unittest.TestCase):
 
         self.assertTrue(np.allclose(actual, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0000001))
 
-# if __name__ == "__main__":
-#     # import sys;sys.argv = ['', 'Test.testName']
-#     unittest.main()
+if __name__ == "__main__":
+    # import sys;sys.argv = ['', 'Test.testName']
+    unittest.main()

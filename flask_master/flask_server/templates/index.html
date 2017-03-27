@@ -155,7 +155,7 @@
     <script type='text/javascript'>
         function clicked_raw(id, rec_type) {
             var server_endpoint = rec_type == "r" ? '/getRecordRaw/' + id : '/getSessionRaw/' + id;
-            $.ajax({headers : {'Accept-Encoding' : 'gzip'},
+            $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
@@ -168,7 +168,7 @@
 
         function clicked_analyzed(id, rec_type) {
             var server_endpoint = rec_type == "r" ? '/getRecordAnalyzed/' + id : '/getSessionAnalyzed/' + id;
-            $.ajax({headers : {'Accept-Encoding' : 'gzip'},
+            $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});

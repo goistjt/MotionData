@@ -4,7 +4,6 @@ import atexit
 import os
 from pathlib import Path
 from flask_compress import Compress
-import shutil
 
 from database import crud_class
 
@@ -32,6 +31,9 @@ def create_app():
         crud.close()
 
     def upload_to_db():
+        if app.testing:
+            interrupt()
+
         global upload_files
         global t
         data = []
@@ -87,17 +89,3 @@ else:
 
 import flask_server.server
 
-"""
-Below: Would delete android cache upon proper exit of system - however this is not typically the case. Typically, we
-are hard cancelling the system with an interrupt that would not trigger the below. Therefore, we CAN remove this, but
-it would be nice if we had a 'cleanup function' at the end of our server running.
-
-This could probably be done by hijacking the signal to kill and performing some pre-kill custom actions.
-
-def delete_android_cache():
-    if os.path.exists(server.get_android_route()):
-        shutil.rmtree(server.get_android_route())
-
-import atexit
-atexit.register(delete_android_cache)
-"""
