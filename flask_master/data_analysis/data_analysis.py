@@ -69,16 +69,15 @@ def point_alignment(accel_base, gyro_base):
 
 
 def download_record_analyzed(record_id):
-    # TODO: Replace some of the below code with calls to Runzhi's new procedures / functions
     accel_base = list(crud.select_accel(record_id))
     gyro_base = list(crud.select_gyro(record_id))
 
     start = 0
     end = 0
 
-    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
-        start = max(accel_base[0][0], gyro_base[0][0])
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+    if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
+        start = max(accel_base[0][0], gyro_base[0][0]) - 40
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
 
@@ -136,20 +135,21 @@ def download_session_analyzed(session_id=[]):
     accel_base = list(crud.get_all_accel_points_from_session(session_id))
     gyro_base = list(crud.get_all_gyro_points_from_session(session_id))
 
-    print(accel_base)
-    print(gyro_base)
-
     start = 0
     end = 0
 
-    if ((gyro_base is not None) and (len(gyro_base) > 1)) and ((accel_base is not None) and len(accel_base)):
-        start = max(accel_base[0][0], gyro_base[0][0])
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
+    if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
+        start = max(accel_base[0][0], gyro_base[0][0]) - 40
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
+"""
+The main preprocessing function in charge of transforming raw accelerations and timestamps into uniformed and matching
+accelerations for each expected interval.
+"""
 
 def process_accelerations(start, end, interval, points):
     # Sets the precision level for operations referencing the Decimal datatype
@@ -201,44 +201,77 @@ def process_accelerations(start, end, interval, points):
             fv3 = float(((dc.Decimal(next_point[3]) * time_ratio) - dc.Decimal(curr_point[3])) / num_elements)
 
             while True:
+
                 next_time = dc.Decimal(curr_point[0]) * dc.Decimal(1.0) + interval_d
+
                 if next_time > last_time:
                     break
+
                 curr_point = [float(next_time), curr_point[1] + fv1, curr_point[2] + fv2, curr_point[3] + fv3]
+
                 final_points.append(curr_point)
 
             z = len(final_points) - 1
 
         n += 1
 
+"""
+Determines the correct ending time of the data provided in order to ensure a logical start to the series before
+preprocessing begins.
+"""
+
 
 def determine_end(points, real_end):
+
     one = dc.Decimal(1.0)
+
     end_index = len(points) - 1
+
     while end_index >= 0:
+
         curr_comparison = dc.Decimal(points[end_index][0]) * one
+
         if curr_comparison <= real_end:
+
             break
+
         end_index -= 1
 
     return end_index + 1
 
+"""
+Determines the correct starting time of the data provided in order to ensure a logical start to the series before
+preprocessing begins.
+"""
+
 
 def determine_start(points, start, end_index):
+
     one = dc.Decimal(1.0)
     start_index = 0
+
     while start_index <= end_index:
+
         if start_index >= len(points):
             return end_index
+
         curr_comparison = dc.Decimal(points[start_index][0]) * one
+
         if curr_comparison > start:
             break
+
         start_index += 1
 
     return start_index
 
+"""
+The main "state machine" used to generate the processed positional data from the preprocessed acceleration data derived
+from the raw collected data. The output of this function should serve as the content of the simulation file.
+"""
+
 
 def generate_processed_data(start_time, end_time, accel_points, gyro_points, interval):
+
     default_list = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]
 
     if start_time >= end_time:
@@ -254,45 +287,61 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
 
     max_coll_fact = mcf.MaxCollectionFactory()
 
-    surge_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SURGE))
-    sway_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SWAY))
-    heave_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.HEAVE))
+    buffer_factor = 0.85
+    surge_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SURGE), buffer_factor)
+    sway_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.SWAY), buffer_factor)
+    heave_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.HEAVE), buffer_factor)
 
     keeps_accel = [surge_keeper, sway_keeper, heave_keeper]
 
-    roll_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.ROLL))
-    pitch_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.PITCH))
-    yaw_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.YAW))
+    roll_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.ROLL), buffer_factor)
+    pitch_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.PITCH), buffer_factor)
+    yaw_keeper = kk.KinematicsKeeper(max_coll_fact.create_max_collection(max_coll_fact.YAW), buffer_factor)
 
     keeps_gyro = [roll_keeper, pitch_keeper, yaw_keeper]
 
     session = []
 
     for i in range(len(gyro_list)):
+
         next_set = []
 
-        next_set = process_normal_state_generations(keeps_accel, accel_list, i, next_set)
+        next_set = process_states(keeps_accel, accel_list, i, next_set, kk.KinematicsKeeper.ACCELERATION)
 
-        next_set = process_normal_state_generations(keeps_gyro, gyro_list, i, next_set)
+        next_set = process_states(keeps_gyro, gyro_list, i, next_set, kk.KinematicsKeeper.VELOCITY)
 
         session.append(next_set)
 
     return process_return_to_zero(keeps_accel, keeps_gyro, session)
 
+"""
+For each degree of freedom in the list specified and for the starting position specified, will generate the next state
+of the keeper associated and append the new position for the set for a particular interval / time.
+"""
 
-def process_normal_state_generations(keeps_list, values_list, position, next_set):
+
+def process_states(keeps_list, values_list, position, next_set, starting_value_type):
+
     for x in range(len(keeps_list)):
-        accel_val = values_list[position][x + 1]
+
+        val = values_list[position][x + 1]
+
         curr_keep = keeps_list[x]
 
-        curr_keep.generate_next_state(accel_val)
+        curr_keep.generate_next_state(val, starting_value_type)
 
         next_set.append(curr_keep.get_position())
 
     return next_set
 
+"""
+Modifies the existing session generated under normal inputs to extend until all values have reached zero position. Uses
+process_for_next_set to generate the next closest states to zero for each of the degrees of motion.
+"""
+
 
 def process_return_to_zero(keeps_accel, keeps_gyro, session):
+
     while True:
 
         next_set = []
@@ -310,8 +359,15 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
     return session
 
+"""
+For each KinematicsKeeper (for each degree of freedom), check if the current values are zeroed to original status, and
+if not generate the next state closer to zero by half the maximum acceleration specified by the keeper. This is a helper
+function in order to drive all keepers to zero.
+"""
+
 
 def process_for_next_set(keeps_list, next_set):
+
     # TODO: Could very much move things like this into a configuration file or make the data analysis class instantiated
     maximum_buffer_factor = 0.5
 
@@ -330,7 +386,7 @@ def process_for_next_set(keeps_list, next_set):
         else:
             accel_val = curr_keep.get_max_acceleration() * maximum_buffer_factor
 
-        curr_keep.generate_next_state(accel_val)
+        curr_keep.generate_next_state(accel_val, kk.KinematicsKeeper.ACCELERATION)
 
         pos_next = curr_keep.get_position()
 
