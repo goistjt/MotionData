@@ -38,10 +38,21 @@ def handle_missing_argument(error):
 @app.route("/")
 def index():
     sessions = crud.get_all_sessions()
-    return render_template("index.html", table=get_html(sessions))
+    if sessions is None:
+        table = get_html_no_sessions()
+    else:
+        table = get_html_sessions(sessions)
+    return render_template("index.html", table=table)
 
 
-def get_html(sessions):
+def get_html_no_sessions():
+    html = """<tr class="master">\n
+                   <td colspan="5"><p>No recording sessions in database</p></td>\n
+               </tr>\n"""
+    return html
+
+
+def get_html_sessions(sessions):
     html = ""
     for s in sessions:
         date = datetime.datetime.fromtimestamp(s[2] / 1e3)
