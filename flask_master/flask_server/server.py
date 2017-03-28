@@ -242,6 +242,88 @@ def create_session():
     return jsonify(session_id=sess_id, record_id=rec_id)
 
 
+@app.route("/addToSessionFromLocal", methods=["POST"])
+def add_to_session_from_local():
+    """ [{accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
+         gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
+         device_id: "",
+         device_name: "",
+         sess_id: ""}, session_id] """
+
+    print(request.data)
+    print(request.args)
+    print(request.form)
+    print(request.values)
+    b64 = base64.b64decode(request.form['content'])
+    request_data = str(zlib.decompress(b64, 16 + zlib.MAX_WBITS), "utf-8")
+    print(request_data)
+    data = json.loads(request_data)
+
+    sess_id = data['sess_id']
+    accel_data = data['accelModels']
+    gyro_data = data['gyroModels']
+    device_id = data['device_id']
+    device_name = data['device_name']
+
+    if sess_id is None or accel_data is None or gyro_data is None \
+            or device_name is None or device_id is None:
+        raise InvalidUsage(
+            "Unable to send request without {}.".format(
+                "session id" if sess_id is None else "accel data" if accel_data is None
+                else "gyro data" if gyro_data is None else "device ID" if device_id is None
+                else "device name" if device_name is None else "Error: Nothing was left empty"),
+            status_code=701)
+
+    print("accel points: {}, gyro points: {}".format(len(accel_data), len(gyro_data)))
+
+    device_name_db = crud.get_device_name(device_id)
+    if device_name_db == ():
+        crud.create_device_entry(device_id, device_name)
+    if device_name != device_name_db:
+        crud.update_device_entry(device_id, device_name)
+    rec_id = crud.create_record(sess_id, device_id)
+
+    gyro_points = []
+    accel_points = []
+
+    here = Path(__file__).parent.parent.resolve()
+    accel_file = "{}\\db_upload_files\\accel_{}_{}.csv".format(here, sess_id, rec_id)
+    gyro_file = "{}\\db_upload_files\\gyro_{}_{}.csv".format(here, sess_id, rec_id)
+
+    for point in accel_data:
+        x = point['x_val']
+        y = point['y_val']
+        z = point['z_val']
+        time = point['time_val']
+
+        # dump points to csv
+        accel_points.append((rec_id, time, x, y, z))
+
+    accel = pd.DataFrame(accel_points)
+    accel.to_csv(accel_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["accel", accel_file])
+
+    for point in gyro_data:
+        roll = point['roll_val']
+        pitch = point['pitch_val']
+        yaw = point['yaw_val']
+        time = point['time_val']
+        # dump points to csv
+        gyro_points.append((rec_id, time, roll, pitch, yaw))
+
+    gyro = pd.DataFrame(gyro_points)
+    gyro.to_csv(gyro_file, index=False)
+    # get lock
+    with data_lock:
+        # add {type, file} to upload_files
+        upload_files.append(["gyro", gyro_file])
+
+    return jsonify(session_id=sess_id, record_id=rec_id)
+
+
 @app.route("/addToSession", methods=["POST"])
 def add_to_session():
     """ {accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
@@ -337,25 +419,20 @@ def get_sessions(device_id):
     return jsonify(sessions=ret_list)
 
 
-"""
-Used as default Android cache location resource
-"""
-
-
 def get_android_route():
+    """
+    Used as default Android cache location resource
+    """
     return os.path.dirname(os.path.realpath(__file__)) + "/android_files"
-
-
-"""
-Route in charge of updating Android cache locally - returns 503 if phone unplugged, 200 if phone transfer successful
-Has to check for OS in order to get location "correct" - still RELIES ON SPECIFIC INSTALL LOCATION - 500 if not
-expected OS
-"""
 
 
 @app.route("/updateAndroidCache")
 def update_android_files():
-
+    """
+    Route in charge of updating Android cache locally - returns 503 if phone unplugged, 200 if phone transfer successful
+    Has to check for OS in order to get location "correct" - still RELIES ON SPECIFIC INSTALL LOCATION - 500 if not
+    expected OS
+    """
     system_name = platform.system()
 
     if system_name == 'Windows':
@@ -383,22 +460,18 @@ def update_android_files():
     try:
         subprocess.check_output(cmd.split())
 
-    except:
-        # TODO: This is an area where additional status codes could and probably should be used
-        e = sys.exc_info()[0]
+    except subprocess.CalledProcessError as e:
         print(e)
         return jsonify(status_code=503)
 
     return jsonify(status_code=200)
 
 
-"""
-Route in charge of deleting / clearing the Android cache.
-"""
-
-
 @app.route("/clearAndroidCache")
 def delete_android_cache():
+    """
+    Route in charge of deleting / clearing the Android cache.
+    """
     if os.path.exists(get_android_route()):
         try:
             shutil.rmtree(get_android_route())
@@ -408,6 +481,7 @@ def delete_android_cache():
             return jsonify(status_code=500)
 
     return jsonify(status_code=200)
+
 
 # used to check for sql injection
 def is_possible_injection(attack_vector):

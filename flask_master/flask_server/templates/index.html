@@ -196,16 +196,35 @@
                 var fr = new FileReader();
                 fr.onload = function(e) {
                     var contents = e.target.result;
-                    alert( "Got the file.n"
-                        +"name: " + fr.name + "n"
-                        +"type: " + fr.type + "n"
-                        +"size: " + fr.size + " bytesn"
-                        + "content: " + contents);
+                    send_record_to_add(contents, id);
                 };
                 fr.readAsText(file);
                 //fr.readAsDataURL(file);
                 //contents.substr(1, contents.indexOf("n")
             }
+        }
+
+        function send_record_to_add(contents, id) {
+            var server_endpoint = '/addToSessionFromLocal';
+            $.ajax({headers : {},
+                type: "POST",
+                data: {
+                    "content" : contents,
+                    "sess_id" : id
+                },
+                dataType: "json",
+                url: server_endpoint,
+                success: function (data) {
+                    if (data.status_code === 503) {
+                        alert("Update Functionality Failed: Perhaps Unavailable");
+                    }
+                    else if (data.status_code === 200) {
+                        alert("Update Successful!");
+                    }
+                    else {
+                        alert("Unknown Error - Update Not Successful");
+                    }
+                }});
         }
 
         // Function to send call to endpoint that updates Android cache
@@ -243,7 +262,6 @@
                     }
                 }});
         }
-
     </script>
 
 </body>
