@@ -26,7 +26,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import datamodels.SessionModel;
 import datamodels.TimeframeDataModel;
@@ -34,14 +33,9 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
 import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
 import edu.rose_hulman.nswccrane.dataacquisition.utils.StringComressor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
 
-import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_IP;
-import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_NAME;
 
 /**
  * Created by Steve Trotta on 3/11/2017.
@@ -51,13 +45,13 @@ import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.J
 public class SaveRecordLocallyDialog extends DialogFragment implements View.OnClickListener {
 
     public static final String TAG = "SAVE_RECORD_LOCALLY_DIALOG";
-    private static final String LOCAL_FILE_PREFIX = "Sess_";
     private static final String SEPARATOR = "_";
     private ListAdapter mListAdapter;
     private Activity mRootActivity;
     private MotionCollectionDBHelper motionDB;
     private SessionModel motionDataPostBody;
     private EditText mRecordNameText;
+    private boolean selected_time;
 
     @Override
     public void onAttach(Context context) {
@@ -70,6 +64,7 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
         View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_save_record_locally, null);
         builder.setView(v);
         initUIElements(v);
+        selected_time = false;
         return builder.create();
     }
 
@@ -89,13 +84,28 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.save_record_locally_submit_button:
+                if(!selected_time) {
+                    Toast.makeText(mRootActivity, "Record NOT Saved. " +
+                            "Must pick a time-frame for the record.",
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                }
                 String deviceUuid = new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString();
                 String recordName = mRecordNameText.getText().toString();
                 motionDataPostBody
                         .setDeviceId(deviceUuid)
+                        .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0)
+                        .getString(SETTINGS_NAME,""))
                         .setSessDesc(recordName);
-                String jsonBody = new Gson().toJson(motionDataPostBody);
-                new PostSaveRecordLocally().execute(recordName, jsonBody);
+                try{
+                    String jsonBody = new Gson().toJson(motionDataPostBody);
+                    new PostSaveRecordLocally().execute(recordName, jsonBody);
+                }
+                catch(Exception e) {
+                    Toast.makeText(mRootActivity, "Record NOT Saved. Error in serialization.",
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                }
                 dismiss();
                 break;
             case R.id.collection_time_selector:
@@ -106,12 +116,15 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
                         .setAdapter(mListAdapter, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                TimeframeDataModel timeframe = (TimeframeDataModel) mListAdapter.getItem(which);
-                                motionDataPostBody = motionDB.getAllDataBetween(timeframe.getStartTime(), timeframe.getEndTime());
+                                TimeframeDataModel timeframe = (TimeframeDataModel)
+                                        mListAdapter.getItem(which);
+                                motionDataPostBody = motionDB.getAllDataBetween(
+                                        timeframe.getStartTime(), timeframe.getEndTime());
                                 motionDataPostBody.setStartTime(timeframe.getStartTime());
                                 StringBuilder sBuilder = new StringBuilder();
 
-                                DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss", Locale.US);
+                                DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss",
+                                        Locale.US);
 
                                 Date date = new Date(timeframe.getStartTime());
                                 String time = dateFormat.format(date);
@@ -121,6 +134,7 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
                                 time = dateFormat.format(date);
                                 sBuilder.append(String.format("End: %s", time));
                                 selector.setText(sBuilder.toString());
+                                selected_time = true;
                             }
                         }).show();
                 break;
@@ -136,9 +150,10 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
         protected Boolean doInBackground(String... params) {
             try {
                 String timeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+                // This is replacing all non-alphanumeric characters with the empty string for names
                 File myExternalFile = new File(mRootActivity.getExternalFilesDir("records"),
-                        LOCAL_FILE_PREFIX.concat(String.valueOf(params[0])).concat(SEPARATOR)
-                        .concat(timeStamp)
+                        String.valueOf(params[0]).replaceAll("[^a-zA-Z0-9]", "").concat(SEPARATOR)
+                                .concat(timeStamp)
                 );
                 FileOutputStream fos = new FileOutputStream(myExternalFile);
                 fos.write(StringComressor.compressString(params[1]).getBytes());
@@ -146,7 +161,8 @@ public class SaveRecordLocallyDialog extends DialogFragment implements View.OnCl
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
-                // TODO: Return an error code or display an error toast or something
+                Toast.makeText(mRootActivity, "Record NOT Saved. Error while saving.",
+                        Toast.LENGTH_SHORT).show();
                 return false;
             }
         }

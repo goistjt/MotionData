@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Record name..."
-        android:inputType="textUri" />
+        android:inputType="textCapCharacters|textVisiblePassword" />
 
     <Button
         android:id="@+id/collection_time_selector"
