@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +19,8 @@ import com.google.gson.Gson;
 
 import org.androidannotations.annotations.EFragment;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -49,11 +52,14 @@ import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.J
 @EFragment
 public class NewSessionDialog extends DialogFragment implements View.OnClickListener {
     public static final String TAG = "NEW_SESSION_DIALOG";
+    private static final String SEPARATOR = "_";
+
     private ListAdapter mListAdapter;
     private Activity mRootActivity;
     private MotionCollectionDBHelper motionDB;
     private SessionModel motionDataPostBody;
     private EditText mSessionDescriptionText;
+    private boolean selected_time;
 
     @Override
     public void onAttach(Context context) {
@@ -66,6 +72,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_new_session, null);
         builder.setView(v);
         initUIElements(v);
+        selected_time = false;
         return builder.create();
     }
 
@@ -78,13 +85,63 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     private void initUIElements(View v) {
         v.findViewById(R.id.new_sess_submit_button).setOnClickListener(this);
         v.findViewById(R.id.collection_time_selector).setOnClickListener(this);
+        if (isExternalStorageAvailable() && !isExternalStorageReadOnly()) {
+            v.findViewById(R.id.save_record_locally_button).setOnClickListener(this);
+        }
         mSessionDescriptionText = (EditText) v.findViewById(R.id.description_edit_text);
+    }
+
+    private static boolean isExternalStorageReadOnly() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isExternalStorageAvailable() {
+        String extStorageState = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(extStorageState)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.save_record_locally_button:
+                if(!selected_time) {
+                    Toast.makeText(mRootActivity, "Record NOT Saved. " +
+                                    "Must pick a time-frame for the record.",
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                String deviceUuid = new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString();
+                String recordName = mSessionDescriptionText.getText().toString();
+                motionDataPostBody
+                        .setDeviceId(deviceUuid)
+                        .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0)
+                                .getString(SETTINGS_NAME,""))
+                        .setSessDesc(recordName);
+                try{
+                    String jsonBody = new Gson().toJson(motionDataPostBody);
+                    new PostSaveRecordLocally().execute(recordName, jsonBody);
+                }
+                catch(Exception e) {
+                    Toast.makeText(mRootActivity, "Record NOT Saved. Error in serialization.",
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                }
+                dismiss();
+                break;
             case R.id.new_sess_submit_button:
+                if(!selected_time) {
+                    Toast.makeText(mRootActivity, "Session Not Created. " +
+                                    "Must pick a time-frame for the session.",
+                            Toast.LENGTH_SHORT).show();
+                    break;
+                }
                 motionDataPostBody
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
                         .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_NAME,""))
@@ -121,6 +178,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                                 time = dateFormat.format(date);
                                 sBuilder.append(String.format("End: %s", time));
                                 selector.setText(sBuilder.toString());
+                                selected_time = true;
                             }
                         }).show();
                 break;
@@ -162,6 +220,38 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                 }
             } else {
                 Toast.makeText(mRootActivity, "No response provided", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class PostSaveRecordLocally extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... params) {
+            try {
+                String timeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
+                // This is replacing all non-alphanumeric characters with the empty string for names
+                File myExternalFile = new File(mRootActivity.getExternalFilesDir("records"),
+                        String.valueOf(params[0]).replaceAll("[^a-zA-Z0-9]", "").concat(SEPARATOR)
+                                .concat(timeStamp)
+                );
+                FileOutputStream fos = new FileOutputStream(myExternalFile);
+                fos.write(StringComressor.compressString(params[1]).getBytes());
+                fos.close();
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(mRootActivity, "Record NOT Saved. Error while saving.",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean response) {
+            if (response != null && response) {
+                Toast.makeText(mRootActivity, "Record Saved Successfully.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(mRootActivity, "Record NOT Saved.", Toast.LENGTH_SHORT).show();
             }
         }
     }
