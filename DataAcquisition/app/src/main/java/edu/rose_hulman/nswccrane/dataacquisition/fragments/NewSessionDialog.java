@@ -109,12 +109,12 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        if(!selected_time) {
-                    Toast.makeText(mRootActivity, "Record NOT Saved. " +
-                                    "Must pick a time-frame for the record.",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
+        if(!selected_time && v.getId() != R.id.collection_time_selector) {
+            Toast.makeText(mRootActivity, "Record NOT Saved. " +
+                            "Must pick a time-frame for the record.",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
         switch (v.getId()) {
             case R.id.save_record_locally_button:
                 String deviceUuid = new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString();
