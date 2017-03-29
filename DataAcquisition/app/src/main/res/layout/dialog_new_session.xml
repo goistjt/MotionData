@@ -25,6 +25,13 @@
         android:text="Select a recording period." />
 
     <Button
+        android:id="@+id/save_record_locally_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:text="Save Locally" />
+
+    <Button
         android:id="@+id/new_sess_submit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
