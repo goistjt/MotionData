@@ -55,7 +55,6 @@ public class DeletionActivity extends AppCompatActivity {
                 if (data != null) {
                     displayConfirmation(pos, data);
                 }
-                autoFinish();
             }
         });
     }
@@ -107,6 +106,7 @@ public class DeletionActivity extends AppCompatActivity {
         timeData.remove(pos);
         Log.d("DATA LIST", "onItemClick: " + pos);
         adapter.notifyDataSetChanged();
+        autoFinish();
     }
 
     /**
