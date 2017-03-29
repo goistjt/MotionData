@@ -109,14 +109,14 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.save_record_locally_button:
-                if(!selected_time) {
+        if(!selected_time) {
                     Toast.makeText(mRootActivity, "Record NOT Saved. " +
                                     "Must pick a time-frame for the record.",
                             Toast.LENGTH_SHORT).show();
-                    break;
+                    return;
                 }
+        switch (v.getId()) {
+            case R.id.save_record_locally_button:
                 String deviceUuid = new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString();
                 String recordName = mSessionDescriptionText.getText().toString();
                 motionDataPostBody
@@ -136,12 +136,6 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                 dismiss();
                 break;
             case R.id.new_sess_submit_button:
-                if(!selected_time) {
-                    Toast.makeText(mRootActivity, "Session Not Created. " +
-                                    "Must pick a time-frame for the session.",
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                }
                 motionDataPostBody
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
                         .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_NAME,""))
