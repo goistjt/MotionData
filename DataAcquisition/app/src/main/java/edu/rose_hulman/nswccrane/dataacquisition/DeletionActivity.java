@@ -12,7 +12,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -101,9 +104,21 @@ public class DeletionActivity extends AppCompatActivity {
      * @param data the {@link TimeframeDataModel} with the timestamps to be deleted
      * @param pos  position in the list that the data came from
      */
-    private void deleteData(TimeframeDataModel data, int pos) {
+    private void deleteData(final TimeframeDataModel data, int pos) {
         motionDB.deleteDataBetween(data.getStartTime(), data.getEndTime());
         timeData.remove(pos);
+        File folder = new File(String.valueOf(getExternalFilesDir("records")));
+        File[] files = folder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String name) {
+                return name.matches(".*" + new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date(data.getStartTime())));
+            }
+        });
+        for (File file : files) {
+            if (!file.delete()) {
+                Toast.makeText(this, "Unable to delete " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+            }
+        }
         Log.d("DATA LIST", "onItemClick: " + pos);
         adapter.notifyDataSetChanged();
         autoFinish();
