@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -109,6 +110,10 @@ public class SettingsActivity extends AppCompatActivity {
      */
     private void updateIpAddress(SharedPreferences.Editor editor) {
         if (!mIpAddressView.getText().toString().isEmpty()) {
+            if (!mIpAddressView.getText().toString().matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
+                Toast.makeText(this, "Invalid Ip Address " + mIpAddressView.getText().toString() + " not saved", Toast.LENGTH_SHORT).show();
+                return;
+            }
             editor.putString(SETTINGS_IP, mIpAddressView.getText().toString());
         }
     }
