@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
@@ -178,6 +179,26 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         this.mRootActivity = applicationContext;
     }
 
+    /**
+     * Writes a file containing the compressed accel and gyro data for a recording to the local storage
+     *
+     * @param params        0 - Session description, 1 - JSON formatted {@link SessionModel}
+     * @param recordingTime Start time of recording
+     * @throws IOException if the file is unable to be opened.
+     */
+    @VisibleForTesting
+    private void writeFile(String[] params, long recordingTime) throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date(recordingTime));
+        // This is replacing all non-alphanumeric characters with the empty string for names
+        File myExternalFile = new File(mRootActivity.getExternalFilesDir("records"),
+                String.valueOf(params[0]).replaceAll("[^a-zA-Z0-9]", "").concat(SEPARATOR)
+                        .concat(timeStamp)
+        );
+        FileOutputStream fos = new FileOutputStream(myExternalFile);
+        fos.write(StringComressor.compressString(params[1]).getBytes());
+        fos.close();
+    }
+
     private class PostNewSession extends AsyncTask<String, Void, Response> {
         @Override
         protected Response doInBackground(String... params) {
@@ -217,15 +238,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         @Override
         protected Boolean doInBackground(String... params) {
             try {
-                String timeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date(recordingTime));
-                // This is replacing all non-alphanumeric characters with the empty string for names
-                File myExternalFile = new File(mRootActivity.getExternalFilesDir("records"),
-                        String.valueOf(params[0]).replaceAll("[^a-zA-Z0-9]", "").concat(SEPARATOR)
-                                .concat(timeStamp)
-                );
-                FileOutputStream fos = new FileOutputStream(myExternalFile);
-                fos.write(StringComressor.compressString(params[1]).getBytes());
-                fos.close();
+                writeFile(params, recordingTime);
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();

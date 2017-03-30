@@ -3,6 +3,7 @@ package edu.rose_hulman.nswccrane.dataacquisition;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -104,9 +105,18 @@ public class DeletionActivity extends AppCompatActivity {
      * @param data the {@link TimeframeDataModel} with the timestamps to be deleted
      * @param pos  position in the list that the data came from
      */
+    @VisibleForTesting
     private void deleteData(final TimeframeDataModel data, int pos) {
         motionDB.deleteDataBetween(data.getStartTime(), data.getEndTime());
         timeData.remove(pos);
+        deleteFiles(data);
+        Log.d("DATA LIST", "onItemClick: " + pos);
+        adapter.notifyDataSetChanged();
+        autoFinish();
+    }
+
+    @VisibleForTesting
+    private void deleteFiles(final TimeframeDataModel data) {
         File folder = new File(String.valueOf(getExternalFilesDir("records")));
         File[] files = folder.listFiles(new FilenameFilter() {
             @Override
@@ -119,9 +129,6 @@ public class DeletionActivity extends AppCompatActivity {
                 Toast.makeText(this, "Unable to delete " + file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
             }
         }
-        Log.d("DATA LIST", "onItemClick: " + pos);
-        adapter.notifyDataSetChanged();
-        autoFinish();
     }
 
     /**
