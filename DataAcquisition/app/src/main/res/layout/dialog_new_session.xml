@@ -24,18 +24,26 @@
         android:gravity="start"
         android:text="Select a recording period." />
 
-    <Button
-        android:id="@+id/save_record_locally_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:text="Save Locally" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/new_sess_submit_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:text="Submit Data" />
+        <Button
+            android:id="@+id/save_record_locally_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="end"
+            android:layout_toStartOf="@+id/new_sess_submit_button"
+            android:text="Save Locally" />
+
+        <Button
+            android:id="@+id/new_sess_submit_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_gravity="end"
+            android:text="Submit Data" />
+    </RelativeLayout>
 
 </LinearLayout>
