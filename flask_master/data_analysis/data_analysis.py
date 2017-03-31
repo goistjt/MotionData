@@ -70,6 +70,12 @@ def point_alignment(accel_base, gyro_base):
 
 
 def download_record_analyzed(record_id):
+
+    interval = 40
+
+    if record_id is None:
+        return None
+
     accel_base = list(crud.select_accel(record_id))
     gyro_base = list(crud.select_gyro(record_id))
 
@@ -77,12 +83,15 @@ def download_record_analyzed(record_id):
     end = 0
 
     if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
-        start = max(accel_base[0][0], gyro_base[0][0]) - 40
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
-    print("made past data")
+        if (gyro_base[0][0] is None) or (accel_base[0][0] is None) or (accel_base[len(accel_base) - 1][0] is None) or (
+                    gyro_base[len(gyro_base) - 1][0] is None):
+            return (pd.DataFrame(np.array([]))).to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
-    df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
+        start = max(accel_base[0][0], gyro_base[0][0]) - interval
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + interval
+
+    df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, interval)))
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
@@ -132,8 +141,11 @@ def average_timeseries_data(records, iteration=1):
 
 
 def download_session_analyzed(session_id=[]):
+
+    interval = 40
+
     if session_id is None:
-        session_id = []
+        return (pd.DataFrame(np.array([]))).to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
     accel_base = list(crud.get_all_accel_points_from_session(session_id))
     gyro_base = list(crud.get_all_gyro_points_from_session(session_id))
@@ -142,10 +154,15 @@ def download_session_analyzed(session_id=[]):
     end = 0
 
     if ((gyro_base is not None) and len(gyro_base)) and ((accel_base is not None) and len(accel_base)):
-        start = max(accel_base[0][0], gyro_base[0][0]) - 40
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + 40
 
-    df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, 40)))
+        if (gyro_base[0][0] is None) or (accel_base[0][0] is None) or (accel_base[len(accel_base) - 1][0] is None) or (
+                    gyro_base[len(gyro_base) - 1][0] is None):
+            return (pd.DataFrame(np.array([]))).to_csv(index=False, header=False, sep=" ", float_format='%.6f')
+
+        start = max(accel_base[0][0], gyro_base[0][0]) - interval
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + interval
+
+    df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, interval)))
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
@@ -258,6 +275,9 @@ def determine_end(points, real_end):
 
     while end_index >= 0:
 
+        if points[end_index][0] is None:
+            return end_index
+
         curr_comparison = dc.Decimal(points[end_index][0]) * ONE
 
         if curr_comparison <= real_end:
@@ -284,6 +304,9 @@ def determine_start(points, start, end_index):
     start_index = 0
 
     while start_index <= end_index:
+
+        if points[start_index][0] is None:
+            return start_index
 
         if start_index >= len(points):
             return end_index
@@ -343,7 +366,6 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
     session = []
 
     for i in range(len(gyro_list)):
-
         next_set = []
 
         next_set = process_states(keeps_accel, accel_list[i], next_set, kk.KinematicsKeeper.ACCELERATION)
@@ -368,7 +390,6 @@ def process_states(keeps_list, point, next_set, starting_value_type):
     """
 
     for x in range(len(keeps_list)):
-
         val = point[x + 1]
 
         curr_keep = keeps_list[x]
@@ -412,7 +433,6 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
 
 def process_for_next_set(keeps_list, next_set):
-
     """
     For each KinematicsKeeper (for each degree of freedom), check if the current values are zeroed to original status, and
     if not generate the next state closer to zero by half the maximum acceleration specified by the keeper. This is a helper
