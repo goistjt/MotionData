@@ -105,11 +105,11 @@ def get_html_sessions(sessions):
                        <td>{}</td>\n
                        <td>\n
                            <input id="raw_button" type="submit" name="rr_{}"
-                               onclick="clicked_raw('{}', 'r')" value="Download Raw Data" />\n
+                               onclick="clicked_raw('{}', 'r', '{}')" value="Download Raw Data" />\n
                            <input id="analyzed_button" type="submit" name="ar_{}"
-                               onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
+                               onclick="clicked_analyzed('{}', 'r', '{}')" value="Download Analyzed Data" />\n
                        </td>\n
-                   </tr>\n""".format(dev_name, rid, rid, rid, rid)
+                   </tr>\n""".format(dev_name, rid, rid, dev_name, rid, rid, dev_name)
             recs += curr
 
         sess = """<tr class="master">\n
@@ -129,7 +129,7 @@ def get_html_sessions(sessions):
                        <table id="records" class="table table-bordered table-hover table-striped">\n
                            <thead>\n
                                <tr>\n
-                                   <th>Record ID</th>\n
+                                   <th>Device Name / ID</th>\n
                                    <th>Download</th>\n
                                </tr>\n
                            </thead>\n
@@ -161,7 +161,7 @@ def get_record_data_raw(record_id):
     :return: The raw record data
     """
     txt = da.download_record_raw(record_id)
-    filename = "record_raw_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
+    filename = "record_raw_()_{}.txt".format(str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
                 'filename': filename,
                 'mimetype': 'text/csv',
@@ -178,7 +178,7 @@ def get_record_data_analyzed(record_id):
     :return: The analyzed record data
     """
     txt = da.download_record_analyzed(record_id)
-    filename = "record_analyzed_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
+    filename = "record_analyzed_()_{}.txt".format(str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
                 'filename': filename,
                 'mimetype': 'text/csv',

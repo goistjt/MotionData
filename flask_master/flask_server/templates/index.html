@@ -26,7 +26,7 @@
     <!-- Our custom CSS files -->
     <link href="../static/css/custom/dashboard-table.css" rel="stylesheet" type="text/css">
 
-    <!-- Style sheed for navbar -->
+    <!-- Style sheet for navbar -->
     <link href="../static/css/navbar.css" rel="stylesheet" type="text/css">
 
 
@@ -72,11 +72,6 @@
                         <h1 class="page-header">
                             Dashboard
                         </h1>
-                 <!--        <ol class="breadcrumb">
-                            <li class="active">
-                                <i class="fa fa-dashboard"></i> Dashboard
-                            </li>
-                        </ol> -->
                     </div>
                 </div>
                 <!-- /.row -->
@@ -141,7 +136,7 @@
     
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>
-        function clicked_raw(id, rec_type) {
+        function clicked_raw(id, rec_type, device_name) {
             var server_endpoint = rec_type == "r" ? '/getRecordRaw/' + id : '/getSessionRaw/' + id;
             $.ajax({headers : {},
                 url: server_endpoint,
@@ -149,12 +144,12 @@
                     var blob = new Blob([data.data], {type: data.mimetype});
                     var link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
-                    link.download = data.filename;
+                    link.download = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
                     link.click();
                 }});
         }
 
-        function clicked_analyzed(id, rec_type) {
+        function clicked_analyzed(id, rec_type, device_name) {
             var server_endpoint = rec_type == "r" ? '/getRecordAnalyzed/' + id : '/getSessionAnalyzed/' + id;
             $.ajax({headers : {},
                 url: server_endpoint,
@@ -162,7 +157,7 @@
                     var blob = new Blob([data.data], {type: data.mimetype});
                     var link = document.createElement('a');
                     link.href = window.URL.createObjectURL(blob);
-                    link.download = data.filename;
+                    link.download = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
                     link.click();
                 }});
         }
