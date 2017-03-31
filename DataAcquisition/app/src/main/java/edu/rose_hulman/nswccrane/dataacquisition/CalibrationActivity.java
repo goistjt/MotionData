@@ -158,16 +158,24 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         xVals.add(floats[0]);
         yVals.add(floats[1]);
         zVals.add(floats[2]);
-        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
-        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
-        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
+        updateAccelerometerNoise(floats);
         prev_accel = floats;
     }
 
+    private void updateAccelerometerNoise(float[] floats) {
+        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
+        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
+        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
+    }
+
     public void gyroscopeChanged(float[] floats) {
+        updateGyroscopeNoise(floats);
+        prev_gyro = floats;
+    }
+
+    private void updateGyroscopeNoise(float[] floats) {
         max_roll_noise = Math.abs(Math.max(max_roll_noise, floats[0] - prev_gyro[0]));
         max_pitch_noise = Math.abs(Math.max(max_pitch_noise, floats[1] - prev_gyro[1]));
         max_yaw_noise = Math.abs(Math.max(max_yaw_noise, floats[2] - prev_gyro[2]));
-        prev_gyro = floats;
     }
 }

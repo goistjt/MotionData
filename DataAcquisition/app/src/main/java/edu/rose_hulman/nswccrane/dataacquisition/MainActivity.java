@@ -107,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             case R.id.settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
+            case R.id.delete:
+                startActivity(new Intent(this, DeletionActivity.class));
+                break;
             default:
                 //No other cases
         }
@@ -134,12 +137,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Begins collecting data and optionally starts a Timer which automatically stops recording after a specified time
+     */
     private void handleRecordingTimer() {
         mCollectionButton.setEnabled(false);
         collectionOn();
-        yawOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
-        pitchOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("pitch_offset", 0f);
-        rollOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("roll_offset", 0f);
+        initializeAngularOffsets();
         if (!mRecordTimeEdit.getText().toString().isEmpty() && Integer.parseInt(mRecordTimeEdit.getText().toString()) != 0) {
 
             Runnable runnable = new Runnable() {
@@ -157,12 +161,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Pulls the angular offsets in radians from the shared preferences and stores them for the life of this Activity
+     */
+    private void initializeAngularOffsets() {
+        yawOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
+        pitchOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("pitch_offset", 0f);
+        rollOffset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("roll_offset", 0f);
+    }
+
+    /**
+     * Opens a dialog to choose how to export data
+     */
     private void openExportDialog() {
         ExportDialog exportDialog = new ExportDialog();
         exportDialog.setActivity(this);
         exportDialog.show(getFragmentManager(), ExportDialog.TAG);
     }
 
+    /**
+     * Opens a dialog to set the yaw angular offset and begin calibration
+     */
     private void openCalibrationDialog() {
         CalibrationDialog calibrationDialog = new CalibrationDialog();
         calibrationDialog.show(getFragmentManager(), CalibrationDialog.TAG);
@@ -177,6 +196,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
 
+    /**
+     * Pulls the noise values from Shared Preferences and stores them for the life of this activity
+     */
     private void populatePreservedValues() {
         SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.calibration_prefs), 0);
         max_x_noise = sharedPref.getFloat(getString(R.string.x_threshold), getResources().getInteger(R.integer.DEFAULT_X_THRESHOLD));
@@ -202,12 +224,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         editor.apply();
     }
 
+    /**
+     * Initializes this Activity as a OnClickListener for multiple UI elements
+     */
     private void setupUIElements() {
         mCollectionButton.setOnClickListener(this);
         mCalibrationButton.setOnClickListener(this);
         mExportButton.setOnClickListener(this);
     }
 
+    /**
+     * Initializes the required sensors and a pair of {@link Executors} for async data caching/storage
+     */
     public void initializeCollectionDependencies() {
         mStarted = false;
 
@@ -221,6 +249,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mGyroscope = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     }
 
+    /**
+     * Closes the {@link Executors} and disables listening to the {@link Sensor}
+     */
     public void teardownCollectionDependencies() {
         mStarted = false;
 
@@ -230,6 +261,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mSensorManager.unregisterListener(this);
     }
 
+    /**
+     * Ends collection of Accel and Gyro data
+     */
     public void collectionOff() {
         mStarted = false;
         mCollectionButton.setText(R.string.collect_data);
@@ -237,6 +271,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mToggleButtonService.execute(new ServiceShutdownRunnable(this, mCollectionService, mCollectionDBHelper));
     }
 
+    /**
+     * Begins collection of Accel and Gyro data
+     */
     public void collectionOn() {
         mCollectionDBHelper.setStartTime(System.currentTimeMillis());
         if (mAccelerometer != null) {
@@ -250,46 +287,92 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mCollectionButton.setEnabled(true);
     }
 
+    /**
+     * Pushes a new record to the database through the collection service
+     *
+     * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
+     */
     public void accelerometerChanged(AccelDataModel dataModel) {
         if (this.mPrevAccelModel == null) {
             this.mPrevAccelModel = dataModel;
         } else {
-            if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.max_x_noise) {
-                dataModel.setX(this.mPrevAccelModel.getX());
-            }
-            if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.max_y_noise) {
-                dataModel.setY(this.mPrevAccelModel.getY());
-            }
-            if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.max_z_noise) {
-                dataModel.setZ(this.mPrevAccelModel.getZ());
-            }
+            handleAccelerometerNoise(dataModel);
         }
         this.mPrevAccelModel = dataModel;
         mCollectionService.execute(new AccelRunnable(dataModel, mCollectionDBHelper));
+        updateAccelerometerUI(dataModel);
+    }
+
+    /**
+     * Limits the updating of the accelerometer values if the difference between the current readings and the previous is smaller than the noise values.
+     *
+     * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
+     */
+    private void handleAccelerometerNoise(AccelDataModel dataModel) {
+        if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.max_x_noise) {
+            dataModel.setX(this.mPrevAccelModel.getX());
+        }
+        if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.max_y_noise) {
+            dataModel.setY(this.mPrevAccelModel.getY());
+        }
+        if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.max_z_noise) {
+            dataModel.setZ(this.mPrevAccelModel.getZ());
+        }
+    }
+
+    /**
+     * Updates the UI to show the most recent Accelerometer readings
+     *
+     * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
+     */
+    private void updateAccelerometerUI(AccelDataModel dataModel) {
         mXTextView.setText(String.format(Locale.US, getString(R.string.x_format), dataModel.getX()));
         mYTextView.setText(String.format(Locale.US, getString(R.string.y_format), dataModel.getY()));
         mZTextView.setText(String.format(Locale.US, getString(R.string.z_format), dataModel.getZ()));
     }
 
+    /**
+     * Pushes a new record to the database through the collection service
+     *
+     * @param dataModel {@link AccelDataModel} containing the most recent gyroscope readings
+     */
     public void gyroscopeChanged(GyroDataModel dataModel) {
         if (this.mPrevGyroModel == null) {
             this.mPrevGyroModel = dataModel;
         } else {
-            if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.max_pitch_noise) {
-                dataModel.setPitch(this.mPrevGyroModel.getPitch());
-            }
-            if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.max_roll_noise) {
-                dataModel.setRoll(this.mPrevGyroModel.getRoll());
-            }
-            if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.max_yaw_noise) {
-                dataModel.setYaw(this.mPrevGyroModel.getYaw());
-            }
+            handleGyroscopeNoise(dataModel);
         }
         this.mPrevGyroModel = dataModel;
         mCollectionService.execute(new GyroRunnable(dataModel, mCollectionDBHelper));
+        updateGyroscopeUI(dataModel);
+    }
+
+    /**
+     * Updates the UI to show the most recent Gyroscope readings
+     *
+     * @param dataModel {@link GyroDataModel} containing the most recent gyroscope readings
+     */
+    private void updateGyroscopeUI(GyroDataModel dataModel) {
         mPitchTextView.setText(String.format(Locale.US, getString(R.string.pitch_format), dataModel.getPitch()));
         mRollTextView.setText(String.format(Locale.US, getString(R.string.roll_format), dataModel.getRoll()));
         mYawTextView.setText(String.format(Locale.US, getString(R.string.yaw_format), dataModel.getYaw()));
+    }
+
+    /**
+     * Limits the updating of the gyroscope values if the difference between the current readings and the previous is smaller than the noise values.
+     *
+     * @param dataModel {@link GyroDataModel} containing the most recent accelerometer readings
+     */
+    private void handleGyroscopeNoise(GyroDataModel dataModel) {
+        if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.max_pitch_noise) {
+            dataModel.setPitch(this.mPrevGyroModel.getPitch());
+        }
+        if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.max_roll_noise) {
+            dataModel.setRoll(this.mPrevGyroModel.getRoll());
+        }
+        if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.max_yaw_noise) {
+            dataModel.setYaw(this.mPrevGyroModel.getYaw());
+        }
     }
 
     @Override
@@ -313,6 +396,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
+    /**
+     * Uses the angular offsets from {@link MainActivity#initializeAngularOffsets()} to rotate the
+     * acceleration values around the origin such they are aligned at 0 degrees in every axis on
+     * the origin
+     *
+     * @param values The most recent acceleration values
+     * @return float[] containing the offset values.
+     */
     private float[] calculateAccelRotation(float[] values) {
         float x = values[0];
         float y = values[1];

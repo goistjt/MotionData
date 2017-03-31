@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
@@ -59,7 +60,18 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
     private MotionCollectionDBHelper motionDB;
     private SessionModel motionDataPostBody;
     private EditText mSessionDescriptionText;
-    private boolean selected_time;
+    private boolean selectedTime;
+    private long recordingTime;
+
+    private static boolean isExternalStorageReadOnly() {
+        String extStorageState = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState);
+    }
+
+    private static boolean isExternalStorageAvailable() {
+        String extStorageState = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals(extStorageState);
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -72,7 +84,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         View v = getActivity().getLayoutInflater().inflate(R.layout.dialog_new_session, null);
         builder.setView(v);
         initUIElements(v);
-        selected_time = false;
+        selectedTime = false;
         return builder.create();
     }
 
@@ -91,25 +103,9 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         mSessionDescriptionText = (EditText) v.findViewById(R.id.description_edit_text);
     }
 
-    private static boolean isExternalStorageReadOnly() {
-        String extStorageState = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(extStorageState)) {
-            return true;
-        }
-        return false;
-    }
-
-    private static boolean isExternalStorageAvailable() {
-        String extStorageState = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(extStorageState)) {
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public void onClick(View v) {
-        if(!selected_time && v.getId() != R.id.collection_time_selector) {
+        if (!selectedTime && v.getId() != R.id.collection_time_selector) {
             Toast.makeText(mRootActivity, "Record NOT Saved. " +
                             "Must pick a time-frame for the record.",
                     Toast.LENGTH_SHORT).show();
@@ -122,13 +118,12 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                 motionDataPostBody
                         .setDeviceId(deviceUuid)
                         .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0)
-                                .getString(SETTINGS_NAME,""))
+                                .getString(SETTINGS_NAME, ""))
                         .setSessDesc(recordName);
-                try{
+                try {
                     String jsonBody = new Gson().toJson(motionDataPostBody);
                     new PostSaveRecordLocally().execute(recordName, jsonBody);
-                }
-                catch(Exception e) {
+                } catch (Exception e) {
                     Toast.makeText(mRootActivity, "Record NOT Saved. Error in serialization.",
                             Toast.LENGTH_SHORT).show();
                     break;
@@ -138,7 +133,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
             case R.id.new_sess_submit_button:
                 motionDataPostBody
                         .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
-                        .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_NAME,""))
+                        .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_NAME, ""))
                         .setSessDesc(mSessionDescriptionText.getText().toString());
                 String jsonBody = new Gson().toJson(motionDataPostBody);
                 String ip = mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_IP, null);
@@ -172,7 +167,8 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
                                 time = dateFormat.format(date);
                                 sBuilder.append(String.format("End: %s", time));
                                 selector.setText(sBuilder.toString());
-                                selected_time = true;
+                                recordingTime = timeframe.getStartTime();
+                                selectedTime = true;
                             }
                         }).show();
                 break;
@@ -181,6 +177,26 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
 
     public void setActivity(Activity applicationContext) {
         this.mRootActivity = applicationContext;
+    }
+
+    /**
+     * Writes a file containing the compressed accel and gyro data for a recording to the local storage
+     *
+     * @param params        0 - Session description, 1 - JSON formatted {@link SessionModel}
+     * @param recordingTime Start time of recording
+     * @throws IOException if the file is unable to be opened.
+     */
+    @VisibleForTesting
+    private void writeFile(String[] params, long recordingTime) throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date(recordingTime));
+        // This is replacing all non-alphanumeric characters with the empty string for names
+        File myExternalFile = new File(mRootActivity.getExternalFilesDir("records"),
+                String.valueOf(params[0]).replaceAll("[^a-zA-Z0-9]", "").concat(SEPARATOR)
+                        .concat(timeStamp)
+        );
+        FileOutputStream fos = new FileOutputStream(myExternalFile);
+        fos.write(StringComressor.compressString(params[1]).getBytes());
+        fos.close();
     }
 
     private class PostNewSession extends AsyncTask<String, Void, Response> {
@@ -222,15 +238,7 @@ public class NewSessionDialog extends DialogFragment implements View.OnClickList
         @Override
         protected Boolean doInBackground(String... params) {
             try {
-                String timeStamp = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss").format(new Date());
-                // This is replacing all non-alphanumeric characters with the empty string for names
-                File myExternalFile = new File(mRootActivity.getExternalFilesDir("records"),
-                        String.valueOf(params[0]).replaceAll("[^a-zA-Z0-9]", "").concat(SEPARATOR)
-                                .concat(timeStamp)
-                );
-                FileOutputStream fos = new FileOutputStream(myExternalFile);
-                fos.write(StringComressor.compressString(params[1]).getBytes());
-                fos.close();
+                writeFile(params, recordingTime);
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();

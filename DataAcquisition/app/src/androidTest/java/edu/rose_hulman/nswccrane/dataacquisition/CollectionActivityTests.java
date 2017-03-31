@@ -166,12 +166,12 @@ public class CollectionActivityTests extends AMainActivityTest {
         }
 
         @Override
-        public void insertAccelData(AccelDataModel data) {
+        public void insertAccelData(@NonNull AccelDataModel data) {
             insertAccelDataHit = true;
         }
 
         @Override
-        public void insertGyroData(GyroDataModel data) {
+        public void insertGyroData(@NonNull GyroDataModel data) {
             insertGyroDataHit = true;
         }
 
