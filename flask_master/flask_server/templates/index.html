@@ -99,6 +99,11 @@
                             <h3 class="panel-title"><i class="fa fa-download fa-fw"></i> Data Records</h3>
                         </div>
                         <div class="panel-body">
+                            <div>
+                                <input type="file" id="create_session_file" />
+                                <input id="create_session_submit" type="submit" name="create_session_button"
+                                       onclick="clicked_create_session('{}', 's')" value="Create New Session From Local File" />
+                            </div>
                             <div class="table-responsive">
                                 <table id="sessions" class="table table-bordered table-hover table-striped">
                                     <thead>
@@ -149,8 +154,9 @@
             toggle_row()
         );
     </script>
-    
-    
+
+    <script type="text/javascript" src="../static/custom-scripts/usb-script.js"></script>
+
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>
         function clicked_raw(id, rec_type) {
@@ -176,90 +182,6 @@
                     link.href = window.URL.createObjectURL(blob);
                     link.download = data.filename;
                     link.click();
-                }});
-        }
-
-        function clicked_upload(id, rec_type) {
-            var receivedText = "";
-            var input = document.getElementById('uf'+rec_type+'_'+id);
-            if (!input){
-                alert("System Error. We apologize for the inconvenience.");
-            }
-            else if (!input.files) {
-                alert("This browser doesn't seem to support the `files` property of file inputs.");
-            }
-            else if (!input.files[0]) {
-                alert("Please select a file before clicking 'Load'");
-            }
-            else {
-                var file = input.files[0];
-                var fr = new FileReader();
-                fr.onload = function(e) {
-                    var contents = e.target.result;
-                    send_record_to_add(contents, id);
-                };
-                fr.readAsText(file);
-                //fr.readAsDataURL(file);
-                //contents.substr(1, contents.indexOf("n")
-            }
-        }
-
-        function send_record_to_add(contents, id) {
-            var server_endpoint = '/addToSessionFromLocal';
-            $.ajax({headers : {},
-                type: "POST",
-                data: {
-                    "content" : contents,
-                    "sess_id" : id
-                },
-                dataType: "json",
-                url: server_endpoint,
-                success: function (data) {
-                    if (data.status_code === 503) {
-                        alert("Update Functionality Failed: Perhaps Unavailable");
-                    }
-                    else if (data.status_code === 200) {
-                        alert("Update Successful!");
-                    }
-                    else {
-                        alert("Unknown Error - Update Not Successful");
-                    }
-                }});
-        }
-
-        // Function to send call to endpoint that updates Android cache
-        function clicked_update_android_files(){
-            var server_endpoint = '/updateAndroidCache';
-            $.ajax({headers : {},
-                url: server_endpoint,
-                success: function (data) {
-                    if (data.status_code === 503) {
-                        alert("Update Functionality Failed: Perhaps Unavailable");
-                    }
-                    else if (data.status_code === 200) {
-                        alert("Update Successful!");
-                    }
-                    else {
-                        alert("Unknown Error - Update Not Successful");
-                    }
-                }});
-        }
-
-        // Function to send call to endpoint that updates Android cache
-        function clicked_clear_cache(){
-            var server_endpoint = '/clearAndroidCache';
-            $.ajax({headers : {},
-                url: server_endpoint,
-                success: function (data) {
-                    if (data.status_code === 500) {
-                        alert("Error Clearing Cache - Not Successful");
-                    }
-                    else if (data.status_code === 200) {
-                        alert("Android Cache Clear Successful!");
-                    }
-                    else {
-                        alert("Unknown Error - Clearing Not Successful");
-                    }
                 }});
         }
     </script>

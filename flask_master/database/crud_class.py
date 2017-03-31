@@ -1,5 +1,6 @@
 import hashlib
 from pymysql import Error, connect
+import platform
 
 from database.python_mysql_dbconfig import read_db_config
 
@@ -410,9 +411,16 @@ class Crud(object):
             lo = 'LOCAL'
         else:
             lo = ''
+
+        system_name = platform.system()
+
+        line_endings = '\r\n'
+        if system_name == 'Linux':
+            line_endings = '\n'
+
         query = "LOAD DATA " + lo + " INFILE '" + path + "' INTO " \
                 "TABLE " + args[0] + " FIELDS TERMINATED BY ',' LINES " \
-                "TERMINATED BY '\r\n' IGNORE 1 LINES " + args[1] + ";"
+                "TERMINATED BY '" + line_endings + "' IGNORE 1 LINES " + args[1] + ";"
         self.execute_transaction_query(query, [])
 
     # ********* generic query ********#
