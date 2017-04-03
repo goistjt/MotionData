@@ -523,6 +523,8 @@ def get_sessions(device_id):
 def get_android_route():
     """
     Used as default Android cache location resource.
+
+    :returns: gives the specified path to the android cache
     """
     return os.path.dirname(os.path.realpath(__file__)) + "/android_files"
 
@@ -533,6 +535,8 @@ def update_android_files():
     Route in charge of updating Android cache locally - returns 503 if phone unplugged, 200 if phone transfer successful
     Has to check for OS in order to get location "correct" - still RELIES ON SPECIFIC INSTALL LOCATION - 500 if not
     expected OS.
+
+    :returns: jsonified status based on the success of updating the cache
     """
     system_name = platform.system()
 
@@ -572,6 +576,8 @@ def update_android_files():
 def delete_android_cache():
     """
     Route in charge of deleting / clearing the Android cache.
+
+    :returns: jsonified status code of the success of clearing the cache
     """
     if os.path.exists(get_android_route()):
 
@@ -589,6 +595,7 @@ def is_possible_injection(attack_vector):
     """
         Checks the input for invalid characters and errors if any are found
         Used to check for SQL injection in the user inputs
+
     :param attack_vector: the string to check for invalid characters
     :return: Raise InvalidUsage error if an invalid character is found
     """
