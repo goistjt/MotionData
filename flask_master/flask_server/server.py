@@ -333,12 +333,21 @@ def create_session():
 
 @app.route("/createSessionFromLocal", methods=["POST"])
 def create_session_from_local():
-    """ {sess_desc: "",
+    """
+    Creates a new session and record in the database with the data from the POST body. This is meant to be the
+    specific enpoint for accomplishing this task from a local source in case there is a clear distinction between
+    the tasks of local / nonlocal. Uses the "content" form to get the post data.
+
+        :post format:
+        {sess_desc: "",
          accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
          device_name: "",
-         begin: long} """
+         begin: long}
+
+    :return: The new session and record IDs
+    """
 
     data = decode_to_json(request.form['content'])
 
@@ -354,6 +363,19 @@ def create_session_from_local():
 
 def create_session_from_data(desc, accel_data, gyro_data, device_id, device_name, start):
 
+    """
+    Extracted out from the endpoints that use it, this function is meant to take the data necessary for inserting into
+    the session table and perform that action on the database, returning a jsonified result of the action or error.
+
+    :param: desc - description of the session
+    :param: accel_data - the acceleration data points to create the session with
+    :param: gyro_data - the gyroscopic data points to create the session with
+    :param: device_id - the device id associated with this first record for the created session
+    :param: device_name - the device name associated with the first record
+    :param: start - the start time for the session
+
+    :returns: jsonified result fo the insertion of the session table - includes session id and record id associated
+    """
     if desc is None or accel_data is None or gyro_data is None or device_id is None \
             or device_name is None or start is None:
         raise InvalidUsage(
@@ -380,14 +402,17 @@ def create_session_from_data(desc, accel_data, gyro_data, device_id, device_name
 @app.route("/addToSession", methods=["POST"])
 def add_to_session():
     """
-        Creates a new record in the database related to the indicated session using
-         the data from the POST body
-    :post format:
+        Creates a new record in the database related to the indicated session using the data from the POST body
+
+        :post format:
         {accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
-         gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
-         device_id: "",
-         device_name: "",
-         sess_id: ""} """
+        gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
+        device_id: "",
+        device_name: "",
+        sess_id: ""}
+
+        :returns: jsonified session id and record id
+    """
 
     data = decode_to_json(request.data)
 
@@ -402,12 +427,19 @@ def add_to_session():
 
 @app.route("/addToSessionFromLocal", methods=["POST"])
 def add_to_session_from_local():
-    """ [{accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
+    """
+        Creates a new record in the database related to the indicated session using the data from the POST body - this
+        is done from local file input in the "content" form
+
+        [{accelModels: [{time_val: long, x_val: float, y_val: float, z_val: float}],
          gyroModels: [{time_val: long, pitch_val: float, roll_val: float, yaw_val: float}],
          device_id: "",
          device_name: "",
          sess_id: ""},
-         session_id: ""] """
+         session_id: ""]
+
+        :returns: jsonified session id and record id
+    """
 
     data = decode_to_json(request.form['content'])
 
@@ -421,6 +453,18 @@ def add_to_session_from_local():
 
 
 def add_to_session_from_data(sess_id, accel_data, gyro_data, device_id, device_name):
+
+    """
+        Extracted logic to insert record data into the appropriate tables associated with the given session_id.
+
+        :param: sess_id - the session id to be assocated to
+        :param: accel_data - the accelerometer points collected
+        :param: gyro_data - the gyroscopic points collected
+        :param: device_id - the id of the device the points were collected on
+        :param: device_name - the name of the device the points were collected on
+
+        :returns: jsonified session id and record id and status code
+    """
 
     if sess_id is None or accel_data is None or gyro_data is None \
             or device_name is None or device_id is None:
@@ -447,8 +491,10 @@ def delete_session():
     """
         Deletes all data related to the session in the database that has the
         session ID provided in the JSON body
-    :JSON format:
+
+        :JSON format:
         {sess_id: ""}
+
     :return: The session ID
     """
     data = request.get_json(force=True)
@@ -461,6 +507,7 @@ def delete_session():
 def get_sessions(device_id):
     """
         Collects a list of all sessions that the current device is not a part of
+
     :param device_id: the device ID to check against
     :return: List of all unrelated sessions
     """
