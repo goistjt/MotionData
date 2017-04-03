@@ -9,7 +9,7 @@ import decimal as dc
 GRAVITY = 9.81
 
 
-class MaxCollection(object):
+class MaxCollection:
     """
     This class is responsible for composing the various constraints that must be considered for each degree of freedom.
     Additional subclasses may be made for differing machines / setups.
