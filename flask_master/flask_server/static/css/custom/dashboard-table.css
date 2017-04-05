@@ -8,3 +8,26 @@
 #sessions div.up {
     background-position: 0px 0px;
 }
+
+#record_table .table-hover > tbody > tr >td:hover {
+    background-color: #8b8b8b;
+}
+#record_table .table-hover > tbody > tr > td.active:hover,
+#record_table .table-hover > tbody > tr > th.active:hover,
+#record_table .table-hover > tbody > tr.active:hover > td,
+#record_table .table-hover > tbody > tr:hover > .active,
+#record_table .table-hover > tbody > tr.active:hover > th {
+    background-color: #8b8b8b;
+}
+
+#sessions_table .table-hover > tbody > tr > td.active:hover,
+#sessions_table .table-hover > tbody > tr > th.active:hover,
+#sessions_table .table-hover > tbody > tr.active:hover > td,
+#sessions_table .table-hover > tbody > tr:hover > .active,
+#sessions_table .table-hover > tbody > tr.active:nth-of-type(even):hover > th {
+    background-color: #8b8b8b;
+}
+#sessions_table .table-hover > tbody > tr.active:nth-of-type(odd):hover {
+    background-color: #e8e8e8;
+}
+

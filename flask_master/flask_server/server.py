@@ -125,8 +125,8 @@ def get_html_sessions(sessions):
                    <td><div class="arrow"></div></td>\n
                </tr>\n
                <tr style="display: none;">\n
-                   <td colspan="5">\n
-                       <table id="records" class="table table-bordered table-hover table-striped">\n
+                   <td id="record_table" colspan="5">\n
+                       <table id="records" class="table table-bordered table-hover">\n
                            <thead>\n
                                <tr>\n
                                    <th>Device Name / ID</th>\n
