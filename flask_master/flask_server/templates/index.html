@@ -62,6 +62,18 @@
             <!-- /.navbar-collapse -->
         </nav>
 
+        <!-- Below: the button to initiate Android transfer and to display Android cache root -->
+
+        <div>
+            <input id="update_button" type="submit" name="update_files"
+                   onclick="clicked_update_android_files()" value="Update Local Android Cache" />
+            <input id="clear_button" type="submit" name="clear_cache"
+                   onclick="clicked_clear_cache()" value="Clear Local Android Cache"/>
+            <br/>
+            <p id="android_route" style="color:white;">Local Android Cache: {{android_route|safe}}</p>
+            <br/>
+        </div>
+
         <div id="page-wrapper">
 
             <div class="container-fluid">
@@ -87,6 +99,11 @@
                             <h3 class="panel-title"><i class="fa fa-download fa-fw"></i> Data Records</h3>
                         </div>
                         <div class="panel-body">
+                            <div>
+                                <input type="file" id="create_session_file" />
+                                <input id="create_session_submit" type="submit" name="create_session_button"
+                                       onclick="clicked_create_session('{}', 's')" value="Create New Session From Local File" />
+                            </div>
                             <div class="table-responsive">
                                 <table id="sessions" class="table table-bordered table-hover table-striped">
                                     <thead>
@@ -137,8 +154,9 @@
             toggle_row()
         );
     </script>
-    
-    
+
+    <script type="text/javascript" src="../static/custom-scripts/usb-script.js"></script>
+
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>
         function clicked_raw(id, rec_type) {

@@ -82,6 +82,7 @@ def create_app():
     atexit.register(interrupt)
     return app
 
+
 if os.environ.get('TRAVIS') is None:
     app = create_app()
 else:

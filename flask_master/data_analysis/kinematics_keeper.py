@@ -34,10 +34,10 @@ class KinematicsKeeper(object):
         Adjusts the values of position, velocity, and acceleration for each interval of this degree of motion.
         The user can then query for these values at a particular moment in time.
 
-        Params: new_val - an input value, either acceleration, velocity, or position from the previous to generate from
-                starting_val_type - acceleration, velocity, or position based on the constants included in this class
+        :param: new_val - an input value, either acceleration, velocity, or position from the previous to generate from
+        :param: starting_val_type - acceleration, velocity, or position based on the constants included in this class
 
-        Returns: None
+        :returns: None
 
         """
 
@@ -75,9 +75,9 @@ class KinematicsKeeper(object):
         """
         Determines if the maximum acceleration was reached.
 
-        Params: new_accel - the acceleration to check against the maximum allowed
+        :param: new_accel - the acceleration to check against the maximum allowed
 
-        Returns: the acceleration deemed appropriate after checks have been made
+        :returns: the acceleration deemed appropriate after checks have been made
         """
 
         definitive_max = self._max_collection.get_max_accel() * self.max_buffer_factor
@@ -95,10 +95,10 @@ class KinematicsKeeper(object):
         """
         Determines if the maximum change in acceleration has been reached.
 
-        Params: new_accel - the acceleration to check against (with the current acceleration) the maximum allowed change
+        :param: new_accel - the acceleration to check against (with the current acceleration) the maximum allowed change
                             in acceleration
 
-        Returns: the acceleration deemed appropriate after checks have been made
+        :returns: the acceleration deemed appropriate after checks have been made
         """
 
         definitive_max = self._max_collection.get_max_accel_diff() * self.max_buffer_factor
@@ -116,9 +116,9 @@ class KinematicsKeeper(object):
         """
         Determines if the maximum velocity has been reached.
 
-        Params: new_vel - the velocity to check against the maximum allowed
+        :param: new_vel - the velocity to check against the maximum allowed
 
-        Returns: the appropriate velocity
+        :returns: the appropriate velocity
         """
 
         definitive_max = self._max_collection.get_max_vel() * self.max_buffer_factor
@@ -136,9 +136,9 @@ class KinematicsKeeper(object):
         """
         Determines if the maximum negative position has been reached.
 
-        Params: new_pos - the position to check against the maximum allowed in the negative direction
+        :param: new_pos - the position to check against the maximum allowed in the negative direction
 
-        Returns: the appropriate position
+        :returns: the appropriate position
 
         """
 
@@ -153,9 +153,9 @@ class KinematicsKeeper(object):
         """
         Determines if the maximum positive position has been reached.
 
-        Params: new_pos - the position to check against the maximum allowed in the positive direction
+        :param: new_pos - the position to check against the maximum allowed in the positive direction
 
-        Returns: the appropriate position
+        :returns: the appropriate position
 
         """
 
@@ -178,7 +178,6 @@ class KinematicsKeeper(object):
         """
         Sets the current position. Used in some niche situations like returning to zero position.
         """
-
         self._curr_pos = dc.Decimal(new_pos) * self.one
 
     def set_interval(self, interval):
@@ -188,16 +187,15 @@ class KinematicsKeeper(object):
         """
         Gets the maximum acceleration that this keeper was set to allow.
         """
-
         return float(self._max_collection.get_max_accel())
 
     def _determine_next_acceleration_by_pos(self, new_pos):
         """
         Determines the next accleration based upon existing values and a new position.
 
-        Params: new_pos - the new position to determine the next acceleration from
+        :param: new_pos - the new position to determine the next acceleration from
 
-        Returns: the appropriate new acceleration for further calculations to use
+        :returns: the appropriate new acceleration for further calculations to use
 
         """
 
@@ -209,9 +207,9 @@ class KinematicsKeeper(object):
         """
         Determines the next acceleration based upon existing values and a new velocity.
 
-        Params: new_vel - the velocity to determine the new acceleration from
+        :param: new_vel - the velocity to determine the new acceleration from
 
-        Returns: the appropriate new acceleration for further calculations to use
+        :returns: the appropriate new acceleration for further calculations to use
         """
         return ((dc.Decimal(-2) * (self._curr_vel + (self._curr_accel * self.interval) - new_vel)) / (
             self.interval)) + self._curr_accel
@@ -220,9 +218,9 @@ class KinematicsKeeper(object):
         """
         Determines the next position based upon existing values and a new acceleration.
 
-        Params: new_accel - the next accel value to generate state from
+        :param: new_accel - the next accel value to generate state from
 
-        Returns: the position of the next state
+        :returns: the position of the next state
 
         """
 
@@ -234,9 +232,9 @@ class KinematicsKeeper(object):
         """
         Determines the next velocity based upon existing values and a new acceleration.
 
-        Params: new_accel - the next accel to generate state from
+        :param: new_accel - the next accel to generate state from
 
-        Returns: the velocity of the next state
+        :returns: the velocity of the next state
 
         """
 
