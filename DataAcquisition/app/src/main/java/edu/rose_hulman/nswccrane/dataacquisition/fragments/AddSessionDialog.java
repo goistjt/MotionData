@@ -30,6 +30,7 @@ import edu.rose_hulman.nswccrane.dataacquisition.R;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.SessionAdapter;
 import edu.rose_hulman.nswccrane.dataacquisition.adapters.TimeframeAdapter;
 import edu.rose_hulman.nswccrane.dataacquisition.utils.DeviceUuidFactory;
+import edu.rose_hulman.nswccrane.dataacquisition.utils.StringComressor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -37,6 +38,7 @@ import okhttp3.Response;
 import sqlite.MotionCollectionDBHelper;
 
 import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_IP;
+import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTINGS_NAME;
 import static edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog.JSON;
 
 /**
@@ -97,7 +99,8 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
         switch (v.getId()) {
             case R.id.add_sess_submit_button:
                 motionDataPostBody
-                        .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString());
+                        .setDeviceId(new DeviceUuidFactory(mRootActivity).getDeviceUuid().toString())
+                        .setDeviceName(mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_NAME, ""));
                 String jsonBody = new Gson().toJson(motionDataPostBody);
                 String ip = mRootActivity.getSharedPreferences("Settings", 0).getString(SETTINGS_IP, null);
                 if (ip == null || ip.isEmpty()) {
@@ -165,7 +168,7 @@ public class AddSessionDialog extends DialogFragment implements View.OnClickList
                     .writeTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
                     .readTimeout(params[1].length() * 10, TimeUnit.MILLISECONDS)
                     .build();
-            RequestBody body = RequestBody.create(JSON, params[1]);
+            RequestBody body = RequestBody.create(JSON, StringComressor.compressString(params[1]));
             Request request = new Request.Builder()
                     .url(params[0])
                     .post(body)
