@@ -79,7 +79,7 @@ def get_html_no_sessions():
     :return: the empty sessions table
     """
     html = """<tr class="master">\n
-                   <td colspan="5"><p>No recording sessions in database</p></td>\n
+                   <td colspan="6"><p>No recording sessions in database</p></td>\n
                </tr>\n"""
     return html
 

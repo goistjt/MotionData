@@ -100,31 +100,30 @@
                                        onclick="clicked_create_session('{}', 's')" value="Create New Session From Local File" />
                             </div>
                             <div class="table-responsive">
-                            <div id="sessions_table" class="table-responsive">
-                                <table id="sessions" class="table table-bordered table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>Session ID</th>
-                                        <th>Description</th>
-                                        <th>Date</th>
-                                        <th>Download</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                        {{ table|safe }}
-                                    </tbody>
-                                </table>
+                                <div id="session_table" class="table-responsive">
+                                    <table id="sessions" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Session ID</th>
+                                                <th>Description</th>
+                                                <th>Date</th>
+                                                <th>Download</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{ table|safe }}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- /.container-fluid -->
-
         </div>
         <!-- /#page-wrapper -->
-
     </div>
     <!-- /#wrapper -->
 
