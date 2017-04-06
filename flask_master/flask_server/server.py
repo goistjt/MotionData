@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 import datetime
 import pandas as pd
+import math
 
 from data_analysis import data_analysis as da
 from flask_server import app, crud, data_lock, upload_files
@@ -259,23 +260,20 @@ def create_data_file(sess_id, rec_id, data, data_type):
     :param data: The accelerometer or gyroscope data that is being added ot the file
     :param data_type: The data type that the file is being create for; either 'accel' or 'gyro'
     """
-    if data_type == "accel":
-        first_point = 'x_val'
-        second_point = 'y_val'
-        third_point = 'z_val'
-    else:
-        first_point = 'roll_val'
-        second_point = 'pitch_val'
-        third_point = 'yaw_val'
-
     here = Path(__file__).parent.parent.resolve()
     file = "{}\\db_upload_files\\{}_{}_{}.csv".format(here, data_type, sess_id, rec_id)
     points = []
     for point in data:
-        one = point[first_point]
-        two = point[second_point]
-        three = point[third_point]
+        # todo: if 'gyro' convert to degrees from radians
         time = point['time_val']
+        if data_type == "accel":
+            one = point['x_val']
+            two = point['y_val']
+            three = point['z_val']
+        else:
+            one = math.degrees(point['roll_val'])
+            two = math.degrees(point['pitch_val'])
+            three = math.degrees(point['yaw_val'])
 
         # dump points to csv
         points.append((rec_id, time, one, two, three))
