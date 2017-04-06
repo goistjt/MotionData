@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/MotionData.iml" filepath="$PROJECT_DIR$/.idea/MotionData.iml" />
+      <module fileurl="file://$PROJECT_DIR$/flask_master.iml" filepath="$PROJECT_DIR$/flask_master.iml" />
     </modules>
   </component>
 </project>

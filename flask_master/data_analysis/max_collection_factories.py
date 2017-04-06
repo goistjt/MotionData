@@ -35,10 +35,10 @@ class MaxCollectionFactory:
         """
         Adds a collection to the dictionary with an id and a collection class.
 
-        Params: fid - the identifier for the input collection object
+        :param: fid - the identifier for the input collection object
                 max_collection - the MaxCollection object to be stored in the dictionary
 
-        Returns: None
+        :returns: None
 
         """
 
@@ -48,9 +48,9 @@ class MaxCollectionFactory:
         """
         Retrieves the correct class from the dictionary and instantiates an instance of it.
 
-        Params: fid - the identifier for the object to retrieve
+        :param: fid - the identifier for the object to retrieve
 
-        Returns: MaxCollection object desired with that fid or None if not found from fid input
+        :returns: MaxCollection object desired with that fid or None if not found from fid input
 
         """
 
