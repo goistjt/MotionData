@@ -14,11 +14,11 @@ import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.runner.AndroidJUnit4;
 
-import org.androidannotations.annotations.IgnoreWhen;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,10 +31,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import datamodels.AccelDataModel;
 import datamodels.GyroDataModel;
 import edu.rose_hulman.nswccrane.dataacquisition.testing_utils.AMainActivityTest;
 import sqlite.MotionCollectionDBHelper;
+
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -42,151 +44,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 @RunWith(AndroidJUnit4.class)
 public class CollectionActivityTests extends AMainActivityTest {
-
-    class FakeExecutorService implements ExecutorService {
-
-        boolean shutdownOccurred = false;
-        boolean terminationOccurred = true;
-
-        @Override
-        public void shutdown() {
-            shutdownOccurred = true;
-        }
-
-        @NonNull
-        @Override
-        public List<Runnable> shutdownNow() {
-            shutdownOccurred = true;
-            return new ArrayList<>();
-        }
-
-        @Override
-        public boolean isShutdown() {
-            return shutdownOccurred;
-        }
-
-        @Override
-        public boolean isTerminated() {
-            return terminationOccurred;
-        }
-
-        @Override
-        public boolean awaitTermination(long timeout, @NonNull TimeUnit unit) throws InterruptedException {
-            terminationOccurred = true;
-            return true;
-        }
-
-        @NonNull
-        @Override
-        public <T> Future<T> submit(@NonNull Callable<T> task) {
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public <T> Future<T> submit(@NonNull Runnable task, T result) {
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public Future<?> submit(@NonNull Runnable task) {
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public <T> List<Future<T>> invokeAll(@NonNull Collection<? extends Callable<T>> tasks) throws InterruptedException {
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public <T> List<Future<T>> invokeAll(@NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit) throws InterruptedException {
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public <T> T invokeAny(@NonNull Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
-            return null;
-        }
-
-        @Override
-        public <T> T invokeAny(@NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            return null;
-        }
-
-        @Override
-        public void execute(@NonNull Runnable command) {
-
-        }
-    }
-
-    class FakeCollectionDB extends MotionCollectionDBHelper {
-
-        boolean pushAccelDataHit = false;
-        boolean pushGyroDataHit = false;
-        boolean insertAccelDataHit = false;
-        boolean insertGyroDataHit = false;
-        boolean deleteCurrentAccelDataHit = false;
-        boolean deleteCurrentGyroDataHit = false;
-
-        public FakeCollectionDB(Context context) {
-            super(context);
-        }
-
-        /*
-        @Override
-        public void setStartTime(long startTime) {
-        }
-
-        @Override
-        public void setEndTime(long endTime) {
-        }
-
-        @Override
-        public void getAllTimeframesBetween(long startTime, long endTime) {
-        }
-
-        @Override
-        public long deleteCurrentTimeframeData() {
-            return 0;
-        }
-        */
-
-        @Override
-        public void pushAccelData() {
-            pushAccelDataHit = true;
-        }
-
-        @Override
-        public void pushGyroData() {
-            pushGyroDataHit = true;
-        }
-
-        @Override
-        public void insertAccelData(AccelDataModel data) {
-            insertAccelDataHit = true;
-        }
-
-        @Override
-        public void insertGyroData(GyroDataModel data) {
-            insertGyroDataHit = true;
-        }
-
-        @Override
-        public long deleteCurrentAccelData() {
-            deleteCurrentAccelDataHit = true;
-            return 0;
-        }
-
-        @Override
-        public long deleteCurrentGyroData() {
-            deleteCurrentGyroDataHit = true;
-            return 0;
-        }
-    }
 
     @Test
     public void testCollectionOn() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
@@ -468,7 +325,7 @@ public class CollectionActivityTests extends AMainActivityTest {
         Field maxPitchNoiseField = getFieldFromMainActivity("max_pitch_noise");
         maxPitchNoiseField.set(mainActivity, 500);
 
-        Field maxRollNoiseField = getFieldFromMainActivity("max_roll_noise");
+        Field maxRollNoiseField = getFieldFromMainActivity("roll_noise");
         maxRollNoiseField.set(mainActivity, 500);
 
         Field maxYawNoiseField = getFieldFromMainActivity("max_yaw_noise");
@@ -513,13 +370,13 @@ public class CollectionActivityTests extends AMainActivityTest {
     @Test
     public void testAccelerometerChangedLessThanMax() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
 
-        Field maxXNoiseField = getFieldFromMainActivity("max_x_noise");
+        Field maxXNoiseField = getFieldFromMainActivity("x_noise");
         maxXNoiseField.set(mainActivity, 500);
 
-        Field maxYNoiseField = getFieldFromMainActivity("max_y_noise");
+        Field maxYNoiseField = getFieldFromMainActivity("y_noise");
         maxYNoiseField.set(mainActivity, 500);
 
-        Field maxZNoiseField = getFieldFromMainActivity("max_z_noise");
+        Field maxZNoiseField = getFieldFromMainActivity("z_noise");
         maxZNoiseField.set(mainActivity, 500);
 
         Field prevAccelField = getFieldFromMainActivity("mPrevAccelModel");
@@ -557,7 +414,6 @@ public class CollectionActivityTests extends AMainActivityTest {
         onView(ViewMatchers.withId(R.id.y_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Y: 500.000000 m/s²")));
         onView(ViewMatchers.withId(R.id.z_accel_text_view)).check(ViewAssertions.matches(ViewMatchers.withText("Z: 0.000000 m/s²")));
     }
-
 
     @Test
     public void testUISetup() throws NoSuchFieldException, IllegalAccessException, InterruptedException, NoSuchMethodException, InvocationTargetException {
@@ -599,17 +455,162 @@ public class CollectionActivityTests extends AMainActivityTest {
         editor.apply();
         final Method populateMethod = getMethodFromMainActivity("populatePreservedValues");
         populateMethod.invoke(mainActivity);
-        Field maxXNoiseField = getFieldFromMainActivity("max_x_noise");
+        Field maxXNoiseField = getFieldFromMainActivity("x_noise");
         Assert.assertTrue(((Double) maxXNoiseField.get(mainActivity)) == 500);
-        Field maxYNoiseField = getFieldFromMainActivity("max_y_noise");
+        Field maxYNoiseField = getFieldFromMainActivity("y_noise");
         Assert.assertTrue(((Double) maxYNoiseField.get(mainActivity)) == 500);
-        Field maxZNoiseField = getFieldFromMainActivity("max_z_noise");
+        Field maxZNoiseField = getFieldFromMainActivity("z_noise");
         Assert.assertTrue(((Double) maxZNoiseField.get(mainActivity)) == 500);
         Field maxPitchNoiseField = getFieldFromMainActivity("max_pitch_noise");
         Assert.assertTrue(((Double) maxPitchNoiseField.get(mainActivity)) == 500);
-        Field maxRollNoiseField = getFieldFromMainActivity("max_roll_noise");
+        Field maxRollNoiseField = getFieldFromMainActivity("roll_noise");
         Assert.assertTrue(((Double) maxRollNoiseField.get(mainActivity)) == 500);
         Field maxYawNoiseField = getFieldFromMainActivity("max_yaw_noise");
         Assert.assertTrue(((Double) maxYawNoiseField.get(mainActivity)) == 500);
+    }
+
+    class FakeExecutorService implements ExecutorService {
+
+        boolean shutdownOccurred = false;
+        boolean terminationOccurred = true;
+
+        @Override
+        public void shutdown() {
+            shutdownOccurred = true;
+        }
+
+        @NonNull
+        @Override
+        public List<Runnable> shutdownNow() {
+            shutdownOccurred = true;
+            return new ArrayList<>();
+        }
+
+        @Override
+        public boolean isShutdown() {
+            return shutdownOccurred;
+        }
+
+        @Override
+        public boolean isTerminated() {
+            return terminationOccurred;
+        }
+
+        @Override
+        public boolean awaitTermination(long timeout, @NonNull TimeUnit unit) throws InterruptedException {
+            terminationOccurred = true;
+            return true;
+        }
+
+        @NonNull
+        @Override
+        public <T> Future<T> submit(@NonNull Callable<T> task) {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> Future<T> submit(@NonNull Runnable task, T result) {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public Future<?> submit(@NonNull Runnable task) {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> List<Future<T>> invokeAll(@NonNull Collection<? extends Callable<T>> tasks) throws InterruptedException {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> List<Future<T>> invokeAll(@NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit) throws InterruptedException {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public <T> T invokeAny(@NonNull Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+            return null;
+        }
+
+        @Override
+        public <T> T invokeAny(@NonNull Collection<? extends Callable<T>> tasks, long timeout, @NonNull TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return null;
+        }
+
+        @Override
+        public void execute(@NonNull Runnable command) {
+
+        }
+    }
+
+    class FakeCollectionDB extends MotionCollectionDBHelper {
+
+        boolean pushAccelDataHit = false;
+        boolean pushGyroDataHit = false;
+        boolean insertAccelDataHit = false;
+        boolean insertGyroDataHit = false;
+        boolean deleteCurrentAccelDataHit = false;
+        boolean deleteCurrentGyroDataHit = false;
+
+        public FakeCollectionDB(Context context) {
+            super(context);
+        }
+
+        /*
+        @Override
+        public void setStartTime(long startTime) {
+        }
+
+        @Override
+        public void setEndTime(long endTime) {
+        }
+
+        @Override
+        public void getAllTimeframesBetween(long startTime, long endTime) {
+        }
+
+        @Override
+        public long deleteCurrentTimeframeData() {
+            return 0;
+        }
+        */
+
+        @Override
+        public void pushAccelData() {
+            pushAccelDataHit = true;
+        }
+
+        @Override
+        public void pushGyroData() {
+            pushGyroDataHit = true;
+        }
+
+        @Override
+        public void insertAccelData(AccelDataModel data) {
+            insertAccelDataHit = true;
+        }
+
+        @Override
+        public void insertGyroData(GyroDataModel data) {
+            insertGyroDataHit = true;
+        }
+
+        @Override
+        public long deleteCurrentAccelData() {
+            deleteCurrentAccelDataHit = true;
+            return 0;
+        }
+
+        @Override
+        public long deleteCurrentGyroData() {
+            deleteCurrentGyroDataHit = true;
+            return 0;
+        }
     }
 }
