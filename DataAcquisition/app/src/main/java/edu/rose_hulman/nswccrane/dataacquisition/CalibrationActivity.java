@@ -54,9 +54,6 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         initGyroscope(mSensorManager);
         initLinearAccelerometer(mSensorManager);
         initCountdown();
-        initGyroscope(mSensorManager);
-        initGravityAccelerometer(mSensorManager);
-        initCountdown();
     }
 
     private void initCountdown() {
@@ -79,6 +76,15 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
                         updateGyroNoise(editor, avgGyro[0], avgGyro[1], avgGyro[2]);
                         editor.apply();
                         currentStage++;
+                        xVals = new ArrayList<>();
+                        yVals = new ArrayList<>();
+                        zVals = new ArrayList<>();
+                        rollVals = new ArrayList<>();
+                        pitchVals = new ArrayList<>();
+                        yawVals = new ArrayList<>();
+                        initGyroscope(mSensorManager);
+                        initGravityAccelerometer(mSensorManager);
+                        initCountdown();
                         break;
                     case 2:
                         CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
@@ -162,13 +168,12 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                if (currentStage == 2) {
-                    float xP = (float) (Math.cos(yaw_offset) * event.values[0] - Math.sin(yaw_offset) * event.values[1]);
-                    float yP = (float) (Math.sin(yaw_offset) * event.values[0] + Math.cos(yaw_offset) * event.values[1]);
-                    accelerometerChanged(new float[]{xP, yP, event.values[2]});
-                } else {
-                    accelerometerChanged(event.values);
-                }
+                float xP = (float) (Math.cos(yaw_offset) * event.values[0] - Math.sin(yaw_offset) * event.values[1]);
+                float yP = (float) (Math.sin(yaw_offset) * event.values[0] + Math.cos(yaw_offset) * event.values[1]);
+                accelerometerChanged(new float[]{xP, yP, event.values[2]});
+                break;
+            case Sensor.TYPE_LINEAR_ACCELERATION:
+                accelerometerChanged(event.values);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 gyroscopeChanged(event.values);
