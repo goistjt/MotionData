@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -65,13 +66,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
 
             @Override
             public void onFinish() {
-                float[] avgAccels = new float[]{calculateAverage(xVals), calculateAverage(yVals), calculateAverage(zVals)};
+                float[] avgAccels = new float[]{calculateMedian(xVals), calculateMedian(yVals), calculateMedian(zVals)};
                 SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
                 SharedPreferences.Editor editor = settings.edit();
                 switch (currentStage) {
                     case 1:
                         CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
-                        float[] avgGyro = new float[]{calculateAverage(rollVals), calculateAverage(pitchVals), calculateAverage(yawVals)};
+                        float[] avgGyro = new float[]{calculateMedian(rollVals), calculateMedian(pitchVals), calculateMedian(yawVals)};
                         updateAccelNoise(editor, avgAccels[0], avgAccels[1], avgAccels[2]);
                         updateGyroNoise(editor, avgGyro[0], avgGyro[1], avgGyro[2]);
                         editor.apply();
@@ -131,6 +132,11 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         }
         avg = avg / values.size();
         return avg;
+    }
+
+    private float calculateMedian(List<Float> values) {
+        Collections.sort(values);
+        return values.get(values.size() / 2);
     }
 
     private void initLinearAccelerometer(SensorManager sensorManager) {

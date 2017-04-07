@@ -293,12 +293,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
      */
     public void accelerometerChanged(AccelDataModel dataModel) {
-        if (this.mPrevAccelModel == null) {
-            this.mPrevAccelModel = dataModel;
-        } else {
-            handleAccelerometerNoise(dataModel);
-        }
-        this.mPrevAccelModel = dataModel;
+//        if (this.mPrevAccelModel == null) {
+//            this.mPrevAccelModel = dataModel;
+//        } else {
+//            handleAccelerometerNoise(dataModel);
+//        }
+//        this.mPrevAccelModel = dataModel;
         mCollectionService.execute(new AccelRunnable(dataModel, mCollectionDBHelper));
         updateAccelerometerUI(dataModel);
     }
@@ -309,13 +309,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
      */
     private void handleAccelerometerNoise(AccelDataModel dataModel) {
-        if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.max_x_noise) {
+        if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.x_noise) {
             dataModel.setX(this.mPrevAccelModel.getX());
         }
-        if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.max_y_noise) {
+        if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.y_noise) {
             dataModel.setY(this.mPrevAccelModel.getY());
         }
-        if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.max_z_noise) {
+        if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.z_noise) {
             dataModel.setZ(this.mPrevAccelModel.getZ());
         }
     }
@@ -326,18 +326,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
      */
     private void updateAccelerometerUI(AccelDataModel dataModel) {
-            if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.x_noise) {
-                dataModel.setX(this.mPrevAccelModel.getX());
-            }
-            if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.y_noise) {
-                dataModel.setY(this.mPrevAccelModel.getY());
-            }
-            if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.z_noise) {
-                dataModel.setZ(this.mPrevAccelModel.getZ());
-            }
-        }
-        this.mPrevAccelModel = dataModel;
-        mCollectionService.execute(new AccelRunnable(dataModel, mCollectionDBHelper));
         mXTextView.setText(String.format(Locale.US, getString(R.string.x_format), dataModel.getX()));
         mYTextView.setText(String.format(Locale.US, getString(R.string.y_format), dataModel.getY()));
         mZTextView.setText(String.format(Locale.US, getString(R.string.z_format), dataModel.getZ()));
@@ -349,21 +337,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link AccelDataModel} containing the most recent gyroscope readings
      */
     public void gyroscopeChanged(GyroDataModel dataModel) {
-        if (this.mPrevGyroModel == null) {
-            this.mPrevGyroModel = dataModel;
-        } else {
-            if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.pitch_noise) {
-                dataModel.setPitch(this.mPrevGyroModel.getPitch());
-            }
-            if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.roll_noise) {
-                dataModel.setRoll(this.mPrevGyroModel.getRoll());
-            }
-            if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.yaw_noise) {
-                dataModel.setYaw(this.mPrevGyroModel.getYaw());
-            }
-            handleGyroscopeNoise(dataModel);
-        }
-        this.mPrevGyroModel = dataModel;
+//        if (this.mPrevGyroModel == null) {
+//            this.mPrevGyroModel = dataModel;
+//        } else {
+//            handleGyroscopeNoise(dataModel);
+//        }
+//        this.mPrevGyroModel = dataModel;
         mCollectionService.execute(new GyroRunnable(dataModel, mCollectionDBHelper));
         updateGyroscopeUI(dataModel);
     }
@@ -385,13 +364,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link GyroDataModel} containing the most recent accelerometer readings
      */
     private void handleGyroscopeNoise(GyroDataModel dataModel) {
-        if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.max_pitch_noise) {
+        if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.pitch_noise) {
             dataModel.setPitch(this.mPrevGyroModel.getPitch());
         }
-        if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.max_roll_noise) {
+        if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.roll_noise) {
             dataModel.setRoll(this.mPrevGyroModel.getRoll());
         }
-        if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.max_yaw_noise) {
+        if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.yaw_noise) {
             dataModel.setYaw(this.mPrevGyroModel.getYaw());
         }
     }
