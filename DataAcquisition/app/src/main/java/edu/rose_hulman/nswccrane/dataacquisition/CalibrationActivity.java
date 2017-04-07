@@ -31,12 +31,12 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public SensorManager mSensorManager;
     @BindView(R.id.time_remaining)
     TextView mTimeRemaining;
-    private List<Float> xVals = new ArrayList<>();
-    private List<Float> yVals = new ArrayList<>();
-    private List<Float> zVals = new ArrayList<>();
-    private List<Float> pitchVals = new ArrayList<>();
-    private List<Float> rollVals = new ArrayList<>();
-    private List<Float> yawVals = new ArrayList<>();
+    private List<Float> xVals;
+    private List<Float> yVals;
+    private List<Float> zVals;
+    private List<Float> pitchVals;
+    private List<Float> rollVals;
+    private List<Float> yawVals;
     private int pollRate;
     private float yaw_offset;
     private int currentStage;
@@ -51,6 +51,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         yaw_offset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
         mTimeRemaining.setText(getString(R.string.time_remaining, 1, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
+        initDegreeLists();
         initSensorManager();
         initGyroscope(mSensorManager);
         initLinearAccelerometer(mSensorManager);
@@ -77,12 +78,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
                         updateGyroNoise(editor, avgGyro[0], avgGyro[1], avgGyro[2]);
                         editor.apply();
                         currentStage++;
-                        xVals = new ArrayList<>();
-                        yVals = new ArrayList<>();
-                        zVals = new ArrayList<>();
-                        rollVals = new ArrayList<>();
-                        pitchVals = new ArrayList<>();
-                        yawVals = new ArrayList<>();
+                        initDegreeLists();
                         initGyroscope(mSensorManager);
                         initGravityAccelerometer(mSensorManager);
                         initCountdown();
@@ -97,6 +93,15 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
                 }
             }
         }.start();
+    }
+
+    private void initDegreeLists() {
+        xVals = new ArrayList<>();
+        yVals = new ArrayList<>();
+        zVals = new ArrayList<>();
+        rollVals = new ArrayList<>();
+        pitchVals = new ArrayList<>();
+        yawVals = new ArrayList<>();
     }
 
     private void updateAngularOffset(float[] zOffs, SharedPreferences.Editor editor) {
