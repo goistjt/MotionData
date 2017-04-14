@@ -541,10 +541,20 @@ def update_android_files():
     system_name = platform.system()
 
     if system_name == 'Windows':
-        adb_location = 'C:\\Android\\sdk\\platform-tools\\adb'
+        android_config_path = os.path.dirname(os.path.realpath(__file__)) + "\\configuration_files" + "\\adb_config.txt"
+        if os.path.isfile(android_config_path):
+            with open(android_config_path, 'r') as f:
+                adb_location = f.read()
+        else:
+            adb_location = 'C:\\Android\\sdk\\platform-tools\\adb'
 
     elif system_name == 'Linux':
-        adb_location = "/usr/bin/adb"
+        android_config_path = os.path.dirname(os.path.realpath(__file__)) + "/configuration_files" + "/adb_config.txt"
+        if os.path.isfile(android_config_path):
+            with open(android_config_path, 'r') as f:
+                adb_location = f.read()
+        else:
+            adb_location = "/usr/bin/adb"
 
     else:
         return jsonify(status_code=505)

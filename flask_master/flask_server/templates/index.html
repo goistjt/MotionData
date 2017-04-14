@@ -70,6 +70,11 @@
             <input id="clear_button" type="submit" name="clear_cache"
                    onclick="clicked_clear_cache()" value="Clear Local Android Cache"/>
             <br/>
+            <div>
+                <input type="file" id="adb_location_chooser" />
+                <input id="adb_chooser_button" type="submit" name="adb_chooser_button"
+                       onclick="confirm_adb_location('{}', 's')" value="Choose Where 'ADB' Is Installed" />
+            </div>
             <p id="android_route" style="color:white;">Local Android Cache: {{android_route|safe}}</p>
             <br/>
         </div>

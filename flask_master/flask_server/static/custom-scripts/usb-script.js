@@ -109,6 +109,7 @@ function send_session_to_create(contents) {
 
 function clicked_update_android_files(){
     // Function to send call to endpoint that updates Android cache
+
     var server_endpoint = '/updateAndroidCache';
 
     $.ajax({headers : {},
