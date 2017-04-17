@@ -1,12 +1,18 @@
 import os
 import shutil
 import subprocess
+import platform
 
 APP_REPO_LOCATION = 'sdcard/Android/data/edu.rose_hulman.nswccrane.dataacquisition/files/records'
 
 
 def get_android_route():
-    return os.path.dirname(os.path.realpath(__file__)) + "/android_files"
+    system_name = platform.system()
+    base_location = os.path.dirname(os.path.realpath(__file__))
+    if system_name == 'Linux':
+        return base_location + '/android_files'
+    else:
+        return os.path.dirname(os.path.realpath(__file__)) + '\\android_files'
 
 
 class Command:
