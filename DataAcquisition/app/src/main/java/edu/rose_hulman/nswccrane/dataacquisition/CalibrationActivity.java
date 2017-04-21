@@ -8,6 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -29,14 +30,14 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
 public class CalibrationActivity extends AppCompatActivity implements SensorEventListener {
     private final int CALIBRATION_TIME = 15;
     public SensorManager mSensorManager;
+    public List<Float> xVals;
+    public List<Float> yVals;
+    public List<Float> zVals;
+    public List<Float> pitchVals;
+    public List<Float> rollVals;
+    public List<Float> yawVals;
     @BindView(R.id.time_remaining)
     TextView mTimeRemaining;
-    private List<Float> xVals;
-    private List<Float> yVals;
-    private List<Float> zVals;
-    private List<Float> pitchVals;
-    private List<Float> rollVals;
-    private List<Float> yawVals;
     private int pollRate;
     private float yaw_offset;
     private int currentStage;
@@ -95,7 +96,8 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         }.start();
     }
 
-    private void initDegreeLists() {
+    @VisibleForTesting
+    void initDegreeLists() {
         xVals = new ArrayList<>();
         yVals = new ArrayList<>();
         zVals = new ArrayList<>();
@@ -130,7 +132,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         return new float[]{xzOff, yzOff};
     }
 
-    private float calculateAverage(List<Float> values) {
+    public float calculateAverage(List<Float> values) {
         float avg = 0;
         for (Float value : values) {
             avg += value;
