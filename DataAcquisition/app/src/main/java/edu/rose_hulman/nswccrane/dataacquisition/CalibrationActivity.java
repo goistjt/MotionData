@@ -123,6 +123,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         editor.putFloat(getString(R.string.yaw_threshold), yaw);
     }
 
+    /**
+     * Determines the angle the the phone is offset from the z-plane in the x-, and y-axis using the
+     * average force of gravity applied to the x-/y-axis during the calibration period
+     *
+     * @param floats float[]: [0] = xAvg, [1] = yAvg, [2] = zAvg
+     * @return float[]: [0] = xzOffset, [1] = yzOffset
+     */
     private float[] calculateZOffsets(float[] floats) {
         float gravity = 9.81F;
         float x = floats[0] < 0 ? Math.max(floats[0], gravity) : Math.min(floats[0], gravity);
@@ -132,6 +139,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         return new float[]{xzOff, yzOff};
     }
 
+    /**
+     * Calculates the average of a list of floats. Note: This may overflow if the sum of all floats
+     * is larger than {@link Float#MAX_VALUE}
+     *
+     * @param values {@link List<Float>}
+     * @return float containing the average
+     */
     public float calculateAverage(List<Float> values) {
         float avg = 0;
         for (Float value : values) {
@@ -141,9 +155,24 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
         return avg;
     }
 
-    private float calculateMedian(List<Float> values) {
+    /**
+     * Calculates the median of a list of floats.
+     *
+     * @param values {@link List<Float>}
+     * @return float containing the average
+     */
+    public float calculateMedian(List<Float> values) {
+        if (values.isEmpty()) {
+            return 0;
+        }
         Collections.sort(values);
-        return values.get(values.size() / 2);
+        int size = values.size();
+        // Odd num of elements
+        if ((size & 1) == 1) {
+            return values.get(values.size() / 2);
+        }
+        // Even num of elements
+        return (values.get((size / 2) - 1) + values.get(size / 2)) / 2;
     }
 
     private void initLinearAccelerometer(SensorManager sensorManager) {
@@ -181,6 +210,7 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
+                // Apply yaw offset
                 float xP = (float) (Math.cos(yaw_offset) * event.values[0] - Math.sin(yaw_offset) * event.values[1]);
                 float yP = (float) (Math.sin(yaw_offset) * event.values[0] + Math.cos(yaw_offset) * event.values[1]);
                 accelerometerChanged(new float[]{xP, yP, event.values[2]});
