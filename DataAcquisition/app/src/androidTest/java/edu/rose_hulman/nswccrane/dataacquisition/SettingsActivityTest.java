@@ -22,11 +22,10 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
  * Created by Jeremiah Goist on 11/25/2016.
  */
 
-//@Ignore // Remove this to test locally
-public class SettingsActvityTest extends JUnitTestCase<SettingsActivity> {
+public class SettingsActivityTest extends JUnitTestCase<SettingsActivity> {
     private SettingsActivity mActivity;
 
-    public SettingsActvityTest() {
+    public SettingsActivityTest() {
         super(SettingsActivity.class);
     }
 
@@ -35,8 +34,7 @@ public class SettingsActvityTest extends JUnitTestCase<SettingsActivity> {
         mActivity = (SettingsActivity) getCurrentActivity();
     }
 
-    @Before
-    public void clearSharedPrefs() {
+    private void clearSharedPrefs() {
         SharedPreferences prefs = mActivity.getSharedPreferences("Settings", 0);
         SharedPreferences.Editor editor = prefs.edit();
         editor.remove(SETTINGS_IP);
@@ -46,6 +44,7 @@ public class SettingsActvityTest extends JUnitTestCase<SettingsActivity> {
 
     @Test
     public void confirmIpPrefs() {
+        clearSharedPrefs();
         onView(withId(R.id.ip_address_edit)).perform(ViewActions.typeText("192.168.1.1"));
         onView(withId(R.id.ip_address_edit)).check(matches(withText("192.168.1.1")));
         openActionBarOverflowOrOptionsMenu(mActivity);
@@ -55,6 +54,7 @@ public class SettingsActvityTest extends JUnitTestCase<SettingsActivity> {
 
     @Test
     public void confirmSampleRatePrefs() {
+        clearSharedPrefs();
         onView(withId(R.id.sample_rate_edit)).perform(ViewActions.typeText("12"));
         onView(withId(R.id.sample_rate_edit)).check(matches(withText("12")));
         openActionBarOverflowOrOptionsMenu(mActivity);
@@ -64,6 +64,7 @@ public class SettingsActvityTest extends JUnitTestCase<SettingsActivity> {
 
     @Test
     public void comfirmEmptyRatePrefs() {
+        clearSharedPrefs();
         openActionBarOverflowOrOptionsMenu(mActivity);
         onView(withText("Confirm")).perform(click());
         Assert.assertEquals(40, mActivity.getSharedPreferences("Settings", 0).getInt(SETTINGS_RATE, 40));
