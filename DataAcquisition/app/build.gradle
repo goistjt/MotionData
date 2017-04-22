@@ -14,14 +14,14 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-//    sourceSets {
-//        androidTest {
-//            java {
-//                exclude '**/*DialogTest.java'
+    sourceSets {
+        androidTest {
+            java {
+                exclude '**/*DialogTest.java'
 //                exclude '**/SettingsActivityTest.java'
-//            }
-//        }
-//    }
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
