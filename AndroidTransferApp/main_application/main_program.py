@@ -7,6 +7,9 @@ APP_REPO_LOCATION = 'sdcard/Android/data/edu.rose_hulman.nswccrane.dataacquisiti
 
 
 def get_android_route():
+    """
+    :returns location of the android cache (the directory transferred files will be placed into.
+    """
     system_name = platform.system()
     base_location = os.path.dirname(os.path.realpath(__file__))
     if system_name == 'Linux':
@@ -16,19 +19,32 @@ def get_android_route():
 
 
 class Command:
+    """
+    The base interface command, specifying the 'execute' method.
+    """
     def __init__(self, params):
         self.params = params
 
     def execute(self):
-        pass
+        """
+        :returns True - it always succeeds
+        """
+        return True
 
 
 class UpdateAndroidCache(Command):
+    """
+    Updates the Android cache using the adb location specified to perform the transfer subprocess.
+    """
     def __init__(self, params):
         Command.__init__(self, params)
 
     def execute(self):
-
+        """
+        Needs exactly one parameter - will return False if there is not at least one parameter given. Any extra
+        parameters will be ignored.
+        :returns the success of the transfer action in total
+        """
         if (len(self.params) > 0) and (self.params[0] is not None):
             adb_location = self.params[0]
 
@@ -41,7 +57,7 @@ class UpdateAndroidCache(Command):
             os.makedirs(get_android_route())
 
         if not os.path.isfile(adb_location):
-            print("Give adb location does not exist.")
+            print("Given adb location does not exist.")
             return False
 
         cmd = 'pull'
@@ -72,11 +88,17 @@ class UpdateAndroidCache(Command):
 
 
 class ClearAndroidCache(Command):
+    """
+    The command class used to delete the contents of the Android cache
+    """
     def __init__(self, params):
         Command.__init__(self, params)
 
     def execute(self):
-
+        """
+        Uses the existing parameters to recursively delete all contents.
+        :returns the success of the deletions in total
+        """
         if os.path.exists(get_android_route()):
             try:
                 shutil.rmtree(get_android_route())
@@ -88,12 +110,39 @@ class ClearAndroidCache(Command):
         return True
 
 
+"""
+This dictionary holds the command types and the keyword associated to each type for the interface to use
+"""
 COMMAND_DICTIONARY = {
     "update": UpdateAndroidCache,
     "clear": ClearAndroidCache
 }
 
 if __name__ == "__main__":
+
+    """
+    Starting prompt describing what this app can accomplish and how to perform the two actions.
+    """
+
+    print("Transfer Application Interface Started!\n")
+    print("***Please note that every space character used in these commands is",
+          "considered a parameter delimiter, or the differentiation character between inputs of methods.***\n")
+    print("Steps:")
+    print("1. Plug the Android device you wish to transfer from, via usb, into your computer.\n")
+    print("2. To 'update' the Android cache by transferring the",
+          "files from the phone to the computer, type this command:")
+    print("update <the location of the adb, or 'Android Debug Bridge' installation>\n")
+    print("3. To 'clear' the Android cache by deleting all files",
+          "stored in the designated transfer directory, type this command:")
+    print("clear")
+    print("[the clear command has no parameters, but will attempt to clear regardless,",
+          "ignoring the 'parameters' given]\n")
+
+    """
+    The below is the main interface loop. It prints a prompt, takes a line of input, and separates the parameters by
+    a space delimiter, crating the appropriate command object type based on the input's starting word, passing in all
+    other parameters.
+    """
 
     while True:
 
@@ -110,9 +159,10 @@ if __name__ == "__main__":
             break
 
         else:
-            try:
+            if split_by_space[0] in COMMAND_DICTIONARY.keys():
                 command_class = COMMAND_DICTIONARY[split_by_space[0]]
-            except KeyError:
+
+            else:
                 print("Invalid command type. Please check the name and try again.")
                 continue
 
