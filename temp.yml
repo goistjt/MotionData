@@ -1,0 +1,15 @@
+web:
+  build: . -t motiondata
+  ports:
+   - "5000:5000"
+  links:
+   - database
+  depends_on:
+   - database
+Database:
+  build: ./Database/. -t db 
+  volumes:
+   - ./Database/data:/var/lib/mysql
+  command: /bin/bash mysql -uroot < /mysql/schema.sql -proot
+
+

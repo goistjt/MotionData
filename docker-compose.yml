@@ -1,0 +1,17 @@
+version: '2'
+services:
+  web:
+     image: motiondata 
+     ports:
+      - "5000:5000"
+     links:
+      - db
+     depends_on:
+      - db
+  db:
+     build: ./Database/. 
+     volumes:
+      - ./Database/data:/var/lib/mysql
+     command: /bin/bash mysql -uroot -proot -e "use `six-dof`; show tables;"
+
+
