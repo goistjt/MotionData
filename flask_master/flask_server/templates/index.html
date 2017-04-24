@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -29,6 +28,9 @@
     <!-- Style sheed for navbar -->
     <link href="../static/css/navbar.css" rel="stylesheet" type="text/css">
 
+    <script src="../static/js/Blob.js"></script>
+    <script src="../static/js/FileSaver.js"></script>
+    <script type="text/javascript" src="../static/custom-scripts/usb-script.js"></script>
 
 </head>
 
@@ -61,18 +63,6 @@
             </div>
             <!-- /.navbar-collapse -->
         </nav>
-
-        <!-- Below: the button to initiate Android transfer and to display Android cache root -->
-
-        <div>
-            <input id="update_button" type="submit" name="update_files"
-                   onclick="clicked_update_android_files()" value="Update Local Android Cache" />
-            <input id="clear_button" type="submit" name="clear_cache"
-                   onclick="clicked_clear_cache()" value="Clear Local Android Cache"/>
-            <br/>
-            <p id="android_route" style="color:white;">Local Android Cache: {{android_route|safe}}</p>
-            <br/>
-        </div>
 
         <div id="page-wrapper">
 
@@ -154,8 +144,6 @@
             toggle_row()
         );
     </script>
-
-    <script type="text/javascript" src="../static/custom-scripts/usb-script.js"></script>
 
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>

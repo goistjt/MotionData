@@ -6,8 +6,8 @@ function clicked_upload(id, rec_type) {
 
     if (!input){
         alert("System Error. We apologize for the inconvenience.");
-
     }
+
     else if (!input.files) {
         alert("This browser doesn't seem to support the `files` property of file inputs.");
     }
@@ -103,44 +103,6 @@ function send_session_to_create(contents) {
 
             else {
                 alert("Unknown Error - Update Not Successful");
-            }
-        }});
-}
-
-function clicked_update_android_files(){
-    // Function to send call to endpoint that updates Android cache
-    var server_endpoint = '/updateAndroidCache';
-
-    $.ajax({headers : {},
-        url: server_endpoint,
-        success: function (data) {
-            if (data.status_code === 503) {
-                alert("Update Functionality Failed: Perhaps Unavailable");
-            }
-            else if (data.status_code === 200) {
-                alert("Update Successful!");
-            }
-            else {
-                alert("Unknown Error: Update Not Successful");
-            }
-        }});
-}
-
-function clicked_clear_cache(){
-    // Function to send call to endpoint that updates Android cache
-    var server_endpoint = '/clearAndroidCache';
-
-    $.ajax({headers : {},
-        url: server_endpoint,
-        success: function (data) {
-            if (data.status_code === 500) {
-                alert("Error Clearing Cache: Not Successful");
-            }
-            else if (data.status_code === 200) {
-                alert("Android Cache Clearing Successful!");
-            }
-            else {
-                alert("Unknown Error: Clearing Not Successful");
             }
         }});
 }
