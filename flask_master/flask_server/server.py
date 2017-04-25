@@ -69,7 +69,7 @@ def index():
         table = get_html_no_sessions()
     else:
         table = get_html_sessions(sessions)
-    return render_template("index.html", table=table, android_route=get_android_route())
+    return render_template("index.html", table=table)
 
 
 def get_html_no_sessions():
@@ -515,77 +515,6 @@ def get_sessions(device_id):
         row[2] = datetime.datetime.fromtimestamp(row[2] / 1e3)
         ret_list.append(dict(id=row[0], desc=row[1], date=row[2]))
     return jsonify(sessions=ret_list)
-
-
-def get_android_route():
-    """
-    Used as default Android cache location resource.
-
-    :returns: gives the specified path to the android cache
-    """
-    return os.path.dirname(os.path.realpath(__file__)) + "/android_files"
-
-
-@app.route("/updateAndroidCache")
-def update_android_files():
-    """
-    Route in charge of updating Android cache locally - returns 503 if phone unplugged, 200 if phone transfer successful
-    Has to check for OS in order to get location "correct" - still RELIES ON SPECIFIC INSTALL LOCATION - 500 if not
-    expected OS.
-
-    :returns: jsonified status based on the success of updating the cache
-    """
-    system_name = platform.system()
-
-    if system_name == 'Windows':
-        adb_location = 'C:\\Android\\sdk\\platform-tools\\adb'
-
-    elif system_name == 'Linux':
-        adb_location = "/usr/bin/adb"
-
-    else:
-        return jsonify(status_code=505)
-
-    repository_dir_location = get_android_route()
-
-    app_repo_location = 'sdcard/Android/data/edu.rose_hulman.nswccrane.dataacquisition/files/records'
-
-    if not os.path.exists(get_android_route()):
-        os.makedirs(get_android_route())
-
-    cmd = 'pull'
-
-    space = ' '
-
-    cmd = adb_location + space + cmd + space + app_repo_location + space + repository_dir_location
-
-    try:
-        subprocess.check_output(cmd.split())
-
-    except subprocess.CalledProcessError as e:
-        print(e)
-        return jsonify(status_code=503)
-
-    return jsonify(status_code=200)
-
-
-@app.route("/clearAndroidCache")
-def delete_android_cache():
-    """
-    Route in charge of deleting / clearing the Android cache.
-
-    :returns: jsonified status code of the success of clearing the cache
-    """
-    if os.path.exists(get_android_route()):
-
-        try:
-            shutil.rmtree(get_android_route())
-
-        except OSError as e:
-            print(e)
-            return jsonify(status_code=500)
-
-    return jsonify(status_code=200)
 
 
 def is_possible_injection(attack_vector):
