@@ -13,7 +13,6 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Schema six-dof
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `six-dof` ;
 
 -- -----------------------------------------------------
 -- Schema six-dof
@@ -24,7 +23,6 @@ USE `six-dof` ;
 -- -----------------------------------------------------
 -- Table `six-dof`.`DeviceNames`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `six-dof`.`DeviceNames` ;
 
 CREATE TABLE IF NOT EXISTS `six-dof`.`DeviceNames` (
   `device_name` VARCHAR(255) NULL DEFAULT NULL,
@@ -39,7 +37,6 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `six-dof`.`Session`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `six-dof`.`Session` ;
 
 CREATE TABLE IF NOT EXISTS `six-dof`.`Session` (
   `id` INT(32) NOT NULL AUTO_INCREMENT,
@@ -55,7 +52,6 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `six-dof`.`Records`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `six-dof`.`Records` ;
 
 CREATE TABLE IF NOT EXISTS `six-dof`.`Records` (
   `id` VARCHAR(255) NOT NULL,
@@ -81,7 +77,6 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `six-dof`.`AccelPoints`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `six-dof`.`AccelPoints` ;
 
 CREATE TABLE IF NOT EXISTS `six-dof`.`AccelPoints` (
   `record_id` VARCHAR(255) NOT NULL,
@@ -102,7 +97,6 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `six-dof`.`GyroPoints`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `six-dof`.`GyroPoints` ;
 
 CREATE TABLE IF NOT EXISTS `six-dof`.`GyroPoints` (
   `record_id` VARCHAR(255) NOT NULL,
@@ -126,7 +120,6 @@ USE `six-dof` ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`add_session`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -148,7 +141,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`create_device_entry`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -169,7 +161,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`create_record`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -191,7 +182,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`delete_device_entry`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -211,7 +201,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`delete_session`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -230,7 +219,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`get_all_records_from_session`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -248,7 +236,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`get_device_name`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -268,7 +255,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`get_session_id`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -287,7 +273,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`get_sessions_not_related_to_device`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -305,7 +290,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`reset_session_auto_index`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -335,7 +319,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`select_accel`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -354,7 +337,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`select_all_accel_from_session`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -377,7 +359,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`select_all_gyro_from_session`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -400,7 +381,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`select_gyro`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -419,7 +399,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`select_record`;
 
 DELIMITER $$
 USE `six-dof`$$
@@ -448,7 +427,6 @@ DELIMITER ;
 -- -----------------------------------------------------
 
 USE `six-dof`;
-DROP procedure IF EXISTS `six-dof`.`update_device_entry`;
 
 DELIMITER $$
 USE `six-dof`$$
