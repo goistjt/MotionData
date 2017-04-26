@@ -1,17 +1,21 @@
 version: '2'
 services:
+  db:
+     image: mysql
+     environment:
+         MYSQL_ROOT_PASSWORD: root 
+     volumes:
+      - ./Database/my.cnf:/mysql/my.cnf
+      - ./Database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./Database/data:/var/lib/mysql
+     ports:
+      - "3306"
   web:
-     image: motiondata 
+     build: ./flask_master/
      ports:
       - "5000:5000"
      links:
       - db
      depends_on:
       - db
-  db:
-     build: ./Database/. 
-     volumes:
-      - ./Database/data:/var/lib/mysql
-     command: /bin/bash mysql -uroot -proot -e "use `six-dof`; show tables;"
-
 

@@ -1,8 +1,6 @@
 #!/bin/bash
 service mysql start
-echo "test"
-sleep 15
+sleep 1
 mysql -uroot -proot < /mysql/schema.sql
-mysql -uroot -proot -e "use six-dof; show tables;"
-service mysql stop
+#mysql -uroot -proot -e "use six-dof; show tables;"
 #sleep infinity
