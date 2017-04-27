@@ -7,11 +7,9 @@ import re
 from pathlib import Path
 import datetime
 import pandas as pd
+import math
 
 import os
-import shutil
-import subprocess
-import platform
 
 from data_analysis import data_analysis as da
 from flask_server import app, crud, data_lock, upload_files
@@ -78,7 +76,7 @@ def get_html_no_sessions():
     :return: the empty sessions table
     """
     html = """<tr class="master">\n
-                   <td colspan="5"><p>No recording sessions in database</p></td>\n
+                   <td colspan="6"><p>No recording sessions in database</p></td>\n
                </tr>\n"""
     return html
 
@@ -110,15 +108,14 @@ def get_html_sessions(sessions):
                        <td>{}</td>\n
                        <td>\n
                            <input id="raw_button" type="submit" name="rr_{}"
-                               onclick="clicked_raw('{}', 'r')" value="Download Raw Data" />\n
+                               onclick="clicked_raw('{}', 'r', '{}')" value="Download Raw Data" />\n
                            <input id="analyzed_button" type="submit" name="ar_{}"
-                               onclick="clicked_analyzed('{}', 'r')" value="Download Analyzed Data" />\n
+                               onclick="clicked_analyzed('{}', 'r', '{}')" value="Download Analyzed Data" />\n
                        </td>\n
-                   </tr>\n""".format(dev_name, rid, rid, rid, rid)
+                   </tr>\n""".format(dev_name, rid, rid, dev_name, rid, rid, dev_name)
             recs += curr
 
-        sess = """
-                   <tr class="master">\n
+        sess = """<tr class="master">\n
                    <td>{}</td>\n
                    <td>{}</td>\n
                    <td>{}</td>\n
@@ -127,28 +124,24 @@ def get_html_sessions(sessions):
                        onclick="clicked_raw('{}', 's')" value="Download Raw Averaged Session" />\n
                        <input id="analyzed_button" type="submit" name="as_{}"
                        onclick="clicked_analyzed('{}', 's')" value="Download Analyzed Session" />\n
-                       <input type="file" id="ufs_{}" />
-                       <input id="upload_button" type="submit" name="us_{}"
-                       onclick="clicked_upload('{}', 's')" value="Upload Record" />\n
                    </td>\n
                    <td><div class="arrow"></div></td>\n
                </tr>\n
                <tr style="display: none;">\n
-                   <td colspan="6">\n
-                       <table id="records" class="table table-bordered table-hover table-striped">\n
-                           <thead>\n
+                   <td id="record_table" colspan="6">\n
+                       <table id="records" class="table table-bordered table-hover">\n
+                            <thead>\n
                                <tr>\n
-                                   <th>Record ID</th>\n
+                                   <th>Device Name / ID</th>\n
                                    <th>Download</th>\n
                                </tr>\n
-                           </thead>\n
-                           <tbody>\n
+                            </thead>\n
+                            <tbody>\n
                                {}
-                           </tbody>\n
+                            </tbody>\n
                        </table>\n
                    </td>\n
-               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id,
-                                 recs)
+               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
         html += sess
     return html
 
@@ -171,7 +164,7 @@ def get_record_data_raw(record_id):
     :return: The raw record data
     """
     txt = da.download_record_raw(record_id)
-    filename = "record_raw_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
+    filename = "record_raw_()_{}.txt".format(str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
                 'filename': filename,
                 'mimetype': 'text/csv',
@@ -188,7 +181,7 @@ def get_record_data_analyzed(record_id):
     :return: The analyzed record data
     """
     txt = da.download_record_analyzed(record_id)
-    filename = "record_analyzed_{}_{}.txt".format(record_id, str(datetime.datetime.now()))
+    filename = "record_analyzed_()_{}.txt".format(str(datetime.datetime.now()))
     response = {'Content-Disposition': 'attachment;',
                 'filename': filename,
                 'mimetype': 'text/csv',
@@ -269,15 +262,6 @@ def create_data_file(sess_id, rec_id, data, data_type):
     :param data: The accelerometer or gyroscope data that is being added ot the file
     :param data_type: The data type that the file is being create for; either 'accel' or 'gyro'
     """
-    if data_type == "accel":
-        first_point = 'x_val'
-        second_point = 'y_val'
-        third_point = 'z_val'
-    else:
-        first_point = 'roll_val'
-        second_point = 'pitch_val'
-        third_point = 'yaw_val'
-
     here = Path(__file__).parent.parent.resolve()
 
     directory = "{}/db_upload_files/".format(here)
@@ -289,10 +273,16 @@ def create_data_file(sess_id, rec_id, data, data_type):
 
     points = []
     for point in data:
-        one = point[first_point]
-        two = point[second_point]
-        three = point[third_point]
+        # todo: if 'gyro' convert to degrees from radians
         time = point['time_val']
+        if data_type == "accel":
+            one = point['x_val']
+            two = point['y_val']
+            three = point['z_val']
+        else:
+            one = math.degrees(point['roll_val'])
+            two = math.degrees(point['pitch_val'])
+            three = math.degrees(point['yaw_val'])
 
         # dump points to csv
         points.append((rec_id, time, one, two, three))
@@ -524,7 +514,6 @@ def is_possible_injection(attack_vector):
     """
         Checks the input for invalid characters and errors if any are found
         Used to check for SQL injection in the user inputs
-
     :param attack_vector: the string to check for invalid characters
     :return: Raise InvalidUsage error if an invalid character is found
     """

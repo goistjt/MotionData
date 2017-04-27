@@ -24,6 +24,7 @@ COMMIT;
 END$$
 DELIMITER ;
 
+
 DELIMITER $$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_session`(
 	session_id INT
