@@ -10,9 +10,6 @@ import pandas as pd
 import math
 
 import os
-import shutil
-import subprocess
-import platform
 
 from data_analysis import data_analysis as da
 from flask_server import app, crud, data_lock, upload_files
@@ -127,9 +124,6 @@ def get_html_sessions(sessions):
                        onclick="clicked_raw('{}', 's')" value="Download Raw Averaged Session" />\n
                        <input id="analyzed_button" type="submit" name="as_{}"
                        onclick="clicked_analyzed('{}', 's')" value="Download Analyzed Session" />\n
-                       <input type="file" id="ufs_{}" />
-                       <input id="upload_button" type="submit" name="us_{}"
-                       onclick="clicked_upload('{}', 's')" value="Upload Record" />\n
                    </td>\n
                    <td><div class="arrow"></div></td>\n
                </tr>\n
@@ -141,14 +135,13 @@ def get_html_sessions(sessions):
                                    <th>Device Name / ID</th>\n
                                    <th>Download</th>\n
                                </tr>\n
-                           </thead>\n
-                           <tbody>\n
+                            </thead>\n
+                            <tbody>\n
                                {}
-                           </tbody>\n
+                            </tbody>\n
                        </table>\n
                    </td>\n
-               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id,
-                                 recs)
+               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
         html += sess
     return html
 
