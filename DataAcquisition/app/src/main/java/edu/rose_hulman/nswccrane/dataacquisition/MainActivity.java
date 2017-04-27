@@ -61,12 +61,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     Button mExportButton;
     @BindView(R.id.record_time_edit)
     EditText mRecordTimeEdit;
-    private double max_x_noise;
-    private double max_y_noise;
-    private double max_z_noise;
-    private double max_roll_noise;
-    private double max_pitch_noise;
-    private double max_yaw_noise;
+    private float x_noise;
+    private float y_noise;
+    private float z_noise;
+    private float roll_noise;
+    private float pitch_noise;
+    private float yaw_noise;
     private AccelDataModel mPrevAccelModel;
     private GyroDataModel mPrevGyroModel;
     private SensorManager mSensorManager;
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private ExecutorService mToggleButtonService;
     private ExecutorService mCollectionService;
     private boolean mStarted;
-    private int pollRate;
+    private int pollRate, prevSensor = -1;
     private float yawOffset;
     private float pitchOffset;
     private float rollOffset;
@@ -201,12 +201,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     private void populatePreservedValues() {
         SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.calibration_prefs), 0);
-        max_x_noise = sharedPref.getFloat(getString(R.string.x_threshold), getResources().getInteger(R.integer.DEFAULT_X_THRESHOLD));
-        max_y_noise = sharedPref.getFloat(getString(R.string.y_threshold), getResources().getInteger(R.integer.DEFAULT_Y_THRESHOLD));
-        max_z_noise = sharedPref.getFloat(getString(R.string.z_threshold), getResources().getInteger(R.integer.DEFAULT_Z_THRESHOLD));
-        max_pitch_noise = sharedPref.getFloat(getString(R.string.pitch_threshold), getResources().getInteger(R.integer.DEFAULT_PITCH_THRESHOLD));
-        max_roll_noise = sharedPref.getFloat(getString(R.string.roll_threshold), getResources().getInteger(R.integer.DEFAULT_ROLL_THRESHOLD));
-        max_yaw_noise = sharedPref.getFloat(getString(R.string.yaw_threshold), getResources().getInteger(R.integer.DEFAULT_YAW_THRESHOLD));
+        x_noise = sharedPref.getFloat(getString(R.string.x_threshold), getResources().getInteger(R.integer.DEFAULT_X_THRESHOLD));
+        y_noise = sharedPref.getFloat(getString(R.string.y_threshold), getResources().getInteger(R.integer.DEFAULT_Y_THRESHOLD));
+        z_noise = sharedPref.getFloat(getString(R.string.z_threshold), getResources().getInteger(R.integer.DEFAULT_Z_THRESHOLD));
+        pitch_noise = sharedPref.getFloat(getString(R.string.pitch_threshold), getResources().getInteger(R.integer.DEFAULT_PITCH_THRESHOLD));
+        roll_noise = sharedPref.getFloat(getString(R.string.roll_threshold), getResources().getInteger(R.integer.DEFAULT_ROLL_THRESHOLD));
+        yaw_noise = sharedPref.getFloat(getString(R.string.yaw_threshold), getResources().getInteger(R.integer.DEFAULT_YAW_THRESHOLD));
     }
 
     @Override
@@ -293,12 +293,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
      */
     public void accelerometerChanged(AccelDataModel dataModel) {
-        if (this.mPrevAccelModel == null) {
-            this.mPrevAccelModel = dataModel;
-        } else {
-            handleAccelerometerNoise(dataModel);
-        }
-        this.mPrevAccelModel = dataModel;
+//        if (this.mPrevAccelModel == null) {
+//            this.mPrevAccelModel = dataModel;
+//        } else {
+//            handleAccelerometerNoise(dataModel);
+//        }
+//        this.mPrevAccelModel = dataModel;
         mCollectionService.execute(new AccelRunnable(dataModel, mCollectionDBHelper));
         updateAccelerometerUI(dataModel);
     }
@@ -309,13 +309,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link AccelDataModel} containing the most recent accelerometer readings
      */
     private void handleAccelerometerNoise(AccelDataModel dataModel) {
-        if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.max_x_noise) {
+        if (Math.abs(this.mPrevAccelModel.getX() - dataModel.getX()) < this.x_noise) {
             dataModel.setX(this.mPrevAccelModel.getX());
         }
-        if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.max_y_noise) {
+        if (Math.abs(this.mPrevAccelModel.getY() - dataModel.getY()) < this.y_noise) {
             dataModel.setY(this.mPrevAccelModel.getY());
         }
-        if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.max_z_noise) {
+        if (Math.abs(this.mPrevAccelModel.getZ() - dataModel.getZ()) < this.z_noise) {
             dataModel.setZ(this.mPrevAccelModel.getZ());
         }
     }
@@ -337,12 +337,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link AccelDataModel} containing the most recent gyroscope readings
      */
     public void gyroscopeChanged(GyroDataModel dataModel) {
-        if (this.mPrevGyroModel == null) {
-            this.mPrevGyroModel = dataModel;
-        } else {
-            handleGyroscopeNoise(dataModel);
-        }
-        this.mPrevGyroModel = dataModel;
+//        if (this.mPrevGyroModel == null) {
+//            this.mPrevGyroModel = dataModel;
+//        } else {
+//            handleGyroscopeNoise(dataModel);
+//        }
+//        this.mPrevGyroModel = dataModel;
         mCollectionService.execute(new GyroRunnable(dataModel, mCollectionDBHelper));
         updateGyroscopeUI(dataModel);
     }
@@ -364,13 +364,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * @param dataModel {@link GyroDataModel} containing the most recent accelerometer readings
      */
     private void handleGyroscopeNoise(GyroDataModel dataModel) {
-        if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.max_pitch_noise) {
+        if (Math.abs(this.mPrevGyroModel.getPitch() - dataModel.getPitch()) < this.pitch_noise) {
             dataModel.setPitch(this.mPrevGyroModel.getPitch());
         }
-        if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.max_roll_noise) {
+        if (Math.abs(this.mPrevGyroModel.getRoll() - dataModel.getRoll()) < this.roll_noise) {
             dataModel.setRoll(this.mPrevGyroModel.getRoll());
         }
-        if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.max_yaw_noise) {
+        if (Math.abs(this.mPrevGyroModel.getYaw() - dataModel.getYaw()) < this.yaw_noise) {
             dataModel.setYaw(this.mPrevGyroModel.getYaw());
         }
     }
@@ -380,12 +380,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         long time = System.currentTimeMillis();
         switch (event.sensor.getType()) {
             case Sensor.TYPE_LINEAR_ACCELERATION:
-                float[] valsPrime = calculateAccelRotation(event.values);
+//                if(prevSensor == Sensor.TYPE_LINEAR_ACCELERATION){
+//                    break;
+//                }
+//                prevSensor = Sensor.TYPE_LINEAR_ACCELERATION;
+                float[] accelVals = new float[]{event.values[0] - x_noise,
+                        event.values[1] - y_noise,
+                        event.values[2] - z_noise};
+                float[] valsPrime = calculateAccelRotation(accelVals);
                 AccelDataModel accelModel = new AccelDataModel(time, valsPrime[0], valsPrime[1], valsPrime[2]);
                 accelerometerChanged(accelModel);
                 break;
             case Sensor.TYPE_GYROSCOPE:
-                GyroDataModel gyroModel = new GyroDataModel(time, event.values[0], event.values[1], event.values[2]);
+//                if(prevSensor == Sensor.TYPE_GYROSCOPE){
+//                    break;
+//                }
+//                prevSensor = Sensor.TYPE_GYROSCOPE;
+                GyroDataModel gyroModel = new GyroDataModel(time,
+                        event.values[0] - pitch_noise,
+                        event.values[1] - roll_noise,
+                        event.values[2] - yaw_noise);
                 gyroscopeChanged(gyroModel);
             default:
                 //Empty

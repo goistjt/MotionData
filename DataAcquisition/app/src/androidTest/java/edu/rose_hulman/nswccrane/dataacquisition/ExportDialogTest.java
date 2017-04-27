@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import edu.rose_hulman.nswccrane.dataacquisition.fragments.AddSessionDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.fragments.ExportDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.fragments.NewSessionDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
@@ -56,36 +55,13 @@ public class ExportDialogTest extends JUnitTestCase<MainActivity> {
     }
 
     @Test
-    public void openCloseNewSessionDialog() throws InterruptedException {
-//        closeSoftKeyboard();
-//        Thread.sleep(1000);
+    public void openNewSessionDialog() throws InterruptedException {
         onView(withId(R.id.new_session_button)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
-
         waitForFragment(NewSessionDialog.TAG, 5000, getCurrentActivity());
-
-//        Thread.sleep(1000);
         onView(withId(R.id.description_edit_text)).check(matches(isDisplayed()));
-
         onView(withId(R.id.description_text)).check(matches(withText("Enter a description")));
         onView(withId(R.id.collection_time_selector)).check(matches(isDisplayed()));
-        onView(withId(R.id.new_sess_submit_button)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
-        onView(withId(R.id.export_button)).check(matches(isDisplayed()));
-
-    }
-
-    @Test
-    public void openCloseAddToSessionDialog() throws InterruptedException {
-//        closeSoftKeyboard();
-//        Thread.sleep(1000);
-        onView(withId(R.id.add_to_session_button)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
-        waitForFragment(AddSessionDialog.TAG, 5000, getCurrentActivity());
-
-//        Thread.sleep(1000);
-        onView(withId(R.id.session_selector)).check(matches(isDisplayed()));
-
-        onView(withId(R.id.collection_time_selector2)).check(matches(isDisplayed()));
-        onView(withId(R.id.add_sess_submit_button)).perform(new ClickAction(Tap.SINGLE, GeneralLocation.CENTER, Press.FINGER, null));
-        onView(withId(R.id.export_button)).check(matches(isDisplayed()));
-
+        onView(withId(R.id.new_sess_submit_button)).check(matches(isDisplayed()));
+        onView(withId(R.id.save_record_locally_button)).check(matches(isDisplayed()));
     }
 }

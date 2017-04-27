@@ -8,12 +8,14 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.support.annotation.VisibleForTesting;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -26,92 +28,163 @@ import static edu.rose_hulman.nswccrane.dataacquisition.SettingsActivity.SETTING
  * Created by Jeremiah Goist on 9/24/2016.
  */
 public class CalibrationActivity extends AppCompatActivity implements SensorEventListener {
+    private final int CALIBRATION_TIME = 15;
     public SensorManager mSensorManager;
-    public float max_x_noise = 0;
-    public float max_y_noise = 0;
-    public float max_z_noise = 0;
-    public float max_roll_noise = 0;
-    public float max_pitch_noise = 0;
-    public float max_yaw_noise = 0;
+    public List<Float> xVals;
+    public List<Float> yVals;
+    public List<Float> zVals;
+    public List<Float> pitchVals;
+    public List<Float> rollVals;
+    public List<Float> yawVals;
     @BindView(R.id.time_remaining)
     TextView mTimeRemaining;
-    private List<Float> xVals = new ArrayList<>();
-    private List<Float> yVals = new ArrayList<>();
-    private List<Float> zVals = new ArrayList<>();
-
-    private float[] prev_accel = new float[]{0, 0, 0};
-    private float[] prev_gyro = new float[]{0, 0, 0};
-
     private int pollRate;
     private float yaw_offset;
+    private int currentStage;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calibration);
         ButterKnife.bind(this);
+        currentStage = 1;
         pollRate = getSharedPreferences("Settings", 0).getInt(SETTINGS_RATE, 40);
         yaw_offset = getSharedPreferences(getString(R.string.calibration_prefs), 0).getFloat("yaw_offset", 0f);
-        int CALIBRATION_TIME = 30;
-        mTimeRemaining.setText(getString(R.string.time_remaining, CALIBRATION_TIME));
+        mTimeRemaining.setText(getString(R.string.time_remaining, 1, CALIBRATION_TIME));
         mTimeRemaining.setVisibility(View.VISIBLE);
+        initDegreeLists();
         initSensorManager();
-        initAccelerometer(mSensorManager);
         initGyroscope(mSensorManager);
+        initLinearAccelerometer(mSensorManager);
+        initCountdown();
+    }
+
+    private void initCountdown() {
         new CountDownTimer(CALIBRATION_TIME * 1000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                mTimeRemaining.setText(getString(R.string.time_remaining, millisUntilFinished / 1000));
+                mTimeRemaining.setText(getString(R.string.time_remaining, currentStage, millisUntilFinished / 1000));
             }
 
             @Override
             public void onFinish() {
-                CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
-                calculateZOffsets(calculateAverageAccel());
+                float[] avgAccels = new float[]{calculateMedian(xVals), calculateMedian(yVals), calculateMedian(zVals)};
                 SharedPreferences settings = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0);
                 SharedPreferences.Editor editor = settings.edit();
-//                editor.putFloat(getString(R.string.x_threshold), max_x_noise);
-//                editor.putFloat(getString(R.string.y_threshold), max_y_noise);
-//                editor.putFloat(getString(R.string.z_threshold), max_z_noise);
-                editor.putFloat(getString(R.string.roll_threshold), max_roll_noise);
-                editor.putFloat(getString(R.string.pitch_threshold), max_pitch_noise);
-                editor.putFloat(getString(R.string.yaw_threshold), max_yaw_noise);
-                editor.apply();
-                CalibrationActivity.this.finish();
+                switch (currentStage) {
+                    case 1:
+                        CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
+                        float[] avgGyro = new float[]{calculateMedian(rollVals), calculateMedian(pitchVals), calculateMedian(yawVals)};
+                        updateAccelNoise(editor, avgAccels[0], avgAccels[1], avgAccels[2]);
+                        updateGyroNoise(editor, avgGyro[0], avgGyro[1], avgGyro[2]);
+                        editor.apply();
+                        currentStage++;
+                        initDegreeLists();
+                        initGyroscope(mSensorManager);
+                        initGravityAccelerometer(mSensorManager);
+                        initCountdown();
+                        break;
+                    case 2:
+                        CalibrationActivity.this.mSensorManager.unregisterListener(CalibrationActivity.this);
+                        float[] zOffs = calculateZOffsets(avgAccels);
+                        updateAngularOffset(zOffs, editor);
+                        editor.apply();
+                        CalibrationActivity.this.finish();
+                        break;
+                }
             }
         }.start();
     }
 
-    private void calculateZOffsets(float[] floats) {
+    @VisibleForTesting
+    void initDegreeLists() {
+        xVals = new ArrayList<>();
+        yVals = new ArrayList<>();
+        zVals = new ArrayList<>();
+        rollVals = new ArrayList<>();
+        pitchVals = new ArrayList<>();
+        yawVals = new ArrayList<>();
+    }
+
+    private void updateAngularOffset(float[] zOffs, SharedPreferences.Editor editor) {
+        editor.putFloat("roll_offset", -zOffs[0]);
+        editor.putFloat("pitch_offset", -zOffs[1]);
+    }
+
+    private void updateAccelNoise(SharedPreferences.Editor editor, float x, float y, float z) {
+        editor.putFloat(getString(R.string.x_threshold), x);
+        editor.putFloat(getString(R.string.y_threshold), y);
+        editor.putFloat(getString(R.string.z_threshold), z);
+    }
+
+    private void updateGyroNoise(SharedPreferences.Editor editor, float roll, float pitch, float yaw) {
+        editor.putFloat(getString(R.string.roll_threshold), roll);
+        editor.putFloat(getString(R.string.pitch_threshold), pitch);
+        editor.putFloat(getString(R.string.yaw_threshold), yaw);
+    }
+
+    /**
+     * Determines the angle the the phone is offset from the z-plane in the x-, and y-axis using the
+     * average force of gravity applied to the x-/y-axis during the calibration period
+     *
+     * @param floats float[]: [0] = xAvg, [1] = yAvg, [2] = zAvg
+     * @return float[]: [0] = xzOffset, [1] = yzOffset
+     */
+    private float[] calculateZOffsets(float[] floats) {
         float gravity = 9.81F;
         float x = floats[0] < 0 ? Math.max(floats[0], gravity) : Math.min(floats[0], gravity);
         float y = floats[1] < 0 ? Math.max(floats[1], gravity) : Math.min(floats[1], gravity);
         float xzOff = (float) (Math.asin(x / gravity));
         float yzOff = (float) (Math.asin(y / gravity));
-        SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences(getString(R.string.calibration_prefs), 0).edit();
-        editor.putFloat("pitch_offset", -yzOff);
-        editor.putFloat("roll_offset", -xzOff);
-        editor.apply();
+        return new float[]{xzOff, yzOff};
     }
 
-    private float[] calculateAverageAccel() {
-        float xAvg = 0, yAvg = 0, zAvg = 0;
-        for (Float xVal : xVals) {
-            xAvg += xVal;
+    /**
+     * Calculates the average of a list of floats. Note: This may overflow if the sum of all floats
+     * is larger than {@link Float#MAX_VALUE}
+     *
+     * @param values {@link List<Float>}
+     * @return float containing the average
+     */
+    public float calculateAverage(List<Float> values) {
+        float avg = 0;
+        for (Float value : values) {
+            avg += value;
         }
-        for (Float yVal : yVals) {
-            yAvg += yVal;
-        }
-        for (Float zVal : zVals) {
-            zAvg += zVal;
-        }
-        xAvg = xAvg / xVals.size();
-        yAvg = yAvg / yVals.size();
-        zAvg = zAvg / zVals.size();
-        return new float[]{xAvg, yAvg, zAvg};
+        avg = avg / values.size();
+        return avg;
     }
 
-    private void initAccelerometer(SensorManager sensorManager) {
+    /**
+     * Calculates the median of a list of floats.
+     *
+     * @param values {@link List<Float>}
+     * @return float containing the average
+     */
+    public float calculateMedian(List<Float> values) {
+        if (values.isEmpty()) {
+            return 0;
+        }
+        Collections.sort(values);
+        int size = values.size();
+        // Odd num of elements
+        if ((size & 1) == 1) {
+            return values.get(values.size() / 2);
+        }
+        // Even num of elements
+        return (values.get((size / 2) - 1) + values.get(size / 2)) / 2;
+    }
+
+    private void initLinearAccelerometer(SensorManager sensorManager) {
+        if (sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) != null) {
+            Sensor mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+            sensorManager.registerListener(this, mAccelerometer, pollRate * MS_TO_US);
+        } else {
+            Log.d("Calibration", "Linear Accelerometer does not exist");
+        }
+    }
+
+    private void initGravityAccelerometer(SensorManager sensorManager) {
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
             Sensor mAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
             sensorManager.registerListener(this, mAccelerometer, pollRate * MS_TO_US);
@@ -137,11 +210,13 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                float x = event.values[0];
-                float y = event.values[1];
-                float xP = (float) (Math.cos(yaw_offset) * x - Math.sin(yaw_offset) * y);
-                float yP = (float) (Math.sin(yaw_offset) * x + Math.cos(yaw_offset) * y);
+                // Apply yaw offset
+                float xP = (float) (Math.cos(yaw_offset) * event.values[0] - Math.sin(yaw_offset) * event.values[1]);
+                float yP = (float) (Math.sin(yaw_offset) * event.values[0] + Math.cos(yaw_offset) * event.values[1]);
                 accelerometerChanged(new float[]{xP, yP, event.values[2]});
+                break;
+            case Sensor.TYPE_LINEAR_ACCELERATION:
+                accelerometerChanged(event.values);
                 break;
             case Sensor.TYPE_GYROSCOPE:
                 gyroscopeChanged(event.values);
@@ -151,31 +226,17 @@ public class CalibrationActivity extends AppCompatActivity implements SensorEven
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
     }
 
     public void accelerometerChanged(float[] floats) {
         xVals.add(floats[0]);
         yVals.add(floats[1]);
         zVals.add(floats[2]);
-        updateAccelerometerNoise(floats);
-        prev_accel = floats;
-    }
-
-    private void updateAccelerometerNoise(float[] floats) {
-        max_x_noise = Math.abs(Math.max(max_x_noise, floats[0] - prev_accel[0]));
-        max_y_noise = Math.abs(Math.max(max_y_noise, floats[1] - prev_accel[1]));
-        max_z_noise = Math.abs(Math.max(max_z_noise, floats[2] - prev_accel[2]));
     }
 
     public void gyroscopeChanged(float[] floats) {
-        updateGyroscopeNoise(floats);
-        prev_gyro = floats;
-    }
-
-    private void updateGyroscopeNoise(float[] floats) {
-        max_roll_noise = Math.abs(Math.max(max_roll_noise, floats[0] - prev_gyro[0]));
-        max_pitch_noise = Math.abs(Math.max(max_pitch_noise, floats[1] - prev_gyro[1]));
-        max_yaw_noise = Math.abs(Math.max(max_yaw_noise, floats[2] - prev_gyro[2]));
+        rollVals.add(floats[0]);
+        pitchVals.add(floats[1]);
+        yawVals.add(floats[2]);
     }
 }

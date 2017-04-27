@@ -3,9 +3,11 @@ package edu.rose_hulman.nswccrane.dataacquisition;
 import android.support.test.espresso.action.GeneralLocation;
 import android.support.test.espresso.action.Press;
 import android.support.test.espresso.action.Tap;
+import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import edu.rose_hulman.nswccrane.dataacquisition.fragments.CalibrationDialog;
 import edu.rose_hulman.nswccrane.dataacquisition.internal.JUnitTestCase;
@@ -21,7 +23,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 /**
  * Created by Jeremiah Goist on 9/24/2016.
  */
-
+@RunWith(AndroidJUnit4.class)
 public class CalibrationDialogTest extends JUnitTestCase<MainActivity> {
     public CalibrationDialogTest() {
         super(MainActivity.class);
