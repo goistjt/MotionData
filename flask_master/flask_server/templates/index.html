@@ -133,10 +133,10 @@
 
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>
+
         function clicked_raw(id, rec_type, device_name) {
             // Internet Explorer 6-11
             var isIE = /*@cc_on!@*/false || !!document.documentMode;
-
             // Edge 20+
             var isEdge = !isIE && !!window.StyleMedia;
 
@@ -144,28 +144,51 @@
             $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
+                    var blob = new Blob([data.data], {type: data.mimetype});
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+
                     if (isEdge || isIE) {
-                        // TODO: figure out how to download for IE
+                        window.navigator.msSaveOrOpenBlob(blob, name);
                     } else {
-                        var blob = new Blob([data.data], {type: data.mimetype});
                         var link = document.createElement('a');
                         link.href = window.URL.createObjectURL(blob);
-                        link.download = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
-                        link.click();
+                        link.download = name;
+                        var event = new MouseEvent("click", {
+                            bubbles: true,
+                            cancelable: false,
+                            view: window
+                        });
+                        link.dispatchEvent(event);
                     }
                 }});
         }
 
         function clicked_analyzed(id, rec_type, device_name) {
+            // Internet Explorer 6-11
+            var isIE = /*@cc_on!@*/false || !!document.documentMode;
+            // Edge 20+
+            var isEdge = !isIE && !!window.StyleMedia;
+
             var server_endpoint = rec_type == "r" ? '/getRecordAnalyzed/' + id : '/getSessionAnalyzed/' + id;
             $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
-                    var link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
-                    link.click();
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+
+                    if (isEdge || isIE) {
+                        window.navigator.msSaveOrOpenBlob(blob, name);
+                    } else {
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = name;
+                        var event = new MouseEvent("click", {
+                            bubbles: true,
+                            cancelable: false,
+                            view: window
+                        });
+                        link.dispatchEvent(event);
+                    }
                 }});
         }
     </script>
