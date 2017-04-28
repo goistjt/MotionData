@@ -130,6 +130,7 @@ def get_html_sessions(sessions):
                        <input type="file" id="ufs_{}" />
                        <input id="upload_button" type="submit" name="us_{}"
                        onclick="clicked_upload('{}', 's')" value="Upload Record" />\n
+                       
                    </td>\n
                    <td><div class="arrow"></div></td>\n
                </tr>\n

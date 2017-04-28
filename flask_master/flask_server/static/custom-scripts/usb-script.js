@@ -9,6 +9,7 @@ function clicked_upload(id, rec_type) {
     }
 
     else if (!input.files) {
+
         alert("This browser doesn't seem to support the `files` property of file inputs.");
     }
 
