@@ -28,6 +28,8 @@
     <!-- Style sheet for navbar -->
     <link href="../static/css/navbar.css" rel="stylesheet" type="text/css">
 
+    <script type="text/javascript" src="../static/custom-scripts/usb-script.js"></script>
+
 </head>
 
 <body>
@@ -80,6 +82,11 @@
                             <h3 class="panel-title"><i class="fa fa-download fa-fw"></i> Data Records</h3>
                         </div>
                         <div class="panel-body">
+                            <div>
+                                <input type="file" id="create_session_file" />
+                                <input id="create_session_submit" type="submit" name="create_session_button"
+                                       onclick="clicked_create_session('{}', 's')" value="Create New Session From Local File" />
+                            </div>
                             <div class="table-responsive">
                                 <div id="session_table" class="table-responsive">
                                     <table id="sessions" class="table table-bordered table-hover">
