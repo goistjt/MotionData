@@ -25,7 +25,7 @@
     <!-- Our custom CSS files -->
     <link href="../static/css/custom/dashboard-table.css" rel="stylesheet" type="text/css">
 
-    <!-- Style sheed for navbar -->
+    <!-- Style sheet for navbar -->
     <link href="../static/css/navbar.css" rel="stylesheet" type="text/css">
 
     <script type="text/javascript" src="../static/custom-scripts/usb-script.js"></script>
@@ -72,11 +72,6 @@
                         <h1 class="page-header">
                             Dashboard
                         </h1>
-                 <!--        <ol class="breadcrumb">
-                            <li class="active">
-                                <i class="fa fa-dashboard"></i> Dashboard
-                            </li>
-                        </ol> -->
                     </div>
                 </div>
                 <!-- /.row -->
@@ -91,34 +86,32 @@
                                 <input type="file" id="create_session_file" />
                                 <input id="create_session_submit" type="submit" name="create_session_button"
                                        onclick="clicked_create_session('{}', 's')" value="Create New Session From Local File" />
-
-
                             </div>
                             <div class="table-responsive">
-                                <table id="sessions" class="table table-bordered table-hover table-striped">
-                                    <thead>
-                                    <tr>
-                                        <th>Session ID</th>
-                                        <th>Description</th>
-                                        <th>Date</th>
-                                        <th>Download</th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                        {{ table|safe }}
-                                    </tbody>
-                                </table>
+                                <div id="session_table" class="table-responsive">
+                                    <table id="sessions" class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Session ID</th>
+                                                <th>Description</th>
+                                                <th>Date</th>
+                                                <th>Download</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{ table|safe }}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- /.container-fluid -->
-
         </div>
         <!-- /#page-wrapper -->
-
     </div>
     <!-- /#wrapper -->
 
@@ -147,29 +140,62 @@
 
     <!-- Script for buttons to download files -->
     <script type='text/javascript'>
-        function clicked_raw(id, rec_type) {
+
+        function clicked_raw(id, rec_type, device_name) {
+            // Internet Explorer 6-11
+            var isIE = /*@cc_on!@*/false || !!document.documentMode;
+            // Edge 20+
+            var isEdge = !isIE && !!window.StyleMedia;
+
             var server_endpoint = rec_type == "r" ? '/getRecordRaw/' + id : '/getSessionRaw/' + id;
             $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
-                    var link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = data.filename;
-                    link.click();
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+
+                    if (isEdge || isIE) {
+                        window.navigator.msSaveOrOpenBlob(blob, name);
+                    } else {
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = name;
+                        var event = new MouseEvent("click", {
+                            bubbles: true,
+                            cancelable: false,
+                            view: window
+                        });
+                        link.dispatchEvent(event);
+                    }
                 }});
         }
 
-        function clicked_analyzed(id, rec_type) {
+        function clicked_analyzed(id, rec_type, device_name) {
+            // Internet Explorer 6-11
+            var isIE = /*@cc_on!@*/false || !!document.documentMode;
+            // Edge 20+
+            var isEdge = !isIE && !!window.StyleMedia;
+
             var server_endpoint = rec_type == "r" ? '/getRecordAnalyzed/' + id : '/getSessionAnalyzed/' + id;
             $.ajax({headers : {},
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
-                    var link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = data.filename;
-                    link.click();
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+
+                    if (isEdge || isIE) {
+                        window.navigator.msSaveOrOpenBlob(blob, name);
+                    } else {
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = name;
+                        var event = new MouseEvent("click", {
+                            bubbles: true,
+                            cancelable: false,
+                            view: window
+                        });
+                        link.dispatchEvent(event);
+                    }
                 }});
         }
     </script>
