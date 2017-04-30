@@ -3,7 +3,7 @@
 
 #data folder for docker
 data/*
-
+temp*
 # User-specific stuff:
 .idea/**/workspace.xml
 .idea/**/tasks.xml

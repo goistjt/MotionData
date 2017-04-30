@@ -1,21 +1,23 @@
 version: '2'
 services:
   db:
+     restart: always
      image: mysql
+     hostname: mysql
+     container_name: db
      environment:
          MYSQL_ROOT_PASSWORD: root 
      volumes:
-      - ./Database/my.cnf:/mysql/my.cnf
-      - ./Database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-      - ./Database/data:/var/lib/mysql
+      - /Database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - /Database/data:/var/lib/mysql
      ports:
-      - "3306"
+      - "3306:3306"
   web:
      build: ./flask_master/
      ports:
       - "5000:5000"
      links:
-      - db
+      - db:mysql
      depends_on:
       - db
 
