@@ -121,25 +121,18 @@ COMMAND_DICTIONARY = {
 if __name__ == "__main__":
 
     """
-    Starting prompt describing what this app can accomplish and how to perform the two actions.
+    Starting prompt.txt describing what this app can accomplish and how to perform the two actions.
     """
 
-    print("Transfer Application Interface Started!\n")
-    print("***Please note that every space character used in these commands is",
-          "considered a parameter delimiter, or the differentiation character between inputs of methods.***\n")
-    print("Steps:")
-    print("1. Plug the Android device you wish to transfer from, via usb, into your computer.\n")
-    print("2. To 'update' the Android cache by transferring the",
-          "files from the phone to the computer, type this command:")
-    print("update <the location of the adb, or 'Android Debug Bridge' installation>\n")
-    print("3. To 'clear' the Android cache by deleting all files",
-          "stored in the designated transfer directory, type this command:")
-    print("clear")
-    print("[the clear command has no parameters, but will attempt to clear regardless,",
-          "ignoring the 'parameters' given]\n")
+    if os.path.exists("./prompt.txt"):
+        f = open('./prompt.txt')
+        for line in f:
+            print(line)
+        print('\n')
+        f.close()
 
     """
-    The below is the main interface loop. It prints a prompt, takes a line of input, and separates the parameters by
+    The below is the main interface loop. It prints a prompt.txt, takes a line of input, and separates the parameters by
     a space delimiter, crating the appropriate command object type based on the input's starting word, passing in all
     other parameters.
     """
