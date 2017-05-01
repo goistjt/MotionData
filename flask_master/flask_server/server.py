@@ -103,7 +103,7 @@ def get_html_sessions(sessions):
             if dev_name == () or dev_name[0] == '':
                 dev_name = dev_id
             else:
-                dev_name = dev_name[0]
+                dev_name = dev_name[0].replace("'", "\\'")
             curr = """<tr style="display: table-row;">\n
                        <td>{}</td>\n
                        <td>\n
