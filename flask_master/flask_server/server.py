@@ -103,7 +103,7 @@ def get_html_sessions(sessions):
             if dev_name == () or dev_name[0] == '':
                 dev_name = dev_id
             else:
-                dev_name = dev_name[0].replace("'", "\\'")
+                dev_name = dev_name[0]
             curr = """<tr style="display: table-row;">\n
                        <td>{}</td>\n
                        <td>\n
@@ -112,7 +112,8 @@ def get_html_sessions(sessions):
                            <input id="analyzed_button" type="submit" name="ar_{}"
                                onclick="clicked_analyzed('{}', 'r', '{}')" value="Download Analyzed Data" />\n
                        </td>\n
-                   </tr>\n""".format(dev_name, rid, rid, dev_name, rid, rid, dev_name)
+                   </tr>\n""".format(dev_name, rid, rid, dev_name.replace("'", "\\'"), rid, rid,
+                                     dev_name.replace("'", "\\'"))
             recs += curr
 
         sess = """<tr class="master">\n
