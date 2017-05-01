@@ -2,25 +2,28 @@ version: '2'
 services:
   db:
      image: mysql
+     container_name: db
+     hostname: mysql
      expose:
       - 3306
-     hostname: mysql
-     container_name: db
-     environment:
-         MYSQL_DATABASE: six-dof
-         MYSQL_USER: root
-         MYSQL_ROOT_PASSWORD: root
      ports:
-      - "3306:3306" 
+      - "3306:3306"
+     environment:
+         MYSQL_USER: root
+         MYSQL_ROOT_PASSWORD: csse 
      volumes:
       - ./Database/schema:/docker-entrypoint-initdb.d
-      - ./Database/data:/var/lib/mysql
+      - /var/lib/mysql:/var/lib/mysql
   web:
      build: ./flask_master/
      container_name: app
-     ports:
+     ports: 
       - "5000:5000"
+     volumes:
+      - ./flask_master:/usr/src/app
+     entrypoint: /usr/src/app/entrypoint.sh
      links:
       - db:mysql
      depends_on:
       - db
+     
