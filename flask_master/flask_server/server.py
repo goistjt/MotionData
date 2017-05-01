@@ -112,7 +112,8 @@ def get_html_sessions(sessions):
                            <input id="analyzed_button" type="submit" name="ar_{}"
                                onclick="clicked_analyzed('{}', 'r', '{}')" value="Download Analyzed Data" />\n
                        </td>\n
-                   </tr>\n""".format(dev_name, rid, rid, dev_name, rid, rid, dev_name)
+                   </tr>\n""".format(dev_name, rid, rid, dev_name.replace("'", "\\'"), rid, rid,
+                                     dev_name.replace("'", "\\'"))
             recs += curr
 
         sess = """<tr class="master">\n

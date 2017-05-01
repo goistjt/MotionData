@@ -152,7 +152,8 @@
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
-                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name.replace("\\", ""))
+                        : data.filename;
 
                     if (isEdge || isIE) {
                         window.navigator.msSaveOrOpenBlob(blob, name);
@@ -181,7 +182,8 @@
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
-                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name.replace("\'", "'"))
+                        : data.filename;
 
                     if (isEdge || isIE) {
                         window.navigator.msSaveOrOpenBlob(blob, name);
