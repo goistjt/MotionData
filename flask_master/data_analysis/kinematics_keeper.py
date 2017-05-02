@@ -39,14 +39,27 @@ class KinematicsKeeper(object):
         dc.getcontext().prec = 6
         new_val = dc.Decimal(new_val) * self.one
 
+        bool_res = True
+
+        bool_res = bool_res and self.check_max_accel(self._curr_accel)
+
+        bool_res = bool_res and self.check_max_velocity(self._curr_vel)
+
+        bool_res = bool_res and self.check_max_neg_position(self._curr_pos)
+
+        bool_res = bool_res and self.check_max_pos_position(self._curr_pos)
+
         if starting_val_type == self.VELOCITY:
+            bool_res = bool_res and self.check_max_velocity(new_val)
             new_accel = self._determine_next_acceleration_by_vel(new_val)
+
         elif starting_val_type == self.POSITION:
+            bool_res = bool_res and self.check_max_neg_position(new_val)
+            bool_res = bool_res and self.check_max_pos_position(new_val)
             new_accel = self._determine_next_acceleration_by_pos(new_val)
+
         else:
             new_accel = new_val
-
-        bool_res = True
 
         bool_res = bool_res and self.check_max_accel(new_accel)
 
@@ -54,7 +67,7 @@ class KinematicsKeeper(object):
 
         new_vel = self._determine_next_velocity(new_accel)
 
-        bool_res and self.check_max_velocity(new_vel)
+        bool_res = bool_res and self.check_max_velocity(new_vel)
 
         new_pos = self._determine_next_position(new_accel)
 
@@ -66,7 +79,6 @@ class KinematicsKeeper(object):
             self._curr_pos = new_pos
 
         self._curr_vel = new_vel
-
         self._curr_accel = new_accel
 
     def check_max_accel(self, new_accel):
@@ -88,7 +100,8 @@ class KinematicsKeeper(object):
         :returns: the acceleration deemed appropriate after checks have been made
         """
         definitive_max = self._max_collection.get_max_accel_diff() * dc.Decimal(self.max_buffer_factor)
-        if definitive_max < dc.Decimal(abs(new_accel - self._curr_accel)):
+        diff = new_accel - self._curr_accel
+        if definitive_max < dc.Decimal(abs(diff)):
             return False
         return True
 

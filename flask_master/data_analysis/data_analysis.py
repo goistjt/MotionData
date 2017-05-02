@@ -409,7 +409,7 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
 
         session.append(next_set)
 
-    return process_return_to_zero(keeps_accel, keeps_gyro, session)
+    return session
 
 
 def process_states(keeps_list, point, next_set, starting_value_type):
