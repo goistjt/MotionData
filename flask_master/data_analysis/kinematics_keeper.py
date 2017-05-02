@@ -53,6 +53,8 @@ class KinematicsKeeper(object):
         elif starting_val_type == self.POSITION:
             new_accel = self._determine_next_acceleration_by_pos(new_val)
 
+        print(self._curr_accel)
+
         new_accel = self.check_max_accel(new_accel)
 
         new_accel = self.check_accel_onset(new_accel)
@@ -80,16 +82,12 @@ class KinematicsKeeper(object):
         :returns: the acceleration deemed appropriate after checks have been made
         """
 
-        definitive_max = self._max_collection.get_max_accel() * self.max_buffer_factor
-        if definitive_max < dc.Decimal(abs(new_accel)):
-
-            if new_accel == dc.Decimal(0.0):
-                new_accel = definitive_max
-
-            else:
-                new_accel = (new_accel / dc.Decimal(abs(new_accel))) * definitive_max
-
-        return new_accel
+        definitive_max = self._max_collection.get_max_accel() * dc.Decimal(self.max_buffer_factor)
+        if dc.Decimal(abs(new_accel)) > abs(definitive_max):
+            if dc.Decimal(new_accel) == dc.Decimal(0.0):
+                return dc.Decimal(definitive_max)
+            return dc.Decimal((new_accel / abs(new_accel)) * definitive_max)
+        return dc.Decimal(new_accel)
 
     def check_accel_onset(self, new_accel):
         """
@@ -103,14 +101,12 @@ class KinematicsKeeper(object):
 
         definitive_max = self._max_collection.get_max_accel_diff() * self.max_buffer_factor
         if definitive_max < dc.Decimal(abs(new_accel - self._curr_accel)):
-
-            if new_accel == dc.Decimal(0.0):
-                new_accel = definitive_max + self._curr_accel
-
+            if new_accel - self._curr_accel == dc.Decimal(0.0):
+                new_accel = dc.Decimal(definitive_max + self._curr_accel)
             else:
-                new_accel = ((new_accel / dc.Decimal(abs(new_accel))) * definitive_max) + self._curr_accel
-
-        return new_accel
+                new_accel = dc.Decimal((((new_accel - self._curr_accel) / dc.Decimal(
+                    abs(new_accel - self._curr_accel))) * definitive_max) + self._curr_accel)
+        return dc.Decimal(new_accel)
 
     def check_max_velocity(self, new_vel):
         """
@@ -123,13 +119,10 @@ class KinematicsKeeper(object):
 
         definitive_max = self._max_collection.get_max_vel() * self.max_buffer_factor
         if definitive_max < dc.Decimal(abs(new_vel)):
-
             if new_vel == dc.Decimal(0.0):
                 new_vel = definitive_max
-
             else:
                 new_vel = (new_vel / dc.Decimal(abs(new_vel))) * definitive_max
-
         return new_vel
 
     def check_max_neg_position(self, new_pos):
@@ -145,7 +138,6 @@ class KinematicsKeeper(object):
         definitive_max = self._max_collection.get_max_neg_exc() * self.max_buffer_factor
         if definitive_max > dc.Decimal(new_pos):
             new_pos = definitive_max
-
         return new_pos
 
     def check_max_pos_position(self, new_pos):
@@ -162,7 +154,6 @@ class KinematicsKeeper(object):
         definitive_max = self._max_collection.get_max_pos_exc() * self.max_buffer_factor
         if definitive_max < dc.Decimal(new_pos):
             new_pos = definitive_max
-
         return new_pos
 
     def get_velocity(self):
@@ -199,9 +190,8 @@ class KinematicsKeeper(object):
 
         """
 
-        return ((dc.Decimal(6) * (new_pos - self._curr_pos - (self._curr_vel * self._interval) - (
-            dc.Decimal(1 / 2) * (self._curr_accel * (self._interval ** dc.Decimal(2)))))) / (
-                    self._interval ** dc.Decimal(3))) + self._curr_accel
+        return (
+               (((dc.Decimal(new_pos) * self.one) - self._curr_pos) / self._interval) - self._curr_vel) / self._interval
 
     def _determine_next_acceleration_by_vel(self, new_vel):
         """
@@ -211,8 +201,7 @@ class KinematicsKeeper(object):
 
         :returns: the appropriate new acceleration for further calculations to use
         """
-        return (dc.Decimal(2) * ((dc.Decimal(new_vel) * dc.Decimal(1)) - self._curr_vel - (
-            self._curr_accel * self._interval ** dc.Decimal(2))) / (self._interval ** dc.Decimal(2))) + self._curr_accel
+        return ((dc.Decimal(new_vel) * self.one) - self._curr_vel) / self._interval
 
     def _determine_next_position(self, new_accel):
         """
