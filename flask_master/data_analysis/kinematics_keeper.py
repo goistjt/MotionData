@@ -22,8 +22,8 @@ class KinematicsKeeper(object):
         self.zero = dc.Decimal(0.0)
         self.one = dc.Decimal(1.0)
         self.max_buffer_factor = dc.Decimal(buffer_factor) * self.one
-        self.interval = dc.Decimal(40)
-        self.interval = (self.interval * self.one) / (dc.Decimal(1000) * self.one)
+        self._interval = dc.Decimal(40)
+        self._interval = (self._interval * self.one) / (dc.Decimal(1000) * self.one)
         self._curr_pos = dc.Decimal(0.0)
         self._curr_vel = dc.Decimal(0.0)
         self._curr_accel = dc.Decimal(0.0)
@@ -181,7 +181,7 @@ class KinematicsKeeper(object):
         self._curr_pos = dc.Decimal(new_pos) * self.one
 
     def set_interval(self, interval):
-        self.interval = (dc.Decimal(interval) * self.one) / (dc.Decimal(1000) * self.one)
+        self._interval = (dc.Decimal(interval) * self.one) / (dc.Decimal(1000) * self.one)
 
     def get_max_acceleration(self):
         """
@@ -199,9 +199,9 @@ class KinematicsKeeper(object):
 
         """
 
-        return ((dc.Decimal(-6) * (self._curr_pos + (self._curr_vel * self.interval) + (
-            dc.Decimal(1 / 2) * (self._curr_accel * (self.interval ** dc.Decimal(2)))) - new_pos)) / (
-                    self.interval ** dc.Decimal(2))) + self._curr_accel
+        return ((dc.Decimal(6) * (new_pos - self._curr_pos - (self._curr_vel * self._interval) - (
+            dc.Decimal(1 / 2) * (self._curr_accel * (self._interval ** dc.Decimal(2)))))) / (
+                    self._interval ** dc.Decimal(3))) + self._curr_accel
 
     def _determine_next_acceleration_by_vel(self, new_vel):
         """
@@ -211,8 +211,8 @@ class KinematicsKeeper(object):
 
         :returns: the appropriate new acceleration for further calculations to use
         """
-        return ((dc.Decimal(-2) * (self._curr_vel + (self._curr_accel * self.interval) - new_vel)) / (
-            self.interval)) + self._curr_accel
+        return (dc.Decimal(2) * ((dc.Decimal(new_vel) * dc.Decimal(1)) - self._curr_vel - (
+            self._curr_accel * self._interval ** dc.Decimal(2))) / (self._interval ** dc.Decimal(2))) + self._curr_accel
 
     def _determine_next_position(self, new_accel):
         """
@@ -224,9 +224,9 @@ class KinematicsKeeper(object):
 
         """
 
-        return self._curr_pos + (self._curr_vel * self.interval) + (
-            dc.Decimal(1 / 2) * self._curr_accel * (self.interval ** dc.Decimal(2))) + (
-                   dc.Decimal(1 / 6) * ((new_accel - self._curr_accel) * (self.interval ** dc.Decimal(2))))
+        return self._curr_pos + (self._curr_vel * self._interval) + (
+            dc.Decimal(1 / 2) * self._curr_accel * (self._interval ** dc.Decimal(2))) + (
+                   dc.Decimal(1 / 6) * ((new_accel - self._curr_accel) * (self._interval ** dc.Decimal(3))))
 
     def _determine_next_velocity(self, new_accel):
         """
@@ -238,5 +238,5 @@ class KinematicsKeeper(object):
 
         """
 
-        return self._curr_vel + self._curr_accel * self.interval + dc.Decimal(1 / 2) * (
-            (new_accel - self._curr_accel) * self.interval)
+        return self._curr_vel + self._curr_accel * self._interval + dc.Decimal(1 / 2) * (
+            (new_accel - self._curr_accel) * (self._interval ** dc.Decimal(2)))

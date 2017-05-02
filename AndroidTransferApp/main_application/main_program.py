@@ -119,7 +119,6 @@ COMMAND_DICTIONARY = {
 }
 
 if __name__ == "__main__":
-
     """
     Starting prompt describing what this app can accomplish and how to perform the two actions.
     """

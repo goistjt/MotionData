@@ -112,7 +112,8 @@ def get_html_sessions(sessions):
                            <input id="analyzed_button" type="submit" name="ar_{}"
                                onclick="clicked_analyzed('{}', 'r', '{}')" value="Download Analyzed Data" />\n
                        </td>\n
-                   </tr>\n""".format(dev_name, rid, rid, dev_name, rid, rid, dev_name)
+                   </tr>\n""".format(dev_name, rid, rid, dev_name.replace("'", "\\'"), rid, rid,
+                                     dev_name.replace("'", "\\'"))
             recs += curr
 
         sess = """<tr class="master">\n
@@ -124,6 +125,10 @@ def get_html_sessions(sessions):
                        onclick="clicked_raw('{}', 's')" value="Download Raw Averaged Session" />\n
                        <input id="analyzed_button" type="submit" name="as_{}"
                        onclick="clicked_analyzed('{}', 's')" value="Download Analyzed Session" />\n
+                       <input type="file" id="ufs_{}" />
+                       <input id="upload_button" type="submit" name="us_{}"
+                       onclick="clicked_upload('{}', 's')" value="Upload Record" />\n
+
                    </td>\n
                    <td><div class="arrow"></div></td>\n
                </tr>\n
@@ -141,7 +146,7 @@ def get_html_sessions(sessions):
                             </tbody>\n
                        </table>\n
                    </td>\n
-               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, recs)
+               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id, recs)
         html += sess
     return html
 

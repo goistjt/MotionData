@@ -159,12 +159,39 @@ def download_session_analyzed(session_id=[]):
                     gyro_base[len(gyro_base) - 1][0] is None):
             return (pd.DataFrame(np.array([]))).to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
-        start = max(accel_base[0][0], gyro_base[0][0]) - interval
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + interval
+        start = max(accel_base[0][0], gyro_base[0][0])
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
 
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, interval)))
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
+
+
+def process_accelerations_simple(start, end, points, interval):
+
+    x = 0
+    for x in range(0, len(points)):
+        if points[x][0] < start:
+            continue
+        if points[x][0] >= start:
+            break
+
+    final_list = [points[x]]
+
+    if x + 1 >= len(points):
+        return final_list
+
+    curr_time = points[x][0]
+    for y in range(x + 1, len(points)):
+        if curr_time <= points[y][0]:
+            final_list.append([curr_time, points[y][1], points[y][2], points[y][3]])
+        else:
+            continue
+        if points[y][0] >= end:
+            break
+        curr_time += interval
+
+    return final_list
 
 
 def process_accelerations(start, end, interval, points):
@@ -342,9 +369,15 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
     if start_time >= end_time:
         return default_list
 
-    accel_list, end_time = process_accelerations(start_time, end_time, interval, accel_points)
+    accel_list = process_accelerations_simple(start_time, end_time, accel_points, interval)
 
-    gyro_list, end_time = process_accelerations(start_time, end_time, interval, gyro_points)
+    gyro_list = process_accelerations_simple(start_time, end_time, gyro_points, interval)
+
+    cutoff = min(len(accel_list), len(gyro_list))
+
+    accel_list = accel_list[0:cutoff]
+
+    gyro_list = gyro_list[0:cutoff]
 
     if ((accel_list is None or len(accel_list) == 0) or (gyro_list is None or len(gyro_list) == 0) or (
                 len(gyro_list) != len(accel_list))):
@@ -393,7 +426,7 @@ def process_states(keeps_list, point, next_set, starting_value_type):
     :returns: the current snapshot of the position data of the six degrees of motion
     """
 
-    for x in range(len(keeps_list)):
+    for x in range(0, len(keeps_list)):
         val = point[x + 1]
 
         curr_keep = keeps_list[x]

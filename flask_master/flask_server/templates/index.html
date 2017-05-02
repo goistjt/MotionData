@@ -28,6 +28,8 @@
     <!-- Style sheet for navbar -->
     <link href="../static/css/navbar.css" rel="stylesheet" type="text/css">
 
+    <script type="text/javascript" src="../static/custom-scripts/usb-script.js"></script>
+
 </head>
 
 <body>
@@ -80,6 +82,11 @@
                             <h3 class="panel-title"><i class="fa fa-download fa-fw"></i> Data Records</h3>
                         </div>
                         <div class="panel-body">
+                            <div>
+                                <input type="file" id="create_session_file" />
+                                <input id="create_session_submit" type="submit" name="create_session_button"
+                                       onclick="clicked_create_session('{}', 's')" value="Create New Session From Local File" />
+                            </div>
                             <div class="table-responsive">
                                 <div id="session_table" class="table-responsive">
                                     <table id="sessions" class="table table-bordered table-hover">
@@ -145,7 +152,8 @@
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
-                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name.replace("\\", ""))
+                        : data.filename;
 
                     if (isEdge || isIE) {
                         window.navigator.msSaveOrOpenBlob(blob, name);
@@ -174,7 +182,8 @@
                 url: server_endpoint,
                 success: function (data) {
                     var blob = new Blob([data.data], {type: data.mimetype});
-                    var name = rec_type == "r" ? data.filename.replace('()', device_name) : data.filename;
+                    var name = rec_type == "r" ? data.filename.replace('()', device_name.replace("\'", "'"))
+                        : data.filename;
 
                     if (isEdge || isIE) {
                         window.navigator.msSaveOrOpenBlob(blob, name);
