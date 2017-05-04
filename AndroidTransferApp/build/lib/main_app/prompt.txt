@@ -1,0 +1,11 @@
+Transfer Application Interface Started!
+***Please note that every space character used in these commands is considered a parameter delimiter, or the differentiation character between inputs of methods.***
+Steps:
+1. Plug the Android device you wish to transfer from, via usb, into your computer.
+2. To 'update' the Android cache by transferring the files from the phone to the computer, type this command:
+   update <the location of the adb, or 'Android Debug Bridge' installation>
+3. To 'clear' the Android cache by deleting all files stored in the designated transfer directory, type this command:
+   clear
+   [the clear command has no parameters, but will attempt to clear regardless ignoring the 'parameters' given]
+4. To exit the application, type this command:
+   quit

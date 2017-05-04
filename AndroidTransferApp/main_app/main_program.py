@@ -127,12 +127,11 @@ def main():
     Starting prompt.txt describing what this app can accomplish and how to perform the two actions.
     """
 
-    if os.path.exists("./prompt.txt"):
-        f = open('./prompt.txt')
-        for line in f:
-            print(line)
-        print('\n')
-        f.close()
+    f = open(os.path.dirname(os.path.realpath(__file__)) + '/prompt.txt', 'r')
+    for line in f:
+        print(line)
+    print('\n')
+    f.close()
 
     """
     The below is the main interface loop. It prints a prompt.txt, takes a line of input, and separates the parameters by

@@ -1,3 +1,4 @@
+MANIFEST.in
 setup.py
 AndroidTransferApp.egg-info/PKG-INFO
 AndroidTransferApp.egg-info/SOURCES.txt
@@ -5,4 +6,7 @@ AndroidTransferApp.egg-info/dependency_links.txt
 AndroidTransferApp.egg-info/entry_points.txt
 AndroidTransferApp.egg-info/top_level.txt
 main_app/__init__.py
+main_app/adb-setup-1.4.3.exe
+main_app/main_app.iml
 main_app/main_program.py
+main_app/prompt.txt
