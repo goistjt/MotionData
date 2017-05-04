@@ -1,3 +1,0 @@
-[console_scripts]
-android_transfer_app = main_app.main_program:main
-

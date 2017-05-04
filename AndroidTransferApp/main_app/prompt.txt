@@ -2,10 +2,20 @@ Transfer Application Interface Started!
 ***Please note that every space character used in these commands is considered a parameter delimiter, or the differentiation character between inputs of methods.***
 Steps:
 1. Plug the Android device you wish to transfer from, via usb, into your computer.
-2. To 'update' the Android cache by transferring the files from the phone to the computer, type this command:
-   update <the location of the adb, or 'Android Debug Bridge' installation>
+2. To 'update' the Android cache by transferring the files from the phone to the computer, type one of these commands:
+   To change transfer file repository location (on record) and transfer files:
+        update -r <new location>
+   To change adb location (on record) and transfer files:
+        update -a <new location>
+   To change both locations (on record) and transfer files:
+        update <new ADB location> <new FILE REPO location>
+   To keep what is on record and transfer based on the previous inputs:
+        update
 3. To 'clear' the Android cache by deleting all files stored in the designated transfer directory, type this command:
    clear
    [the clear command has no parameters, but will attempt to clear regardless ignoring the 'parameters' given]
+   [the location this command will clear is the last file repository location used with the update command]
+   [WARNING: this command will clear ALL FILES, regardless of type, in the FILE REPOSITORY location specified in the last update
+   DO NOT USE if there are files you wish not to delete in the FILE REPOSITORY location we have specified]
 4. To exit the application, type this command:
    quit
