@@ -26,6 +26,7 @@ class KinematicsKeeper(object):
         self._curr_pos = dc.Decimal(0.0)
         self._curr_vel = dc.Decimal(0.0)
         self._curr_accel = dc.Decimal(0.0)
+        self._allowed_pos = dc.Decimal(0.0)
         self._max_collection = max_collection
 
     def generate_next_state(self, new_val, starting_val_type):
@@ -40,46 +41,84 @@ class KinematicsKeeper(object):
         new_val = dc.Decimal(new_val) * self.one
 
         bool_res = True
-
-        bool_res = bool_res and self.check_max_accel(self._curr_accel)
-
-        bool_res = bool_res and self.check_max_velocity(self._curr_vel)
-
-        bool_res = bool_res and self.check_max_neg_position(self._curr_pos)
-
-        bool_res = bool_res and self.check_max_pos_position(self._curr_pos)
+        new_vel = None
+        new_pos = None
 
         if starting_val_type == self.VELOCITY:
-            bool_res = bool_res and self.check_max_velocity(new_val)
+            new_vel = new_val
             new_accel = self._determine_next_acceleration_by_vel(new_val)
 
         elif starting_val_type == self.POSITION:
-            bool_res = bool_res and self.check_max_neg_position(new_val)
-            bool_res = bool_res and self.check_max_pos_position(new_val)
+            new_pos = new_val
             new_accel = self._determine_next_acceleration_by_pos(new_val)
 
         else:
             new_accel = new_val
 
-        bool_res = bool_res and self.check_max_accel(new_accel)
+        if (not self.check_max_accel(new_accel)) or (not self.check_accel_onset(new_accel)):
+            bool_res = False
 
-        bool_res = bool_res and self.check_accel_onset(new_accel)
+        if new_vel is None:
+            new_vel = self._determine_next_velocity(new_accel)
+
+        if not self.check_max_velocity(new_vel):
+            bool_res = False
+
+        if new_pos is None:
+            new_pos = self._determine_next_position(new_accel)
+
+        if (not self.check_max_neg_position(new_pos)) or (not self.check_max_pos_position(new_pos)):
+            bool_res = False
+
+        if bool_res:
+            self._allowed_pos = new_pos
+
+        self._curr_accel = new_accel
+        self._curr_vel = new_vel
+        self._curr_pos = new_pos
+
+    def generate_to_zero(self, new_accel):
+        """
+        A second state generator whose purpose it is to drive values relatively safely back to the zero position
+        :param new_accel - the new accel value to do calculations with towards the next interval
+        :returns None, no return
+        """
+
+        dc.getcontext().prec = 6
+        new_accel = dc.Decimal(new_accel) * self.one
+
+        if not self.check_accel_onset(new_accel):
+            if new_accel >= 0.0:
+                new_accel = self._curr_accel + self.get_constraints().get_max_accel_diff() * self.max_buffer_factor
+            else:
+                new_accel = self._curr_accel - self.get_constraints().get_max_accel_diff() * self.max_buffer_factor
+
+        if not self.check_max_accel(new_accel):
+            if new_accel >= 0.0:
+                new_accel = self.get_constraints().get_max_accel() * self.max_buffer_factor
+            else:
+                new_accel = -self.get_constraints().get_max_accel() * self.max_buffer_factor
 
         new_vel = self._determine_next_velocity(new_accel)
 
-        bool_res = bool_res and self.check_max_velocity(new_vel)
+        if not self.check_max_velocity(new_vel):
+            if new_vel >= 0.0:
+                new_vel = self.get_constraints().get_max_vel() * self.max_buffer_factor
+            else:
+                new_vel = -self.get_constraints().get_max_vel() * self.max_buffer_factor
 
         new_pos = self._determine_next_position(new_accel)
 
-        bool_res = bool_res and self.check_max_neg_position(new_pos)
+        if not self.check_max_neg_position(new_pos):
+            new_pos = self.get_constraints().get_max_neg_exc() * self.max_buffer_factor
 
-        bool_res = bool_res and self.check_max_pos_position(new_pos)
+        if not self.check_max_pos_position(new_pos):
+            new_pos = self.get_constraints().get_max_pos_exc() * self.max_buffer_factor
 
-        if bool_res:
-            self._curr_pos = new_pos
-
-        self._curr_vel = new_vel
         self._curr_accel = new_accel
+        self._curr_vel = new_vel
+        self._curr_pos = new_pos
+        self._allowed_pos = new_pos
 
     def check_max_accel(self, new_accel):
         """
@@ -138,6 +177,9 @@ class KinematicsKeeper(object):
             return False
         return True
 
+    def get_constraints(self):
+        return self._max_collection
+
     def get_velocity(self):
         return float(self._curr_vel)
 
@@ -145,6 +187,9 @@ class KinematicsKeeper(object):
         return float(self._curr_accel)
 
     def get_position(self):
+        return float(self._allowed_pos)
+
+    def get_actual_position(self):
         return float(self._curr_pos)
 
     def set_position(self, new_pos):
@@ -152,6 +197,15 @@ class KinematicsKeeper(object):
         Sets the current position. Used in some niche situations like returning to zero position.
         """
         self._curr_pos = dc.Decimal(new_pos) * self.one
+
+    def set_actual_position(self, new_pos):
+        self._allowed_pos = dc.Decimal(new_pos) * self.one
+
+    def set_acceleration(self, new_accel):
+        self._curr_accel = dc.Decimal(new_accel) * self.one
+
+    def set_velocity(self, new_vel):
+        self._curr_accel = dc.Decimal(new_vel) * self.one
 
     def set_interval(self, interval):
         self._interval = (dc.Decimal(interval) * self.one) / (dc.Decimal(1000) * self.one)
