@@ -125,6 +125,8 @@ def get_html_sessions(sessions):
                        onclick="clicked_raw('{}', 's')" value="Download Raw Averaged Session" />\n
                        <input id="analyzed_button" type="submit" name="as_{}"
                        onclick="clicked_analyzed('{}', 's')" value="Download Analyzed Session" />\n
+                       <input id="delete_button" type="submit" name="delete_{}"
+                       onclick="clicked_delete('{}')" value="Delete Session" />\n
                        <input type="file" id="ufs_{}" />
                        <input id="upload_button" type="submit" name="us_{}"
                        onclick="clicked_upload('{}', 's')" value="Upload Record" />\n
@@ -146,7 +148,8 @@ def get_html_sessions(sessions):
                             </tbody>\n
                        </table>\n
                    </td>\n
-               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id, sess_id, recs)
+               </tr>\n""".format(sess_id, desc, date, sess_id, sess_id, sess_id, sess_id,sess_id, sess_id, sess_id,
+                                 sess_id, sess_id, recs)
         html += sess
     return html
 
@@ -481,19 +484,15 @@ def add_to_session_from_data(sess_id, accel_data, gyro_data, device_id, device_n
     return jsonify(session_id=sess_id, record_id=rec_id, status_code=200)
 
 
-@app.route("/deleteSession", methods=['DELETE'])
-def delete_session():
+@app.route("/deleteSession/<sess_id>", methods=['DELETE'])
+def delete_session(sess_id):
     """
         Deletes all data related to the session in the database that has the
         session ID provided in the JSON body
 
-        :JSON format:
-        {sess_id: ""}
-
+    :param sess_id: the session ID that we are deleting
     :return: The session ID
     """
-    data = request.get_json(force=True)
-    sess_id = data["sess_id"]
     crud.delete_entire_session(sess_id)
     return jsonify(session_id=sess_id)
 

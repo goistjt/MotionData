@@ -200,6 +200,19 @@
                     }
                 }});
         }
+
+        function clicked_delete(id) {
+            // create verify popup
+            if (window.confirm("Are you sure you wish to delete session " + id + "? This cannot be undone.")) {
+                $.ajax({headers : {},
+                    type: "DELETE",
+                    url: '/deleteSession/' + id,
+                    success: function () {
+                        location.reload(true);
+                        alert("Session " + id + " deleted!");
+                    }});
+            }
+        }
     </script>
 
 </body>
