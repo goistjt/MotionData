@@ -70,7 +70,6 @@ def point_alignment(accel_base, gyro_base):
 
 
 def download_record_analyzed(record_id):
-
     interval = 40
 
     if record_id is None:
@@ -140,7 +139,10 @@ def average_timeseries_data(records, iteration=1):
     return average_timeseries_data(rec_copy, iteration + 1)
 
 
-def download_session_analyzed(session_id=[]):
+def download_session_analyzed(session_id=None):
+
+    if session_id is None:
+        session_id = []
 
     interval = 40
 
@@ -159,15 +161,49 @@ def download_session_analyzed(session_id=[]):
                     gyro_base[len(gyro_base) - 1][0] is None):
             return (pd.DataFrame(np.array([]))).to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
-        start = max(accel_base[0][0], gyro_base[0][0]) - interval
-        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0]) + interval
+        start = max(accel_base[0][0], gyro_base[0][0])
+        end = min(accel_base[len(accel_base) - 1][0], gyro_base[len(gyro_base) - 1][0])
 
     df = pd.DataFrame(np.array(generate_processed_data(start, end, accel_base, gyro_base, interval)))
 
     return df.to_csv(index=False, header=False, sep=" ", float_format='%.6f')
 
 
-def process_accelerations(start, end, interval, points):
+def process_accelerations_simple(start, end, points, interval):
+    """
+    A simpler preprocessing step that substitutes interpolation for closest real value to the time interval.
+    :param start - start time
+    :param end - end time
+    :param points - the set of points
+    :param interval - the time interval desired for preprocessing
+    :returns preprocessed set of points
+    """
+    x = 0
+    for x in range(0, len(points)):
+        if points[x][0] < start:
+            continue
+        if points[x][0] >= start:
+            break
+
+    final_list = [points[x]]
+
+    if x + 1 >= len(points):
+        return final_list
+
+    curr_time = points[x][0]
+    for y in range(x + 1, len(points)):
+        if curr_time <= points[y][0]:
+            final_list.append([curr_time, points[y][1], points[y][2], points[y][3]])
+        else:
+            continue
+        if points[y][0] >= end:
+            break
+        curr_time += interval
+
+    return final_list
+
+
+def process_accelerations(start, end, points, interval):
     """
     The main preprocessing function in charge of transforming raw accelerations and timestamps into uniformed and matching
     accelerations for each expected interval.
@@ -342,9 +378,15 @@ def generate_processed_data(start_time, end_time, accel_points, gyro_points, int
     if start_time >= end_time:
         return default_list
 
-    accel_list, end_time = process_accelerations(start_time, end_time, interval, accel_points)
+    accel_list, end_time = process_accelerations(start_time, end_time, accel_points, interval)
 
-    gyro_list, end_time = process_accelerations(start_time, end_time, interval, gyro_points)
+    gyro_list, end_time = process_accelerations(start_time, end_time, gyro_points, interval)
+
+    cutoff = min(len(accel_list), len(gyro_list))
+
+    accel_list = accel_list[0:cutoff]
+
+    gyro_list = gyro_list[0:cutoff]
 
     if ((accel_list is None or len(accel_list) == 0) or (gyro_list is None or len(gyro_list) == 0) or (
                 len(gyro_list) != len(accel_list))):
@@ -393,7 +435,7 @@ def process_states(keeps_list, point, next_set, starting_value_type):
     :returns: the current snapshot of the position data of the six degrees of motion
     """
 
-    for x in range(len(keeps_list)):
+    for x in range(0, len(keeps_list)):
         val = point[x + 1]
 
         curr_keep = keeps_list[x]
@@ -426,7 +468,7 @@ def process_return_to_zero(keeps_accel, keeps_gyro, session):
 
         next_set = process_for_next_set(keeps_gyro, next_set)
 
-        if np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], atol=0.0000001):
+        if np.allclose(next_set, [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], atol=0.000001):
             next_set = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
             session.append(next_set)
             break
@@ -441,12 +483,9 @@ def process_for_next_set(keeps_list, next_set):
     For each KinematicsKeeper (for each degree of freedom), check if the current values are zeroed to original status, and
     if not generate the next state closer to zero by half the maximum acceleration specified by the keeper. This is a helper
     function in order to drive all keepers to zero.
-
     :param: keeps_list - the set of KinematicsKeepers to be iterated through to produce generated state values from
     :param: next_set - the set to append the current six degrees' states to for addition to the total session
-
     :returns: next_set - the original set given for this time, plus the appended generated values for these keepers.
-
     """
 
     maximum_buffer_factor = 0.5
@@ -466,12 +505,12 @@ def process_for_next_set(keeps_list, next_set):
         else:
             accel_val = curr_keep.get_max_acceleration() * maximum_buffer_factor
 
-        curr_keep.generate_next_state(accel_val, kk.KinematicsKeeper.ACCELERATION)
+        curr_keep.generate_to_zero(accel_val)
 
         pos_next = curr_keep.get_position()
 
         if (abs(pos_next - 0.0) < 0.0000001) or ((pos_next / abs(pos_next)) != (pos / (abs(pos)))):
-            curr_keep.set_position(0.0)
+            curr_keep.set_actual_position(0.0)
             next_set.append(0.0)
             continue
 

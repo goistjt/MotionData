@@ -37,6 +37,12 @@ class MaxCollection:
     def get_max_accel_diff(self):
         return self._max_accel_diff
 
+    def set_max_pos_exc(self, new_max_exc):
+        self._max_pos_exc = new_max_exc
+
+    def set_max_neg_exc(self, new_max_exc):
+        self._max_neg_exc = new_max_exc
+
 
 class SurgeCollection(MaxCollection):
     def __init__(self):

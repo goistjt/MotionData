@@ -38,7 +38,7 @@ class TestKinematics(unittest.TestCase):
                   [4.0, 0.0, 0.0, 0.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, points, 1.0)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_normalizer_beginning_off(self):
@@ -46,7 +46,7 @@ class TestKinematics(unittest.TestCase):
                   [4.0, 0.0, 0.0, 0.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, points, 1.0)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_normalizer_end_off(self):
@@ -54,21 +54,21 @@ class TestKinematics(unittest.TestCase):
                   [3.9, 22.0, 0.42, 42.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, points, 1.0)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_simple_shift(self):
         points = [[0.1, 0.0, 0.0, 0.0], [0.8, 2.0, 1.0, 8.0], [1.2, 1.2, 1.2, 1.2], [1.5, 2.0, 8.0, 9.0],
                   [2.3, 43.0, 42.1, 42.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.1, 1.1, 1.1, 1.1], [2.2, 0.0, 0.0, 0.0]]
-        points, end_time = da.process_accelerations(0.0, 2.2, 1.1, points)
+        points, end_time = da.process_accelerations(0.0, 2.2, points, 1.1)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_points_normalizer_both(self):
         points = [[2.0, 1.0, 1.0, 1.0]]
         points_exp = [[0.0, 0.0, 0.0, 0.0], [1.0, 0.5, 0.5, 0.5], [2.0, 1.0, 1.0, 1.0], [3.0, 0.5, 0.5, 0.5],
                       [4.0, 0.0, 0.0, 0.0]]
-        points, end_time = da.process_accelerations(0.0, 4.0, 1.0, points)
+        points, end_time = da.process_accelerations(0.0, 4.0, points, 1.0)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_complex_shift(self):
@@ -76,7 +76,7 @@ class TestKinematics(unittest.TestCase):
                   [0.9, 8.0, 2.0, 3.0], [1.3, 0.0, 1.0, 2.0], [2.9, 2.32, 2.32, 2.32], [3.0, 8.0, 2.0, 3.0],
                   [3.5, 1.0, 4.0, 9.2]]
         points_exp = [[0.5, 0.0, 0.0, 0.0], [1.5, 1.0, 1.0, 1.0], [2.5, 2.0, 2.0, 2.0], [3.5, 0.0, 0.0, 0.0]]
-        points, end_time = da.process_accelerations(0.5, 3.5, 1.0, points)
+        points, end_time = da.process_accelerations(0.5, 3.5, points, 1.0)
         self.assertTrue(np.allclose(points_exp, points, atol=self.MAX_EPSILON))
 
     def test_kk_determine_next_acceleration_by_pos(self):
@@ -84,7 +84,7 @@ class TestKinematics(unittest.TestCase):
         self.kin_keep.set_interval(0.0001)
         new_pos = dc.Decimal(1.0)
         actual = self.kin_keep._determine_next_acceleration_by_pos(new_pos)
-        expected = dc.Decimal(600000000000000) * dc.Decimal(1.0)
+        expected = dc.Decimal(100000000000000) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
 
     def test_kk_determine_next_acceleration_by_pos_nontrivial(self):
@@ -95,7 +95,7 @@ class TestKinematics(unittest.TestCase):
         self.kin_keep.set_interval(0.0001)
         new_pos = dc.Decimal(2.0)
         actual = self.kin_keep._determine_next_acceleration_by_pos(new_pos)
-        expected = dc.Decimal(600000000000000) * dc.Decimal(1.0)
+        expected = dc.Decimal(100000000000000) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
 
     def test_kk_determine_next_acceleration_by_vel(self):
@@ -103,7 +103,7 @@ class TestKinematics(unittest.TestCase):
         self.kin_keep.set_interval(0.0001)
         new_vel = dc.Decimal(0.1)
         actual = self.kin_keep._determine_next_acceleration_by_vel(new_vel)
-        expected = dc.Decimal(2000000) * dc.Decimal(1.0)
+        expected = dc.Decimal(1000000) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
 
     def test_kk_determine_next_acceleration_by_vel_nontrivial(self):
@@ -114,7 +114,7 @@ class TestKinematics(unittest.TestCase):
         self.kin_keep._curr_vel = dc.Decimal(-0.124)
         new_pos = dc.Decimal(2.0)
         actual = self.kin_keep._determine_next_acceleration_by_vel(new_pos)
-        expected = dc.Decimal(42480000.0023) * dc.Decimal(1.0)
+        expected = dc.Decimal(21240000) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
 
     def test_kk_determine_next_position(self):
@@ -122,7 +122,7 @@ class TestKinematics(unittest.TestCase):
         self.kin_keep.set_interval(0.0001)
         new_accel = dc.Decimal(1)
         actual = self.kin_keep._determine_next_position(new_accel)
-        expected = dc.Decimal(0.00000000000000166667) * dc.Decimal(1.0)
+        expected = dc.Decimal(0.000000000000000000000166667) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
 
     def test_kk_determine_next_position_nontrivial(self):
@@ -141,7 +141,7 @@ class TestKinematics(unittest.TestCase):
         self.kin_keep.set_interval(0.0001)
         new_accel = dc.Decimal(1)
         actual = self.kin_keep._determine_next_velocity(new_accel) * dc.Decimal(1.0)
-        expected = dc.Decimal(0.00000005) * dc.Decimal(1.0)
+        expected = dc.Decimal(0.000000000000005) * dc.Decimal(1.0)
         self.assertEqual(expected, actual)
 
     def test_kk_determine_next_velocity_nontrivial(self):
@@ -163,9 +163,9 @@ class TestKinematics(unittest.TestCase):
         actual_pos = self.kin_keep.get_position()
         actual_vel = self.kin_keep.get_velocity()
         actual_accel = self.kin_keep.get_acceleration()
-        expected_accel = self.kin_keep.get_max_acceleration()
-        expected_vel = expected_accel * (1/2) * 0.04
-        expected_pos = expected_accel * (1/6) * (0.04 ** 2)
+        expected_accel = 50.0
+        expected_vel = 2.0
+        expected_pos = 0.0
         self.assertEqual(expected_accel, actual_accel)
         self.assertEqual(expected_vel, actual_vel)
         self.assertEqual(expected_pos, actual_pos)
@@ -178,9 +178,9 @@ class TestKinematics(unittest.TestCase):
         actual_pos = self.kin_keep.get_position()
         actual_vel = self.kin_keep.get_velocity()
         actual_accel = self.kin_keep.get_acceleration()
-        expected_accel = 0.5625
-        expected_vel = dc.Decimal(expected_accel * (1/2) * 0.04) * dc.Decimal(1.0)
-        expected_pos = dc.Decimal(expected_accel * (1/6) * (0.04 ** 2)) * dc.Decimal(1.0)
+        expected_accel = 0.09375
+        expected_vel = 0.000075
+        expected_pos = 0.00015
         self.assertEqual(expected_accel, actual_accel)
         self.assertEqual(float(expected_vel), actual_vel)
         self.assertEqual(float(expected_pos), actual_pos)
