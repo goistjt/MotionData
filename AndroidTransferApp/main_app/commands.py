@@ -120,7 +120,7 @@ class ClearAndroidCache(Command):
             correct = ''
             while (correct != 'y') and (correct != 'n'):
                 correct = input('Are you absolutely sure you want to DELETE ALL FILES in (y=yes, n=no): '
-                                + repo_location)
+                                + repo_location + "\r\n")
             if correct == 'y':
                 for curr_path in os.listdir(repo_location):
                     file_path = os.path.join(repo_location, curr_path)
@@ -132,9 +132,5 @@ class ClearAndroidCache(Command):
                     except Exception as e:
                         print(e)
             else:
-                response = input("Please choose a better location to clear or type 'stop' to return to CMD")
-                if response == 'stop':
-                    return False
-                else:
-                    return ClearAndroidCache([response]).execute()
+                return False
         return True
