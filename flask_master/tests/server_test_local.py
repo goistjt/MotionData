@@ -41,8 +41,7 @@ class FlaskTestCase(unittest.TestCase):
         """
         if self.session:
             time.sleep(30)
-            delete_data = {"sess_id": self.session}
-            response = self.app.delete('/deleteSession/' + delete_data, content_type='application/json')
+            response = self.app.delete('/deleteSession/' + str(self.session))
             resp_json = json.loads(response.data.decode("utf-8"))
             self.assertIsNotNone(resp_json)
             self.session = None
