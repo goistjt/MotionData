@@ -85,7 +85,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
 
         zero = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        df = pd.DataFrame(np.array([zero, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0], zero]))
+        df = pd.DataFrame(np.array([zero, [1.0, 1.0, 1.0, 57.295780, 57.295780, 57.295780], zero]))
         data = df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")
         self.assertEquals(resp_json['data'], data)
 
@@ -124,11 +124,12 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
 
         data = [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                [0.000267, 0.000267, 0.000267, 0.013333, 0.013333, 0.013333],
-                [0.001867, 0.001867, 0.001867, 0.066667, 0.066667, 0.066667],
-                [0.004800, 0.004800, 0.004800, 0.080000, 0.080000, 0.080000],
-                [0.007150, 0.007215, 0.007215, 0.040000, 0.040000, 0.033334],
-                [0.005249, 0.005706, 0.005706, 0.000000, 0.000000, 0.000000],
+                [0.000011, 0.000011, 0.000011, 0.0, 0.0, 0.0],
+                [0.000843, 0.000843, 0.000843, 0.0, 0.0, 0.0],
+                [0.003264, 0.003264, 0.003264, 0.0, 0.0, 0.0],
+                [0.006430, 0.006433, 0.006433, 0.0, 0.0, 0.0],
+                [0.006977, 0.007184, 0.007184, 0.0, 0.0, 0.0],
+                [0.002424, 0.003227, 0.003227, 0.000000, 0.000000, 0.000000],
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
         df = pd.DataFrame(np.array(data))
         data = df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")
@@ -162,7 +163,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
 
         zero = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        df = pd.DataFrame(np.array([zero, [1.0, 1.0, 1.0, 1.0, 1.0, 1.0], zero]))
+        df = pd.DataFrame(np.array([zero, [1.0, 1.0, 1.0, 57.295780, 57.295780, 57.295780], zero]))
         data = df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")
         self.assertEquals(resp_json['data'], data)
 
@@ -196,11 +197,7 @@ class FlaskTestCase(unittest.TestCase):
         self.assertIsNotNone(resp_json)
 
         data = [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                [0.000267, 0.000267, 0.000267, 0.013333, 0.013333, 0.013333],
-                [0.001867, 0.001867, 0.001867, 0.066667, 0.066667, 0.066667],
-                [0.004800, 0.004800, 0.004800, 0.080000, 0.080000, 0.080000],
-                [0.007150, 0.007215, 0.007215, 0.040000, 0.040000, 0.033334],
-                [0.005249, 0.005706, 0.005706, 0.000000, 0.000000, 0.000000],
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
                 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]
         df = pd.DataFrame(np.array(data))
         data = df.to_csv(index=False, header=False, sep=" ", float_format="%.6f")

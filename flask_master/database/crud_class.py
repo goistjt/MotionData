@@ -45,6 +45,16 @@ class Crud(object):
         db_config = read_db_config()
         return connect(**db_config)
 
+    def update_connection_if_timed_out(self):
+        """
+        What comes in: Nothing
+        What goes out: Nothing
+        Description: Check if the local mysql connection is still open,
+        if not, restart the connection
+        """
+        if not self.conn.open:
+            self.conn = self.get_connection()
+
     # ********* session ********#
 
     def create_session(self, description, starting_time):
@@ -344,6 +354,7 @@ class Crud(object):
         Description: Read and return the first row from the result
         """
         try:
+            self.update_connection_if_timed_out()
             cursor = self.conn.cursor()
             cursor.execute(query, args)
             data = cursor.fetchone()
@@ -360,6 +371,7 @@ class Crud(object):
         Description: Read and return the entire result
         """
         try:
+            self.update_connection_if_timed_out()
             cursor = self.conn.cursor()
             cursor.execute(query, args)
             data = cursor.fetchall()
@@ -387,6 +399,7 @@ class Crud(object):
         Description:
         """
         try:
+            self.update_connection_if_timed_out()
             cursor = self.conn.cursor()
             if multi_row:
                 print(query)
@@ -432,6 +445,7 @@ class Crud(object):
         Description:  Generic procedure call
         """
         try:
+            self.update_connection_if_timed_out()
             cursor = self.conn.cursor()
             cursor.callproc(proc_name, args)
             if fetchall:
@@ -451,6 +465,7 @@ class Crud(object):
         Description:  Generic transaction call
         """
         try:
+            self.update_connection_if_timed_out()
             cursor = self.conn.cursor()
             cursor.execute(query, args)
             self.conn.commit()
