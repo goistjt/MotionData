@@ -21,7 +21,7 @@ services:
       - "5000:5000"
      volumes:
       - ./flask_master:/usr/src/app
-     entrypoint: /usr/src/app/entrypoint.sh
+     command: python /usr/src/app/run_server.py
      links:
       - db:mysql
      depends_on:
