@@ -3,8 +3,7 @@ from configparser import ConfigParser
 from pathlib import Path
 
 HERE = Path(__file__).parent.resolve()
-print(str(HERE / 'local_config.ini'))
-CONFIG_PATH = str(HERE / 'local_config.ini')
+CONFIG_PATH = str(HERE / 'server_config.ini')
 
 
 def read_db_config(filename=CONFIG_PATH, section='mysql'):
@@ -16,7 +15,7 @@ def read_db_config(filename=CONFIG_PATH, section='mysql'):
     # create parser and read ini configuration file
     parser = ConfigParser()
     parser.read(filename)
- 
+
     # get section, default to mysql
     db = {}
     if parser.has_section(section):
@@ -25,5 +24,5 @@ def read_db_config(filename=CONFIG_PATH, section='mysql'):
             db[item[0]] = item[1]
     else:
         raise Exception('{0} not found in the {1} file'.format(section, filename))
- 
+
     return db
